@@ -498,8 +498,8 @@ const STR = {
     cSwap: 'SWAP', cFire: 'SHOOT', cMove: 'MOVE', cSearch: 'SEARCH', cMelee0: 'BAT', cMelee1: 'NAIL', cMelee2: 'AXE',
     w_pistol: '.38 Revolver', w_shotgun: 'Pump Shotgun', w_smg: 'Chopper SMG',
     m_bat: 'Baseball Bat', m_nailbat: 'Nail Bat', m_axe: 'Fire Axe',
-    u_jacket: 'Canvas Jacket', ud_jacket: '+25 max health', u_rounds: 'Hollow Points', ud_rounds: '+20% damage, every gun',
-    u_shoes: 'Trail Runners', ud_shoes: '+12% walking speed', u_hands: 'Quick Hands', ud_hands: 'Search and reload 35% faster',
+    u_jacket: 'Canvas Jacket', ud_jacket: '+{n} max health', u_rounds: 'Hollow Points', ud_rounds: '+{n}% damage, every gun',
+    u_shoes: 'Trail Runners', ud_shoes: '+{n}% walking speed', u_hands: 'Quick Hands', ud_hands: 'Search and reload {n}% faster',
     // street names (menus, then the in-game HUD)
     'st_MAPLE ST': 'Maple Street', 'st_ELM ST': 'Elm Street', 'st_OAK AVE': 'Oak Avenue', 'st_BIRCH LN': 'Birch Lane', 'st_MAIN ST': 'Main Street',
     'sh_MAPLE ST': 'MAPLE ST', 'sh_ELM ST': 'ELM ST', 'sh_OAK AVE': 'OAK AVE', 'sh_BIRCH LN': 'BIRCH LN', 'sh_MAIN ST': 'MAIN ST',
@@ -587,8 +587,8 @@ const STR = {
     cSwap: '换枪', cFire: '射击', cMove: '移动', cSearch: '搜索', cMelee0: '球棒', cMelee1: '钉棒', cMelee2: '斧头',
     w_pistol: '.38 左轮手枪', w_shotgun: '泵动霰弹枪', w_smg: '冲锋枪',
     m_bat: '棒球棒', m_nailbat: '钉子球棒', m_axe: '消防斧',
-    u_jacket: '帆布夹克', ud_jacket: '最大生命 +25', u_rounds: '空尖弹', ud_rounds: '所有枪伤害 +20%',
-    u_shoes: '越野跑鞋', ud_shoes: '移动速度 +12%', u_hands: '快手', ud_hands: '搜索和换弹快 35%',
+    u_jacket: '帆布夹克', ud_jacket: '最大生命 +{n}', u_rounds: '空尖弹', ud_rounds: '所有枪伤害 +{n}%',
+    u_shoes: '越野跑鞋', ud_shoes: '移动速度 +{n}%', u_hands: '快手', ud_hands: '搜索和换弹快 {n}%',
     'st_MAPLE ST': '枫树街', 'st_ELM ST': '榆树街', 'st_OAK AVE': '橡树大道', 'st_BIRCH LN': '桦树巷', 'st_MAIN ST': '主街',
     'sh_MAPLE ST': '枫树街', 'sh_ELM ST': '榆树街', 'sh_OAK AVE': '橡树大道', 'sh_BIRCH LN': '桦树巷', 'sh_MAIN ST': '主街',
     night: '第 {n} 夜', hudNight: '第 {n} 夜  {street}',
@@ -745,6 +745,16 @@ const customNoGun = () => !!(CUSTOM && CUSTOM.frames && CUSTOM.frames.idle1_ng);
 const survF = (seq, i) => AF[(player.weapon === 'pistol' && !pistolLoose(player) ? 'sv_' : 'sn_') + seq + '_' + pad2(((i % SURV_N[seq]) + SURV_N[seq]) % SURV_N[seq])];
 const Z_WALK = ['walk_01', 'walk_02', 'walk_03', 'walk_02'];
 
+// ---- gameplay tuning: written in at build time from the Porchlight Tuning page. Anything missing here keeps the
+// default written beside it in the code below.
+const TUNING = /*TUNING*/{}/*END TUNING*/;
+const tn = (path, def) => { let o = TUNING; for (const k of path.split('.')) { if (!o || typeof o !== 'object') return def; o = o[k]; } return typeof o === 'number' && Number.isFinite(o) ? o : def; };
+const TUNE_INT = { mag: 1, pellets: 1, max: 1 }, TUNE_MIN = { cd: .03, reload: .1, speed: 20, life: .02, mag: 1, pellets: 1, max: 1 };
+function tuneObj(o, t, keys) {           // copy the tuned numbers onto a weapon / swing / zombie entry
+  if (!t || typeof t !== 'object') return;
+  for (const k of keys) { let v = t[k]; if (typeof v !== 'number' || !Number.isFinite(v)) continue; if (TUNE_INT[k]) v = Math.round(v); o[k] = Math.max(TUNE_MIN[k] ?? 0, v); }
+}
+
 const WEAPON_LIST = [
   { id: 'pistol', name: '.38 Revolver', art: 'g_pistol', noise: .04, mag: 6, reload: 1.05, cd: .3, dmg: 12, speed: 470, life: .7, pellets: 1, spread: .015, kb: 24, shake: 1.2 },
   { id: 'shotgun', name: 'Pump Shotgun', art: 'g_shotgun', noise: .12, mag: 5, reload: 1.5, cd: .8, dmg: 8, speed: 400, life: .3, pellets: 6, spread: .075, kb: 75, shake: 3.5 },
@@ -752,6 +762,8 @@ const WEAPON_LIST = [
   // bolt-action: slow, and each round goes through every zombie in line, losing half its punch at each one
   { id: 'rifle', name: 'Bolt-Action Rifle', art: 'g_rifle', noise: .1, mag: 5, reload: 1.9, cd: .9, dmg: 30, speed: 900, life: .6, pellets: 1, spread: .004, kb: 40, shake: 3, pierce: true },
 ];
+WEAPON_LIST.forEach(w => tuneObj(w, TUNING.weapons && TUNING.weapons[w.id], ['dmg', 'pellets', 'cd', 'mag', 'reload', 'speed', 'life', 'spread', 'kb']));
+const RIFLE_FALL = Math.max(0, Math.min(1, tn('weapons.rifle.falloff', .5)));   // what a rifle round keeps each time it goes through one
 const WEAP = {}; WEAPON_LIST.forEach(w => WEAP[w.id] = w);
 const WEAPON_ORDER = ['pistol', 'shotgun', 'smg', 'rifle'];
 const PRIMARIES = ['shotgun', 'smg', 'rifle'];                   // pick one per run; the revolver always comes along   // the bat lives on its own button
@@ -762,6 +774,7 @@ const MELEE = [
   { id: 'nailbat', name: 'Nail Bat', short: 'NAIL BAT', art: 'm_nailbat', dmg: 20, cd: .48, reach: 23, kb: 115, stun: .5, max: 3 },
   { id: 'axe', name: 'Fire Axe', short: 'FIRE AXE', art: 'm_axe', dmg: 34, cd: .62, reach: 25, kb: 135, stun: .55, max: 4 },
 ];
+MELEE.forEach(m => tuneObj(m, TUNING.melee && TUNING.melee[m.id], ['dmg', 'cd', 'reach', 'kb', 'stun', 'max']));
 const SWING = .3;
 const melee = () => MELEE[clamp(save.meleeTier || 0, 0, 2)];
 
@@ -1433,11 +1446,12 @@ function sfx(n, gap = 0) {
 const SAVE_KEY = 'porchlight.save.v1';
 // the items found in the glimmering houses (see ITEMS below), and how much each gun's ammo you can carry
 const RELICS = ['bouncer', 'quickmag', 'kickback', 'vest', 'killfill', 'crowbar', 'onetwo', 'getaway', 'barbed', 'flare'];
-const AMMO_CAP = { shotgun: 10, smg: 60, rifle: 10 };           // two clips each; the revolver never runs out
-function freshSave() { return { v: 1, night: 1, cash: 0, owned: { pistol: true, melee: true, shotgun: false, smg: false }, meleeTier: 0, ammo: { shotgun: 0, smg: 0, rifle: 0 }, up: { jacket: 0, rounds: 0, shoes: 0, hands: 0 }, best: 1, totalKills: 0, muted: false, escaped: false, grenades: 3, relics: [], primary: null, runNew: false }; }
+const AMMO_CAP = { shotgun: Math.max(1, Math.round(tn('nights.ammoShotgun', 10))), smg: Math.max(1, Math.round(tn('nights.ammoSmg', 60))), rifle: Math.max(1, Math.round(tn('nights.ammoRifle', 10))) };   // two clips each; the revolver never runs out
+const START_NADES = Math.max(0, Math.round(tn('grenade.start', 3)));
+function freshSave() { return { v: 1, night: 1, cash: 0, owned: { pistol: true, melee: true, shotgun: false, smg: false }, meleeTier: 0, ammo: { shotgun: 0, smg: 0, rifle: 0 }, up: { jacket: 0, rounds: 0, shoes: 0, hands: 0 }, best: 1, totalKills: 0, muted: false, escaped: false, grenades: START_NADES, relics: [], primary: null, runNew: false }; }
 function normalizeSave(s) {
   const f = freshSave(); if (!s || typeof s !== 'object') return f;
-  const o = { ...f, ...s, owned: { ...f.owned, ...(s.owned || {}) }, ammo: { ...f.ammo, ...(s.ammo || {}) }, up: { ...f.up, ...(s.up || {}) }, grenades: Number.isFinite(s.grenades) ? s.grenades : 3, v: 1 };
+  const o = { ...f, ...s, owned: { ...f.owned, ...(s.owned || {}) }, ammo: { ...f.ammo, ...(s.ammo || {}) }, up: { ...f.up, ...(s.up || {}) }, grenades: Number.isFinite(s.grenades) ? s.grenades : START_NADES, v: 1 };
   for (const id in AMMO_CAP) o.ammo[id] = clamp(Math.floor(+o.ammo[id] || 0), 0, AMMO_CAP[id]);
   o.relics = Array.isArray(s.relics) ? [...new Set(s.relics.filter(id => RELICS.includes(id)))] : [];
   o.primary = ['shotgun', 'smg', 'rifle'].includes(s.primary) ? s.primary : null;
@@ -1448,25 +1462,28 @@ let SOLO_SAVE = null;                                 // during a co-op session:
 function loadSave() { try { const s = JSON.parse(localStorage.getItem(SAVE_KEY)); if (s && s.v === 1) return normalizeSave(s); } catch (e) {} return null; }
 function persist() { if (SOLO_SAVE) return; try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} }   // a co-op session isn't saved
 
-const maxHp = () => 100 + 25 * save.up.jacket;
-const dmgMul = () => 1 + .2 * save.up.rounds;
-const moveSpeed = () => 58 * (1 + .12 * save.up.shoes) * (player && player.speedT > 0 ? 1.6 : 1);
-const searchRate = () => (1 / 1.1) * (1 + .35 * save.up.hands);
-const reloadMul = () => 1 + .35 * save.up.hands;
+const PT = { hp: Math.max(1, tn('player.hp', 100)), speed: Math.max(1, tn('player.speed', 58)), med: Math.max(0, Math.round(tn('player.medkit', 35))),
+  jacket: tn('player.jacket', 25), rounds: tn('player.rounds', .2), shoes: tn('player.shoes', .12), hands: tn('player.hands', .35) };
+const maxHp = () => Math.round(PT.hp + PT.jacket * save.up.jacket);
+const dmgMul = () => 1 + PT.rounds * save.up.rounds;
+const moveSpeed = () => PT.speed * (1 + PT.shoes * save.up.shoes) * (player && player.speedT > 0 ? 1.6 : 1);
+const searchRate = () => (1 / 1.1) * (1 + PT.hands * save.up.hands);
+const reloadMul = () => 1 + PT.hands * save.up.hands;
 // The loop: each street brings in something new (Maple St walkers, Elm St runners and bats, Oak Ave crawlers and
 // brutes, Birch Ln the hounds), then the Dispatcher at the depot. After that the streets come round again with
 // everything out, harder each time.
 const ROSTER = { walker: 1, runner: 2, flyer: 2, crawler: 3, brute: 3, hound: 4 };
 const unlocked = (t, n) => n > STREETS.length || n >= (ROSTER[t] || 1);
 function nightCfg(n) {
-  return { hpMul: 1 + (n - 1) * .18, spawnMul: Math.max(.45, 1 - (n - 1) * .09), idle: 12 + n * 3, horde: 5 + n * 2, cap: 11 + n * 2,
+  return { hpMul: 1 + (n - 1) * tn('nights.hpGrowth', .18), spawnMul: Math.max(.45, 1 - (n - 1) * tn('nights.spawnGrowth', .09)), idle: 12 + n * 3, horde: 5 + n * 2, cap: 11 + n * 2,
     runner: unlocked('runner', n) ? Math.min(.35, .1 + (n - 1) * .05) : 0,
     brute: unlocked('brute', n) ? Math.max(.05, Math.min(.25, -.03 + (n - 1) * .045)) : 0,
     crawler: unlocked('crawler', n) ? Math.min(.2, .12 + Math.max(0, n - 3) * .02) : 0,
     flyEvery: Math.max(8, 20 - (n - 1) * 3), flyMax: !unlocked('flyer', n) ? 0 : n <= 2 ? 1 : n <= 4 ? 2 : 3,
     hounds: unlocked('hound', n) };
 }
-const bossHp = n => Math.round(1300 * (1 + .45 * (Math.floor(n / 5) - 1)));
+const bossHp = n => Math.max(1, Math.round(tn('boss.hp', 1300) * (1 + tn('boss.growth', .45) * (Math.floor(n / 5) - 1))));
+const BOSS_DMG = { drop: tn('boss.drop', 10), swipe: tn('boss.swipe', 16), slam: tn('boss.slam', 22), charge: tn('boss.charge', 30), can: tn('boss.can', 18) };
 
 /* ============================================================
    GAME STATE
@@ -1487,6 +1504,18 @@ const ZT = {
   hound: { hp: 12, spd: [118, 132], dps: 0, half: 8, h: 13, rew: [3, 6], kbRes: .1 },      // the fastest thing on the street: leaps at your face
   boss: { hp: 1300, spd: [15, 15], dps: 0, half: 17, h: 60, rew: [0, 0], kbRes: .97 },
 };
+for (const t in ZT) {                     // the tuning page's numbers for each kind
+  const q = t === 'boss' ? { spdMin: tn('boss.speed', NaN), spdMax: tn('boss.speed', NaN) } : TUNING.enemies && TUNING.enemies[t];
+  if (!q || typeof q !== 'object') continue;
+  const T = ZT[t], n = (v, lo = 0) => typeof v === 'number' && Number.isFinite(v) ? Math.max(lo, v) : null;
+  if (n(q.hp, 1) != null) T.hp = n(q.hp, 1);
+  if (n(q.dps) != null) T.dps = n(q.dps);
+  if (n(q.kbRes) != null) T.kbRes = Math.min(1, n(q.kbRes));
+  const s0 = n(q.spdMin, 1) ?? T.spd[0], s1 = n(q.spdMax, 1) ?? T.spd[1];
+  T.spd = [Math.min(s0, s1), Math.max(s0, s1)];
+  const c0 = n(q.cashMin) ?? T.rew[0], c1 = n(q.cashMax) ?? T.rew[1];
+  T.rew = [Math.round(Math.min(c0, c1)), Math.round(Math.max(c0, c1))];
+}
 const PLAYER_BASE = { fy: GROUND, face: 1, elev: 0, anim: 0, moving: false, fireCd: 0, flashT: 0, recoil: 0, weapon: 'pistol', searching: null, searchT: 0, deadT: 0, hurtSfxT: 0, inBus: false, pumpT: 0, rumT: 0, reloadT: 0, reloadDur: 1, reloadW: null, calmT: 0, swingT: -1, swingHit: true, swingN: 0, lastGun: 'pistol', aim: 0, aimHoldT: 0, shotT: 9, runPhase: 0, lastRi: -1, meleeCd: 0, kbv: 0, hurtT: 0, porchT: 0, itemT: 0, speedT: 0, flareReady: false, killT: -9, emptyN: 0 };
 function dummyPlayer() { return { ...PLAYER_BASE, x: -9999, hp: 1, dead: true, hidden: true, mag: { pistol: 6, shotgun: 0, smg: 0 } }; }
 
@@ -1541,7 +1570,7 @@ function startNight() {
   useStreet(S);
   resetLevel(!!S.boss);
   pickRelicHouses();
-  save.grenades = Math.max(save.grenades || 0, 3);      // (for now: every night starts with at least 3)
+  save.grenades = Math.max(save.grenades || 0, START_NADES);      // (for now: every night starts with at least a few)
   player = { ...PLAYER_BASE, x: 36, hp: maxHp(), dead: false, hidden: false, mag: {} };
   WEAPON_LIST.forEach(w => { player.mag[w.id] = w.id === 'pistol' ? w.mag : Math.min(w.mag, save.ammo[w.id]); });
   if (usable(save.primary)) player.weapon = save.primary;
@@ -1778,7 +1807,7 @@ function finishSearch() {
   if (res === 'cash') { const a = H.type === 'house' ? irnd(8, 26) : irnd(22, 40); addCash(a); floater(fx, fy, '+$' + a, '#ffb43a'); sfx('loot'); }
   else if (res === 'ammo') { const w = pick(ammoGuns); const n = addAmmo(w.id, w.id === 'smg' ? irnd(18, 30) : irnd(3, 5)); floater(fx, fy, tr(w.id === 'shotgun' ? 'fShells' : 'fRounds', { n }), '#e2bf62'); sfx('loot'); }
   else if (res === 'nade') { const n = irnd(1, 2); save.grenades = (save.grenades || 0) + n; floater(fx, fy, tr('fNades', { n }), '#a8c46a'); sfx('loot'); }
-  else if (res === 'med') { const a = 35; player.hp = Math.min(maxHp(), player.hp + a); floater(fx, fy, tr('fHealth', { n: a }), '#7fd08a'); sfx('med'); }
+  else if (res === 'med') { const a = PT.med; player.hp = Math.min(maxHp(), player.hp + a); floater(fx, fy, tr('fHealth', { n: a }), '#7fd08a'); sfx('med'); }
   else if (res === 'weapon') {
     const w = unowned[0]; save.owned[w.id] = true; addAmmo(w.id, AMMO_CAP[w.id]);
     player.weapon = w.id; player.reloadT = 0; player.mag[w.id] = Math.min(w.mag, save.ammo[w.id]); floater(fx, fy, tr(w.id === 'shotgun' ? 'fFoundSg' : 'fFoundSmg'), '#ffb43a'); setBanner(tr('newGun'), tr('w_' + w.id).toUpperCase(), 2); sfx('gun');
@@ -2276,7 +2305,7 @@ function updBoss(z, dt) {
       if (z.dropY >= 0) {
         addShake(7); sfx('slam');
         for (let i = 0; i < 16; i++) parts.push({ k: 'd', x: z.x + rnd(-24, 24), y: z.fy - 1, vx: rnd(-60, 60), vy: rnd(-25, -5), life: rnd(.4, .8), t: 0 });
-        areaHit(z.x, 40, 10, 160);
+        areaHit(z.x, 40, BOSS_DMG.drop, 160);
         go('roar');
       }
       break;
@@ -2307,7 +2336,7 @@ function updBoss(z, dt) {
       const tell = .6 * f2;
       if (z.stT >= tell && !z.hit) {
         z.hit = true; sfx('whoosh');
-        areaHit(z.x, 42, 16, 190, z.face, z.face, 's');
+        areaHit(z.x, 42, BOSS_DMG.swipe, 190, z.face, z.face, 's');
         if (livePlayers().some(q => upright(q) && !q.hidden && inArea(q.x, z.x, 42, z.face))) z.landed = true;
       }
       // after a backhand lands he gloats for a moment: time to slip past him or back off
@@ -2319,7 +2348,7 @@ function updBoss(z, dt) {
       if (z.stT >= tell && !z.hit) {
         z.hit = true; addShake(6); sfx('slam');
         for (let i = 0; i < 24; i++) { const d = i % 2 ? 1 : -1; parts.push({ k: 'd', x: z.x + d * rnd(4, 60), y: z.fy - 1, vx: d * rnd(40, 110), vy: rnd(-30, -6), life: rnd(.3, .6), t: 0 }); }
-        areaHit(z.x, SLAM_R, 22, 200);
+        areaHit(z.x, SLAM_R, BOSS_DMG.slam, 200);
         for (const q of zombies) if (q !== z && !q.dead && Math.abs(q.x - z.x) < SLAM_R) { q.kbv += Math.sign(q.x - z.x || 1) * 140; q.stun = Math.max(q.stun, .5); q.hp -= 20; q.flash = .07; if (q.hp <= 0) killZombie(q, Math.sign(q.x - z.x || 1)); }
       }
       if (z.stT >= tell + .8) { z.cd.slam = rnd(4.5, 6.5) * f2; z.cd.atk = .7; go('walk'); }
@@ -2344,7 +2373,7 @@ function updBoss(z, dt) {
           if (has('onetwo')) z.primed = G.t;
           go('stagger'); break;
         }
-        if (P === player) { dmgPlayer(30, z.dir * 260); barbHit(z, 15); } else if (coopAlly()) netEv('atk', r1(z.x), z.half + 10, 30, 260, 0, z.dir, 'c');   // their screen decides (and whether they parried)
+        if (P === player) { dmgPlayer(BOSS_DMG.charge, z.dir * 260); barbHit(z, 15); } else if (coopAlly()) netEv('atk', r1(z.x), z.half + 10, BOSS_DMG.charge, 260, 0, z.dir, 'c');   // their screen decides (and whether they parried)
         addShake(5);
         go('recover'); break;
       }
@@ -2388,7 +2417,7 @@ function updDebris(dt) {
     if (d.t >= d.T) {
       d.done = true; sfx('crash'); addShake(2.5);
       for (let i = 0; i < 10; i++) parts.push({ k: 'i', x: d.tx, y: GROUND - 4, vx: rnd(-70, 70), vy: rnd(-80, -30), life: 1, t: 0, gy: GROUND + irnd(-2, 4), c: pick(['#6a6f7a', '#8a8f9a', '#4a4f5a', '#c9b98a']), sz: 1 });
-      areaHit(d.tx, 17, 18, 150);
+      areaHit(d.tx, 17, BOSS_DMG.can, 150);
       for (const q of zombies) if (q.type !== 'boss' && !q.dead && Math.abs(q.x - d.tx) < 17) { q.hp -= 25; q.flash = .07; q.kbv += Math.sign(q.x - d.tx || 1) * 90; if (q.hp <= 0) killZombie(q, 1); }
     }
   }
@@ -2440,7 +2469,7 @@ function noiseHorde(src, chance) {
   for (let i = 0; i < n; i++) spawnQ.push({ t: .4 + Math.floor(i / 2) * .5, side: Math.floor(i / 2) % 3 === 1 ? -1 : 1 });
   return true;
 }
-const FLY_DMG = 9;
+const FLY_DMG = Math.max(0, tn('enemies.flyer.swoop', 9));
 function spawnFlyer(side = Math.random() < .5 ? 1 : -1) {
   const z = spawnZombie(side > 0 ? G.camX + VW + 16 : G.camX - 16, 'flyer', false);
   Object.assign(z, { y: rnd(26, 46), alt: rnd(30, 52), orbit: rnd(38, 70), side, st: 'cruise', t: 0, cd: rnd(1.4, 2.4), vx: 0, vy: 0, spin: 0, landed: false });
@@ -2451,7 +2480,7 @@ function spawnFlyer(side = Math.random() < .5 ? 1 : -1) {
    can't catch them; the bat can: swing as it jumps and it's knocked out of the air dead. Caught on the
    ground, a swing hurts it and throws it back. ---- */
 const HOUND_ST = ['run', 'crouch', 'leap', 'recover'];
-const HOUND = { leapR: 56, near: 30, crouchT: .3, leapT: .5, peak: .68, face: 14, dmg: 16 };
+const HOUND = { leapR: 56, near: 30, crouchT: .3, leapT: .5, peak: .68, face: 14, dmg: Math.max(0, tn('enemies.hound.leap', 16)) };
 function houndWave() {
   G.houndDone = true;
   const n = Math.min(5, 2 + Math.floor((nightNo() - 1) / 2));
@@ -2565,7 +2594,9 @@ function updFlyer(z, dt) {
    let go: it flies the other way, as far as you pulled (a full pull reaches almost to the edge of the screen).
    The pin clicks a moment after you press; it goes off 3 seconds after it leaves his hand. Pull back less than
    a thumb's width and let go to put it away. G throws one straight ahead. ---- */
-const NADE_G = 300, NADE_FUSE = 3, NADE_R = 46, NADE_PULL = 75, NADE_MIN = 7;
+const NADE_G = 300, NADE_FUSE = Math.max(.2, tn('grenade.fuse', 3)), NADE_R = Math.max(5, tn('grenade.radius', 46)), NADE_PULL = 75, NADE_MIN = 7;
+const NADE_DMAX = tn('grenade.dmax', 110), NADE_DMIN = tn('grenade.dmin', 25), NADE_KB = tn('grenade.kb', 170), NADE_SELF = tn('grenade.self', 35);
+const nadeDmg = k => NADE_DMIN + (NADE_DMAX - NADE_DMIN) * k;
 const NADE = { on: false, id: null, ox: 0, oy: 0, cx: 0, cy: 0, t0: 0, pinned: false };
 let nades = [];
 function nadeCalc(p, th, dir) {                       // pull strength + angle -> the throw, landing exactly where the aim shows
@@ -2578,8 +2609,8 @@ function nadeCalc(p, th, dir) {                       // pull strength + angle -
 }
 // the grenade button: hold it and the throw winds up, reaching further the longer you hold (up to about
 // three quarters of the screen: he's strong, not superhuman). It goes the way he's facing when you pressed.
-const NADE_CHARGE = 1.1, NADE_TH = .72, NADE_MIN_D = 42;
-const nadeMaxD = () => Math.round(VW * .75);
+const NADE_CHARGE = Math.max(.1, tn('grenade.charge', 1.1)), NADE_TH = .72, NADE_MIN_D = 42;
+const nadeMaxD = () => Math.max(NADE_MIN_D + 10, Math.round(VW * tn('grenade.range', .75)));
 function nadeCalcD(D, th, dir) {
   const x0 = player.x + dir * 4, y0 = player.fy - 24, gy = GROUND + 2, h0 = gy - y0;
   th = clamp(th, Math.atan(-h0 / D) + .08, 1.2);
@@ -2674,15 +2705,15 @@ function blastHits(x, y, fn) {
 function blastSelf(x) {                                 // too close and it gets you as well
   if (!upright(player) || player.hidden) return;
   const d = Math.abs(player.x - x), R = NADE_R * .8;
-  if (d < R) { const k = 1 - d / R; dmgPlayer(Math.round(8 + 27 * k), (Math.sign(player.x - x) || 1) * 120 * k); }
+  if (d < R) { const k = 1 - d / R; dmgPlayer(Math.round(NADE_SELF * (.23 + .77 * k)), (Math.sign(player.x - x) || 1) * 120 * k); }
 }
 function explode(x, y) {                                // my grenade (solo, or the host's)
   explodeFx(x, y); netEv('boom', r1(x), r1(y));
   noiseHorde('grenade', NADE_NOISE);
   blastHits(x, y, (z, k, dir, zy) => {
-    const d = (25 + 85 * k) * (z.type === 'boss' ? .6 : 1);
+    const d = nadeDmg(k) * (z.type === 'boss' ? .6 : 1);
     z.hp -= d; z.flash = .1; z.idle = false;
-    if (z.type !== 'boss') { z.kbv += dir * 170 * k * (1 - z.kbRes); z.stun = Math.max(z.stun || 0, .2 + .6 * k); }
+    if (z.type !== 'boss') { z.kbv += dir * NADE_KB * k * (1 - z.kbRes); z.stun = Math.max(z.stun || 0, .2 + .6 * k); }
     blood(z.x, zy, dir, 4);
     dmgNum(z.x, hitY(z), d, 'blast'); flareOn(z);
     if (z.hp <= 0) ownKill(z, dir);
@@ -2692,7 +2723,7 @@ function explode(x, y) {                                // my grenade (solo, or 
 // host: the guest's grenade going off (their screen does the damage to zombies; it still makes noise)
 function explodeCos(x, y) { explodeFx(x, y); noiseHorde('grenade', NADE_NOISE); blastSelf(x); }
 // guest: my grenade, on my screen
-function explodeGuest(x, y) { explodeFx(x, y); blastHits(x, y, (z, k, dir) => guestHit(z, 25 + 85 * k, dir, 170 * k, .2 + .6 * k, 2)); blastSelf(x); }
+function explodeGuest(x, y) { explodeFx(x, y); blastHits(x, y, (z, k, dir) => guestHit(z, nadeDmg(k), dir, NADE_KB * k, .2 + .6 * k, 2)); blastSelf(x); }
 function explodeFx(x, y) {                               // the flash, the smoke, the scorch (no damage)
   sfx('boom'); addShake(6.5); G.boom = { x, y, t: 0 };
   for (let i = 0; i < 28; i++) { const a = rnd(Math.PI * 1.05, Math.PI * 1.95), sp = rnd(40, 160); parts.push({ k: 'f', x, y: y - 2, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp * .8, life: rnd(.22, .5), t: 0, sz: irnd(1, 3) }); }
@@ -2769,7 +2800,7 @@ function updBullets(dt) {
       if (!b.cos) { const m = oneTwo(hit, b); if (NET.role === 'guest') guestHit(hit, b.dmg * m, b.face, b.kb, 0, 0, m > 1); else hurtZombie(hit, b, m); }
       if (!b.pierce) { b.life = 0; break; }
       (b.done || (b.done = new Set())).add(hit);
-      if (!b.cos) { b.dmg *= .5; if (b.dmg < 1) { b.life = 0; break; } }
+      if (!b.cos) { b.dmg *= RIFLE_FALL; if (b.dmg < 1) { b.life = 0; break; } }
     }
     if (b.own === 2 ? Math.abs(b.x - b.ox) > VW * .75 : b.x < G.camX - 30 || b.x > G.camX + VW + 30) b.life = 0;
   }
@@ -2845,7 +2876,7 @@ function updMisc(dt) {
    Searching one throws the items out onto the sidewalk (one each in co-op); stand on one for five seconds
    to take it. From then on it works for the rest of the run, until you're bitten for good.
    ============================================================ */
-const RELIC_T = 5, RELIC_R = 7, BARB_DPS = 10, FIRE_R = 20, FIRE_LIFE = 3, FIRE_TICK = 6;
+const RELIC_T = Math.max(.5, tn('items.collect', 5)), RELIC_R = 7, BARB_DPS = tn('items.barbed', 10), FIRE_R = 20, FIRE_LIFE = Math.max(.5, tn('items.flareLife', 3)), FIRE_TICK = tn('items.flareDmg', 6);
 const has = id => !!(save && save.relics && save.relics.includes(id));
 let drops = [], fires = [], nums = [], relicTook = new Set(), dropUid = 0, dropGroup = 0, shotSeq = 0;
 
@@ -3169,7 +3200,7 @@ function drawRelicPop() {                            // just picked up: the item
    On claude.ai the page's `room` carries the snapshots; on the game's own website PeerJS does (a free
    public server introduces the two browsers, then they talk directly).
    ============================================================ */
-const GAME_BUILD = 42;                              // shown on the co-op screen, so two players can check they have the same game
+const GAME_BUILD = 43;                              // shown on the co-op screen, so two players can check they have the same game
 // on the game's own website: browsers may keep an old copy of the page for up to 10 minutes after an update,
 // so check for a newer upload when the game opens and load it straight away if there is one
 (function checkForUpdate() {
@@ -3485,7 +3516,7 @@ function allyLoot(i) {
   const res = rollLoot(H, unowned, ammoGuns, q.hp > q.maxHp - 8);
   if (res === 'cash') { const v = H.type === 'house' ? irnd(8, 26) : irnd(22, 40); addCash(v); floater(fx, fy, '+$' + v, '#ffb43a'); }
   else if (res === 'ammo') { const w = pick(ammoGuns), n = w.id === 'smg' ? irnd(18, 30) : irnd(3, 5); netEv('loot', 'ammo', n, WEAPON_ORDER.indexOf(w.id)); floater(fx, fy, tr(w.id === 'shotgun' ? 'fShells' : 'fRounds', { n }), '#e2bf62'); }
-  else if (res === 'med') { netEv('loot', 'med', 35, 0); floater(fx, fy, tr('fHealth', { n: 35 }), '#7fd08a'); }
+  else if (res === 'med') { netEv('loot', 'med', PT.med, 0); floater(fx, fy, tr('fHealth', { n: PT.med }), '#7fd08a'); }
   else if (res === 'weapon') { const w = unowned[0]; netEv('loot', 'gun', 0, WEAPON_ORDER.indexOf(w.id)); floater(fx, fy, tr(w.id === 'shotgun' ? 'fFoundSg' : 'fFoundSmg'), '#ffb43a'); }
   else if (res === 'nade') { const n = irnd(1, 2); netEv('loot', 'nade', n, 0); floater(fx, fy, tr('fNades', { n }), '#a8c46a'); }
   else { netEv('loot', 'empty', 0, 0); floater(fx, fy, tr('fEmpty'), '#a99fbd'); }
@@ -3694,7 +3725,7 @@ function guestStart(n, run, hx) {
   NET.night = n; cfg = nightCfg(n);
   useStreet(S); resetLevel(!!S.boss); hordeMarks = []; hostNades = []; NET.pend = []; NET.gone = new Set(); wearSkin('guest');
   ensureLoadout();
-  save.grenades = Math.max(save.grenades || 0, 3);
+  save.grenades = Math.max(save.grenades || 0, START_NADES);
   player = { ...PLAYER_BASE, x: clamp((+hx || 36) - 16, 12, BUS_X - 20), hp: maxHp(), dead: false, hidden: false, mag: {} };
   WEAPON_LIST.forEach(w => { player.mag[w.id] = w.id === 'pistol' ? w.mag : Math.min(w.mag, save.ammo[w.id]); });
   if (usable(save.primary)) player.weapon = save.primary;
@@ -3853,7 +3884,7 @@ async function coopJoin() {
   coopLobbyUI();
   setTimeout(() => { if (NET.role === 'guest' && NET.code === code && !NET.hadPartner && G.screen === 'sCoop') $('coopStatus').textContent = tr('coopNoHost'); }, 6000);
 }
-const REVIVE_T = 10, REVIVE_R = 14;
+const REVIVE_T = Math.max(1, tn('items.revive', 10)), REVIVE_R = 14;
 let reviveThem = 0, reviveMe = 0, reviveTick = 0;
 function updRevive(dt) {
   G.revive = null;
@@ -4891,7 +4922,7 @@ function shopItems() {
     lv: mt, max: 2, price: mt < 2 ? [120, 260][mt] : null });
   UPGRADES.forEach(u => {
     const lv = save.up[u.id];
-    out.push({ key: 'up_' + u.id, icon: SPR.iconURL[u.id], name: tr('u_' + u.id), desc: tr('ud_' + u.id), lv, max: u.max, price: lv < u.max ? u.cost[lv] : null });
+    out.push({ key: 'up_' + u.id, icon: SPR.iconURL[u.id], name: tr('u_' + u.id), desc: tr('ud_' + u.id, { n: u.id === 'jacket' ? Math.round(PT.jacket) : Math.round(PT[u.id] * 100) }), lv, max: u.max, price: lv < u.max ? u.cost[lv] : null });
   });
   return out;
 }
@@ -5535,7 +5566,7 @@ try { if (hot && typeof hot.snapshot === 'function') hot.snapshot(() => ({ save 
 try {
   if (hot && typeof hot.ready === 'function') hot.ready(start); else start((hot && hot.data) || {});
 } catch (e) { console.error(e); start({}); }
-window.__porch = { nadeChargeStart, nadeChargeEnd, nadeMaxD, openIntro, closeIntro, checkIntros, nightCfg, unlocked, ROSTER, openSettings, cancelReload, roundsIn, getRevived, updRevive, get SOLO_SAVE() { return SOLO_SAVE; }, nadePlan, openShop, PRIMARIES, pickGun, openPick, ensureLoadout, gunFor, sticks, pollTouch, input, WEAP, fire, startReload, moveSpeed, normalizeSave, addAmmo, get fires() { return fires; }, RELICS, AMMO_CAP, has, grabRelic, dropRelics, pickRelicHouses, ignite, renderRelics, relicArt, get drops() { return drops; }, get nums() { return nums; }, shopItems, buy, fillPrice, houndWave, HOUND, buildHoundFrames, batHound, get bullets() { return bullets; }, skinOf, get WORN() { return WORN; }, get AF() { return AF; }, NET, get ally() { return ally; }, hostSnap, areaHit, get hostNades() { return hostNades; }, meleeHit, quickSwing, coopAlly, get stats() { return stats; }, get coins() { return coins; }, get K() { return K; }, noiseHorde, get spawnQ() { return spawnQ; }, spawnFlyer, NADE, get nades() { return nades; }, nadeCalc, throwNade, explode, TRACKS, G, get player() { return player; }, get zombies() { return zombies; }, get save() { return save; }, get boss() { return boss; }, get bus() { return bus; }, get props() { return props; }, get debris() { return debris; }, WX, startNight, startBoss, setWeather, houses: () => houses, dmgPlayer, spawnZombie, CE, makeTemplate, importSheet, get CUSTOM() { return CUSTOM; } };
+window.__porch = { TUNING, MELEE, ZT, PT, BOSS_DMG, get RIFLE_FALL() { return RIFLE_FALL; }, bossHp, get NADE_R() { return NADE_R; }, get FLY_DMG() { return FLY_DMG; }, nadeDmg, nadeChargeStart, nadeChargeEnd, nadeMaxD, openIntro, closeIntro, checkIntros, nightCfg, unlocked, ROSTER, openSettings, cancelReload, roundsIn, getRevived, updRevive, get SOLO_SAVE() { return SOLO_SAVE; }, nadePlan, openShop, PRIMARIES, pickGun, openPick, ensureLoadout, gunFor, sticks, pollTouch, input, WEAP, fire, startReload, moveSpeed, normalizeSave, addAmmo, get fires() { return fires; }, RELICS, AMMO_CAP, has, grabRelic, dropRelics, pickRelicHouses, ignite, renderRelics, relicArt, get drops() { return drops; }, get nums() { return nums; }, shopItems, buy, fillPrice, houndWave, HOUND, buildHoundFrames, batHound, get bullets() { return bullets; }, skinOf, get WORN() { return WORN; }, get AF() { return AF; }, NET, get ally() { return ally; }, hostSnap, areaHit, get hostNades() { return hostNades; }, meleeHit, quickSwing, coopAlly, get stats() { return stats; }, get coins() { return coins; }, get K() { return K; }, noiseHorde, get spawnQ() { return spawnQ; }, spawnFlyer, NADE, get nades() { return nades; }, nadeCalc, throwNade, explode, TRACKS, G, get player() { return player; }, get zombies() { return zombies; }, get save() { return save; }, get boss() { return boss; }, get bus() { return bus; }, get props() { return props; }, get debris() { return debris; }, WX, startNight, startBoss, setWeather, houses: () => houses, dmgPlayer, spawnZombie, CE, makeTemplate, importSheet, get CUSTOM() { return CUSTOM; } };
 })();
 </script>
 </body></html>
