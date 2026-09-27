@@ -747,7 +747,7 @@ const Z_WALK = ['walk_01', 'walk_02', 'walk_03', 'walk_02'];
 
 // ---- gameplay tuning: written in at build time from the Porchlight Tuning page. Anything missing here keeps the
 // default written beside it in the code below.
-const TUNING = /*TUNING*/{}/*END TUNING*/;
+const TUNING = /*TUNING*/{"grenade":{"charge":2},"enemies":{"runner":{"hp":12,"spdMax":57,"cashMin":1}}}/*END TUNING*/;
 const tn = (path, def) => { let o = TUNING; for (const k of path.split('.')) { if (!o || typeof o !== 'object') return def; o = o[k]; } return typeof o === 'number' && Number.isFinite(o) ? o : def; };
 const TUNE_INT = { mag: 1, pellets: 1, max: 1 }, TUNE_MIN = { cd: .03, reload: .1, speed: 20, life: .02, mag: 1, pellets: 1, max: 1 };
 function tuneObj(o, t, keys) {           // copy the tuned numbers onto a weapon / swing / zombie entry
@@ -1475,7 +1475,7 @@ const reloadMul = () => 1 + PT.hands * save.up.hands;
 const ROSTER = { walker: 1, runner: 2, flyer: 2, crawler: 3, brute: 3, hound: 4 };
 const unlocked = (t, n) => n > STREETS.length || n >= (ROSTER[t] || 1);
 function nightCfg(n) {
-  return { hpMul: 1 + (n - 1) * tn('nights.hpGrowth', .18), spawnMul: Math.max(.45, 1 - (n - 1) * tn('nights.spawnGrowth', .09)), idle: 12 + n * 3, horde: 5 + n * 2, cap: 11 + n * 2,
+  return { hpMul: 1 + (n - 1 - (zLevel(n) - 1) * STREETS.length) * tn('nights.hpGrowth', .18), spawnMul: Math.max(.45, 1 - (n - 1) * tn('nights.spawnGrowth', .09)), idle: 12 + n * 3, horde: 5 + n * 2, cap: 11 + n * 2,
     runner: unlocked('runner', n) ? Math.min(.35, .1 + (n - 1) * .05) : 0,
     brute: unlocked('brute', n) ? Math.max(.05, Math.min(.25, -.03 + (n - 1) * .045)) : 0,
     crawler: unlocked('crawler', n) ? Math.min(.2, .12 + Math.max(0, n - 3) * .02) : 0,
@@ -1516,6 +1516,34 @@ for (const t in ZT) {                     // the tuning page's numbers for each 
   const c0 = n(q.cashMin) ?? T.rew[0], c1 = n(q.cashMax) ?? T.rew[1];
   T.rew = [Math.round(Math.min(c0, c1)), Math.round(Math.max(c0, c1))];
 }
+// ---- enemy levels: the first time round the streets everything is level 1, the second time level 2, from the
+// third on level 3. Level 1 is ZT above; levels 2 and 3 start from ZLV (the tuning page's defaults) and take the
+// page's numbers on top.
+const ZLV = {"walker":{"L2":{"hp":47,"spdMin":14,"spdMax":21,"dps":13,"kbRes":0.1,"cashMin":2,"cashMax":4,"size":1.1},"L3":{"hp":68,"spdMin":16,"spdMax":23,"dps":16,"kbRes":0.2,"cashMin":2,"cashMax":6,"size":1.2}},"runner":{"L2":{"hp":29,"spdMin":48,"spdMax":59,"dps":10,"kbRes":0.1,"cashMin":3,"cashMax":6,"size":1.1},"L3":{"hp":42,"spdMin":53,"spdMax":65,"dps":13,"kbRes":0.2,"cashMin":4,"cashMax":8,"size":1.2}},"flyer":{"L2":{"hp":25,"spdMin":61,"spdMax":77,"swoop":12,"kbRes":0.4,"cashMin":3,"cashMax":6,"size":1.1},"L3":{"hp":36,"spdMin":66,"spdMax":84,"swoop":14,"kbRes":0.5,"cashMin":4,"cashMax":8,"size":1.2}},"crawler":{"L2":{"hp":25,"spdMin":18,"spdMax":24,"dps":10,"kbRes":0.25,"cashMin":3,"cashMax":6,"size":1.1},"L3":{"hp":36,"spdMin":19,"spdMax":26,"dps":13,"kbRes":0.35,"cashMin":4,"cashMax":8,"size":1.2}},"brute":{"L2":{"hp":153,"spdMin":10,"spdMax":13,"dps":21,"kbRes":0.7,"cashMin":12,"cashMax":18,"size":1.1},"L3":{"hp":221,"spdMin":11,"spdMax":14,"dps":26,"kbRes":0.8,"cashMin":16,"cashMax":24,"size":1.2}},"hound":{"L2":{"hp":22,"spdMin":130,"spdMax":145,"leap":21,"kbRes":0.2,"cashMin":4,"cashMax":9,"size":1.1},"L3":{"hp":31,"spdMin":142,"spdMax":158,"leap":26,"kbRes":0.3,"cashMin":6,"cashMax":12,"size":1.2}}};
+function zLevel(n = nightNo()) { return Math.min(3, 1 + Math.floor((Math.max(1, n) - 1) / STREETS.length)); }
+const ZSTAT = {};
+function zStats(type, lvl) {
+  const key = type + ':' + lvl; if (ZSTAT[key]) return ZSTAT[key];
+  const T = ZT[type], num = (v, lo, d) => typeof v === 'number' && Number.isFinite(v) ? Math.max(lo, v) : d;
+  const q = TUNING.enemies && TUNING.enemies[type] || {};
+  let s;
+  if (lvl <= 1 || !ZLV[type]) s = { hp: T.hp, spd: T.spd, dps: T.dps, kbRes: T.kbRes, rew: T.rew, sc: num(q.size, .5, 1), swoop: FLY_DMG, leap: HOUND.dmg };
+  else {
+    const d = ZLV[type]['L' + lvl], t = (q['L' + lvl] && typeof q['L' + lvl] === 'object') ? q['L' + lvl] : {};
+    const v = (k, lo = 0) => num(t[k], lo, d[k] ?? 0);
+    const s0 = v('spdMin', 1), s1 = v('spdMax', 1), c0 = v('cashMin'), c1 = v('cashMax');
+    s = { hp: v('hp', 1), spd: [Math.min(s0, s1), Math.max(s0, s1)], dps: v('dps'), kbRes: Math.min(1, v('kbRes')), rew: [Math.round(Math.min(c0, c1)), Math.round(Math.max(c0, c1))],
+      sc: Math.min(2, v('size', .5)), swoop: d.swoop != null ? v('swoop') : FLY_DMG, leap: d.leap != null ? v('leap') : HOUND.dmg };
+  }
+  s.sc = Math.min(2, s.sc);
+  return ZSTAT[key] = s;
+}
+function zLevelize(z, type, lvl) {            // a zombie's level: its size (and so its hitbox), toughness and bite
+  const T = ZT[type], L = zStats(type, lvl);
+  z.lvl = lvl; z.sc = L.sc; z.half = T.half * L.sc; z.h = type === 'crawler' ? T.h : T.h * L.sc;   // crawlers stay low enough for bullets to sail over
+  z.kbRes = L.kbRes; z.dps = L.dps; z.swoop = L.swoop; z.leap = L.leap;
+  return L;
+}
 const PLAYER_BASE = { fy: GROUND, face: 1, elev: 0, anim: 0, moving: false, fireCd: 0, flashT: 0, recoil: 0, weapon: 'pistol', searching: null, searchT: 0, deadT: 0, hurtSfxT: 0, inBus: false, pumpT: 0, rumT: 0, reloadT: 0, reloadDur: 1, reloadW: null, calmT: 0, swingT: -1, swingHit: true, swingN: 0, lastGun: 'pistol', aim: 0, aimHoldT: 0, shotT: 9, runPhase: 0, lastRi: -1, meleeCd: 0, kbv: 0, hurtT: 0, porchT: 0, itemT: 0, speedT: 0, flareReady: false, killT: -9, emptyN: 0 };
 function dummyPlayer() { return { ...PLAYER_BASE, x: -9999, hp: 1, dead: true, hidden: true, mag: { pistol: 6, shotgun: 0, smg: 0 } }; }
 
@@ -1523,7 +1551,11 @@ function spawnZombie(x, type, idle = false) {
   const T = ZT[type];
   const z = { id: ++zid, x, fy: GROUND + irnd(-3, 3), type, hp: T.hp * cfg.hpMul, spd: rnd(...T.spd), dps: T.dps, half: T.half, h: T.h, kbRes: T.kbRes, rew: T.rew,
     face: player && player.x < x ? -1 : 1, anim: rnd(10), rank: 0, stun: 0, kbv: 0, flash: 0, idle, wake: rnd(120, 190), atk: false, atkT: 0, dead: false, deadT: 0, fallDir: 1,
-    v: pick(ZLOOK[type]), reach: T.half + rnd(7, 10), swayT: 0, swayDir: 1, trail: 0, vaultT: -1 };
+    v: pick(ZLOOK[type]), reach: T.half + rnd(7, 10), swayT: 0, swayDir: 1, trail: 0, vaultT: -1, lvl: 1, sc: 1 };
+  if (type !== 'boss') {                      // the boss has his own numbers
+    const L = zLevelize(z, type, zLevel());
+    z.hp = L.hp * cfg.hpMul; z.spd = rnd(...L.spd); z.rew = L.rew; z.reach = z.half + rnd(7, 10);
+  }
   zombies.push(z); return z;
 }
 function rollType(p) {
@@ -2516,7 +2548,7 @@ function updHound(z, dt) {
     if (!z.hitDone) for (const q of livePlayers()) {
       if (!upright(q) || q.hidden || Math.abs(q.x - z.x) >= 8 || z.jy < 6) continue;
       z.hitDone = true;
-      if (q === player) { dmgPlayer(HOUND.dmg, z.face * 150); sfx('bite'); barbHit(z, 12); }   // (your partner's own screen decides about them)
+      if (q === player) { dmgPlayer(z.leap ?? HOUND.dmg, z.face * 150); sfx('bite'); barbHit(z, 12); }   // (your partner's own screen decides about them)
       break;
     }
     if (k >= 1) { z.st = 'recover'; z.t = 0; z.jy = 0; }
@@ -2580,7 +2612,7 @@ function updFlyer(z, dt) {
     z.vx = (nx - z.x) / dt; z.vy = (ny - z.y) / dt; z.x = nx; z.y = ny;
     if (Math.abs(z.vx) > 1) z.face = Math.sign(z.vx);
     if (!z.hitDone && !p.dead && !p.inBus && Math.abs(z.x - p.x) < 8 && z.y > p.fy - 31 && z.y < p.fy - 3) {
-      z.hitDone = true; hurtEnt(p, FLY_DMG, Math.sign(p.x - z.x || z.face) * 45); sfx('bite'); if (p === player) barbHit(z, 10);
+      z.hitDone = true; hurtEnt(p, z.swoop ?? FLY_DMG, Math.sign(p.x - z.x || z.face) * 45); sfx('bite'); if (p === player) barbHit(z, 10);
     }
     if (t >= 1) { z.st = 'cruise'; z.cd = rnd(2, 3.4); z.side = Math.sign(z.x - p.x) || 1; }
   } else if (z.st === 'leave') {
@@ -3200,7 +3232,7 @@ function drawRelicPop() {                            // just picked up: the item
    On claude.ai the page's `room` carries the snapshots; on the game's own website PeerJS does (a free
    public server introduces the two browsers, then they talk directly).
    ============================================================ */
-const GAME_BUILD = 43;                              // shown on the co-op screen, so two players can check they have the same game
+const GAME_BUILD = 44;                              // shown on the co-op screen, so two players can check they have the same game
 // on the game's own website: browsers may keep an old copy of the page for up to 10 minutes after an update,
 // so check for a newer upload when the game opens and load it straight away if there is one
 (function checkForUpdate() {
@@ -3646,6 +3678,7 @@ function applyZombies(list, B) {
       const T = ZT[type];
       z = { id, type, x, tx: x, fy: type === 'flyer' ? GROUND : y, y, ty: y, v: (ZLOOK[type] || [])[look] || ZLOOK[type][0], h: T.h, half: T.half, kbRes: T.kbRes, anim: rnd(10), atkT: 0,
         deadT: 0, fallDir: 1, flash: 0, stun: 0, idle: false, atk: false, vaultT: -1, vaultDir: 1, trail: 0, rank: 0, face: 1, spin: 0, landed: false, st: 'cruise', t: 0, kbv: 0, vx: 0, vy: 0, hp: 1, rxAt: now };
+      zLevelize(z, type, zLevel());
     }
     if (z.predDead) {                                // I killed it here; the host hasn't caught up yet
       if (fl & 1) z.predDead = 0;
@@ -3699,17 +3732,17 @@ function tickGuestWorld(dt) {
       z.anim += dt; z.t += dt;
       // a swoop that goes through me on my screen
       if (me && !z.dead && z.st === 'dive' && !z.hitDone && Math.abs(z.x - player.x) < 8 && z.y > player.fy - 31 && z.y < player.fy - 3) {
-        z.hitDone = true; dmgPlayer(FLY_DMG, Math.sign(player.x - z.x || z.face) * 45); sfx('bite'); barbHit(z, 10);
+        z.hitDone = true; dmgPlayer(z.swoop ?? FLY_DMG, Math.sign(player.x - z.x || z.face) * 45); sfx('bite'); barbHit(z, 10);
       }
     } else if (z.type === 'hound') {
       z.t = (z.t || 0) + dt; z.anim += Math.abs(z.x - ox) * .12;
       z.jy = z.dead ? Math.max(0, (z.jy || 0) - dt * 70) : (z.jy || 0) + ((z.tjy || 0) - (z.jy || 0)) * Math.min(1, dt * 16);
       // its leap goes for my face on my screen
-      if (me && !z.dead && z.st === 'leap' && !z.hitDone && Math.abs(z.x - player.x) < 8 && z.jy >= 6) { z.hitDone = true; dmgPlayer(HOUND.dmg, (z.face || 1) * 150); sfx('bite'); barbHit(z, 12); }
+      if (me && !z.dead && z.st === 'leap' && !z.hitDone && Math.abs(z.x - player.x) < 8 && z.jy >= 6) { z.hitDone = true; dmgPlayer(z.leap ?? HOUND.dmg, (z.face || 1) * 150); sfx('bite'); barbHit(z, 12); }
     } else {
       z.anim += Math.abs(z.x - ox) * .16 + (z.idle || z.atk ? dt * 1.2 : 0);
       // a zombie that's after me and biting: it only hurts if it's in reach of where I am on my screen
-      if (me && z.mine && z.atk && !z.dead && Math.abs(z.x - player.x) < z.half + 12) { dmgPlayer(ZT[z.type].dps * dt, 0, z.x); barbTick(z, dt); }
+      if (me && z.mine && z.atk && !z.dead && Math.abs(z.x - player.x) < z.half + 12) { dmgPlayer((z.dps ?? ZT[z.type].dps) * dt, 0, z.x); barbTick(z, dt); }
     }
     if (z.atk) z.atkT += dt;
     z.flash = Math.max(0, z.flash - dt);
@@ -4075,11 +4108,50 @@ function walkPose(anim, amp) {
   return { fi, hop: -Math.round(amp * Math.sin(Math.PI * ph) * A) / A, sq: fi % 2 === 0 && anim % 1 < .5 ? 2 : 0 };
 }
 // rot leans the figure about its feet; lsc squashes the legs (kneeling), lowering the upper body with them
+// a stronger level of zombie: its own tinted art (built the first time one shows up) and a bigger size
+let ZSC = 1, ZIMG = null;
+const ZTINT = { 2: null, 3: null }, ZTINT_C = new Map();
+function tintLevel(src, lvl) {                  // level 2: raw red; level 3: ashen blue-grey, eyes lit red
+  const w = src.width, h = src.height, c = document.createElement('canvas'); c.width = w; c.height = h;
+  const g = c.getContext('2d'); g.drawImage(src, 0, 0);
+  const d = g.getImageData(0, 0, w, h), p = d.data, n = w * h, eye = lvl === 3 ? new Uint8Array(n) : null;
+  if (eye) {
+    for (let i = 0; i < n; i++) { const o = i * 4, r = p[o], gg = p[o + 1], b = p[o + 2]; if (p[o + 3] > 200 && (Math.min(r, gg, b) >= 225 || (r > 235 && gg < 90 && b < 110))) eye[i] = 1; }
+    for (let i = 0; i < n; i++) if (eye[i] === 1) {
+      const x = i % w, y = (i - x) / w;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const X = x + dx, Y = y + dy; if (X < 0 || Y < 0 || X >= w || Y >= h) continue;
+        const j = Y * w + X, o = j * 4; if (!eye[j] && p[o + 3] > 200 && Math.min(p[o], p[o + 1], p[o + 2]) >= 170) eye[j] = 2;
+      }
+    }
+  }
+  for (let i = 0; i < n; i++) {
+    const o = i * 4; if (!p[o + 3]) continue;
+    const r = p[o], gg = p[o + 1], b = p[o + 2], L = .3 * r + .59 * gg + .11 * b;
+    if (lvl === 2) { p[o] = Math.min(255, r + (L * 1.3 + 38 - r) * .6); p[o + 1] = gg + (L * .68 - gg) * .6; p[o + 2] = b + (L * .7 - b) * .6; }
+    else if (eye[i] === 1) { p[o] = 255; p[o + 1] = 72; p[o + 2] = 48; }
+    else if (eye[i] === 2) { p[o] = 255; p[o + 1] = 150; p[o + 2] = 80; }
+    else { p[o] = (r + (L * .62 + 30 - r) * .8) * .92; p[o + 1] = (gg + (L * .66 + 26 - gg) * .8) * .92; p[o + 2] = (b + (L * .9 + 44 - b) * .8) * .92; }   // cold and ashen: dark enough to look wrong, light enough to see at night
+  }
+  g.putImageData(d, 0, 0); return c;
+}
+function zAtlas(lvl) {                          // the zombie art at this level (the game's own sheet: zombies are never part of a loaded character)
+  if (!(lvl > 1)) return null;
+  const src = ATLAS_BASE || ATLAS; if (!src) return null;
+  if (!ZTINT[lvl] || ZTINT[lvl].src !== src) { try { ZTINT[lvl] = { src, c: tintLevel(src, lvl) }; } catch (e) { ZTINT[lvl] = { src, c: src }; } }
+  return ZTINT[lvl].c;
+}
+function zTinted(frame, lvl) {                  // one of the hound's or bat's drawn frames, at this level
+  if (!(lvl > 1) || !frame) return frame;
+  let m = ZTINT_C.get(frame); if (!m) ZTINT_C.set(frame, m = {});
+  if (!m[lvl]) { try { m[lvl] = tintLevel(frame, lvl); } catch (e) { m[lvl] = frame; } }
+  return m[lvl];
+}
 function drawChar(L, T, x, fy, face, hop = 0, sq = 0, img = ATLAS, rot = 0, lsc = 1, arm = null) {
   if (!img || !L) return;
   T = T || L;
   const u = 1 / A, lx = -L.ax * u, ly = -L.ay * u, lh = L.h - L.split, drop = lh * (1 - lsc);
-  ctx.save(); ctx.translate(snap(x), snap(fy + hop)); if (rot) ctx.rotate(rot); if (face < 0) ctx.scale(-1, 1);
+  ctx.save(); ctx.translate(snap(x), snap(fy + hop)); if (rot) ctx.rotate(rot); if (ZSC !== 1) ctx.scale(ZSC, ZSC); if (face < 0) ctx.scale(-1, 1);
   // a loaded character keeps its drawing's own resolution (W x H image pixels for a w x h atlas-pixel frame)
   // and is scaled smoothly; the game's own art is pixel art and stays pixel-sharp
   if (L.W || T.W) { ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high'; }
@@ -4115,16 +4187,16 @@ function drawHeld(f, hand, face, ang = 0, sc = 1, rot = 0) {
 }
 function drawFallen(f, x, fy, face, dir, t) {
   if (!ATLAS || !f) return;
-  ctx.save(); ctx.translate(snap(x), snap(fy - (f.w / A / 2 - 3) * t)); ctx.rotate(dir * Math.PI / 2 * t);
-  if (face < 0) ctx.scale(-1, 1);
-  ctx.drawImage(ATLAS, f.x, f.y, f.w, f.h, -f.ax / A, -f.ay / A, f.w / A, f.h / A); ctx.restore();
+  ctx.save(); ctx.translate(snap(x), snap(fy - (f.w / A / 2 - 3) * t * ZSC)); ctx.rotate(dir * Math.PI / 2 * t);
+  if (ZSC !== 1) ctx.scale(ZSC, ZSC); if (face < 0) ctx.scale(-1, 1);
+  ctx.drawImage(ZIMG || ATLAS, f.x, f.y, f.w, f.h, -f.ax / A, -f.ay / A, f.w / A, f.h / A); ctx.restore();
 }
 const zf = (z, name) => AF[z.v + '_' + name];
 function drawCrawler(z, x) {
-  const img = z.flash > 0 ? ATLAS_WHITE : ATLAS;
+  const img = z.flash > 0 ? ATLAS_WHITE : ZIMG || ATLAS;
   if (z.dead) {                                     // it just goes still and flattens out
     if (z.deadT > 4 && Math.floor(z.deadT * 12) % 2) return;
-    drawChar(zf(z, 'walk_02'), null, x, z.fy, z.face, 0, 0, ATLAS, 0, 1); return;
+    drawChar(zf(z, 'walk_02'), null, x, z.fy, z.face, 0, 0, ZIMG || ATLAS, 0, 1); return;
   }
   const i = z.atk ? (Math.floor(z.atkT * 6) % 2 ? 0 : 2) : z.idle || z.stun > 0 ? 1 : Math.floor(z.anim * 1.6) % 4;
   const f = zf(z, C_WALK[i]);
@@ -4246,7 +4318,7 @@ function drawHound(z, x) {
   if (x < -40 || x > VW + 40) return;
   if (z.dead && z.deadT > 4 && Math.floor(z.deadT * 12) % 2) return;
   const k = z.dead ? 'dead' : z.st === 'crouch' ? 'crouch' : z.st === 'leap' ? 'leap' : z.stun > 0 || z.st === 'recover' ? 'run1' : 'run' + (Math.floor(z.anim * 1.1) % 4);
-  const img = z.flash > 0 ? HOUND_ART.white[k] : HOUND_ART.f[k], jy = z.jy || 0, u = 1 / A;
+  const img = z.flash > 0 ? HOUND_ART.white[k] : zTinted(HOUND_ART.f[k], z.lvl), jy = z.jy || 0, u = ZSC / A;
   if (jy > 1) { ctx.globalAlpha = .35; ctx.fillStyle = '#0b0814'; ctx.fillRect(Math.round(x - 6), z.fy + 1, 12, 1); ctx.globalAlpha = 1; }
   ctx.save(); ctx.translate(snap(x - (z.crouchShake || 0)), snap(z.fy - jy));
   if (z.face < 0) ctx.scale(-1, 1);
@@ -4254,7 +4326,7 @@ function drawHound(z, x) {
   ctx.drawImage(img, -HOUND_ART.cx * u, -HOUND_ART.gy * u, HOUND_ART.W * u, HOUND_ART.H * u);
   ctx.restore();
   if (z.stun > 0 && !z.dead) {
-    const hy = Math.round(z.fy - jy - 17);
+    const hy = Math.round(z.fy - jy - 17 * ZSC);
     for (let q = 0; q < 2; q++) { const a = G.t * 11 + q * Math.PI; ctx.fillStyle = q ? '#fff3c4' : '#ffb43a'; ctx.fillRect(Math.round(x + Math.cos(a) * 5), hy + Math.round(Math.sin(a) * 1.5), 1, 1); }
   }
 }
@@ -4262,13 +4334,13 @@ function drawFlyer(z, cam) {
   if (!BAT) BAT = buildBatFrames();
   const x = z.x - cam; if (x < -30 || x > VW + 30) return;
   if (z.dead && z.deadT > 4 && Math.floor(z.deadT * 12) % 2) return;
-  const u = 1.2 / A;                                   // a touch bigger than the art's own scale, so it reads on a phone
+  const u = 1.2 * (z.sc || 1) / A;                     // a touch bigger than the art's own scale, so it reads on a phone
   let k;
   if (z.dead) k = 'dead';
   else if (z.st === 'wind') k = 'up';
   else if (z.st === 'dive') k = z.t < .5 ? 'dive' : ['up', 'mid', 'down', 'mid'][Math.floor(z.anim * 14) % 4];
   else k = ['up', 'mid', 'down', 'mid'][Math.floor(z.anim * 9) % 4];
-  const img = z.flash > 0 ? BAT.white[k] : BAT.f[k];
+  const img = z.flash > 0 ? BAT.white[k] : zTinted(BAT.f[k], z.lvl);
   if (!z.dead || !z.landed) {                          // its shadow on the pavement, sharper the lower it flies
     const hgt = clamp((z.fy - z.y) / 110, 0, 1), sw = Math.round(9 - hgt * 5);
     ctx.globalAlpha = .35 * (1 - hgt * .7); ctx.fillStyle = '#0b0814'; ctx.fillRect(Math.round(x - sw / 2), z.fy + 1, sw, 1); ctx.globalAlpha = 1;
@@ -4283,6 +4355,11 @@ function drawFlyer(z, cam) {
   ctx.restore();
 }
 function drawZombie(z, cam) {
+  if (z.type === 'boss' || !(z.lvl > 1 || (z.sc || 1) !== 1)) { drawZombieAt(z, cam); return; }
+  ZSC = z.sc || 1; ZIMG = zAtlas(z.lvl);
+  try { drawZombieAt(z, cam); } finally { ZSC = 1; ZIMG = null; }
+}
+function drawZombieAt(z, cam) {
   const x = z.x - cam;
   if (z.type === 'boss') { drawBoss(z, x); return; }
   if (x < -40 || x > VW + 40) return;
@@ -4290,7 +4367,7 @@ function drawZombie(z, cam) {
   if (z.type === 'crawler') { drawCrawler(z, x); return; }
   if (z.vaultT >= 0) {                              // mid-hop over the fence
     const k = z.vaultT / .5, f = zf(z, 'walk_02');
-    drawChar(f, null, x, z.fy - Math.sin(Math.PI * k) * 20 - (1 - k) * 4, z.face, 0, 0, ATLAS, z.face * .25 * Math.sin(Math.PI * k));
+    drawChar(f, null, x, z.fy - Math.sin(Math.PI * k) * 20 - (1 - k) * 4, z.face, 0, 0, ZIMG || ATLAS, z.face * .25 * Math.sin(Math.PI * k));
     return;
   }
   const idle = zf(z, 'idle');
@@ -4298,7 +4375,7 @@ function drawZombie(z, cam) {
     if (z.deadT > 4 && Math.floor(z.deadT * 12) % 2) return;
     drawFallen(idle, x, z.fy, z.face, z.fallDir, Math.min(1, z.deadT / .22)); return;
   }
-  const img = z.flash > 0 ? ATLAS_WHITE : ATLAS;
+  const img = z.flash > 0 ? ATLAS_WHITE : ZIMG || ATLAS;
   if (z.stun > 0) {
     drawChar(idle, null, x - z.face, z.fy, z.face, 0, 2, img);
     const hy = Math.round(z.fy - z.h - 4);
@@ -5566,7 +5643,7 @@ try { if (hot && typeof hot.snapshot === 'function') hot.snapshot(() => ({ save 
 try {
   if (hot && typeof hot.ready === 'function') hot.ready(start); else start((hot && hot.data) || {});
 } catch (e) { console.error(e); start({}); }
-window.__porch = { TUNING, MELEE, ZT, PT, BOSS_DMG, get RIFLE_FALL() { return RIFLE_FALL; }, bossHp, get NADE_R() { return NADE_R; }, get FLY_DMG() { return FLY_DMG; }, nadeDmg, nadeChargeStart, nadeChargeEnd, nadeMaxD, openIntro, closeIntro, checkIntros, nightCfg, unlocked, ROSTER, openSettings, cancelReload, roundsIn, getRevived, updRevive, get SOLO_SAVE() { return SOLO_SAVE; }, nadePlan, openShop, PRIMARIES, pickGun, openPick, ensureLoadout, gunFor, sticks, pollTouch, input, WEAP, fire, startReload, moveSpeed, normalizeSave, addAmmo, get fires() { return fires; }, RELICS, AMMO_CAP, has, grabRelic, dropRelics, pickRelicHouses, ignite, renderRelics, relicArt, get drops() { return drops; }, get nums() { return nums; }, shopItems, buy, fillPrice, houndWave, HOUND, buildHoundFrames, batHound, get bullets() { return bullets; }, skinOf, get WORN() { return WORN; }, get AF() { return AF; }, NET, get ally() { return ally; }, hostSnap, areaHit, get hostNades() { return hostNades; }, meleeHit, quickSwing, coopAlly, get stats() { return stats; }, get coins() { return coins; }, get K() { return K; }, noiseHorde, get spawnQ() { return spawnQ; }, spawnFlyer, NADE, get nades() { return nades; }, nadeCalc, throwNade, explode, TRACKS, G, get player() { return player; }, get zombies() { return zombies; }, get save() { return save; }, get boss() { return boss; }, get bus() { return bus; }, get props() { return props; }, get debris() { return debris; }, WX, startNight, startBoss, setWeather, houses: () => houses, dmgPlayer, spawnZombie, CE, makeTemplate, importSheet, get CUSTOM() { return CUSTOM; } };
+window.__porch = { zLevel, zStats, zAtlas, ZLV, TUNING, MELEE, ZT, PT, BOSS_DMG, get RIFLE_FALL() { return RIFLE_FALL; }, bossHp, get NADE_R() { return NADE_R; }, get FLY_DMG() { return FLY_DMG; }, nadeDmg, nadeChargeStart, nadeChargeEnd, nadeMaxD, openIntro, closeIntro, checkIntros, nightCfg, unlocked, ROSTER, openSettings, cancelReload, roundsIn, getRevived, updRevive, get SOLO_SAVE() { return SOLO_SAVE; }, nadePlan, openShop, PRIMARIES, pickGun, openPick, ensureLoadout, gunFor, sticks, pollTouch, input, WEAP, fire, startReload, moveSpeed, normalizeSave, addAmmo, get fires() { return fires; }, RELICS, AMMO_CAP, has, grabRelic, dropRelics, pickRelicHouses, ignite, renderRelics, relicArt, get drops() { return drops; }, get nums() { return nums; }, shopItems, buy, fillPrice, houndWave, HOUND, buildHoundFrames, batHound, get bullets() { return bullets; }, skinOf, get WORN() { return WORN; }, get AF() { return AF; }, NET, get ally() { return ally; }, hostSnap, areaHit, get hostNades() { return hostNades; }, meleeHit, quickSwing, coopAlly, get stats() { return stats; }, get coins() { return coins; }, get K() { return K; }, noiseHorde, get spawnQ() { return spawnQ; }, spawnFlyer, NADE, get nades() { return nades; }, nadeCalc, throwNade, explode, TRACKS, G, get player() { return player; }, get zombies() { return zombies; }, get save() { return save; }, get boss() { return boss; }, get bus() { return bus; }, get props() { return props; }, get debris() { return debris; }, WX, startNight, startBoss, setWeather, houses: () => houses, dmgPlayer, spawnZombie, CE, makeTemplate, importSheet, get CUSTOM() { return CUSTOM; } };
 })();
 </script>
 </body></html>
