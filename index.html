@@ -35,8 +35,9 @@ body{margin:0;background:var(--night);color:var(--ink);font-family:var(--body);o
    The gun sticks rest in their spots; touch on or around one and it centres where your thumb landed. */
 .stick{position:absolute;pointer-events:auto;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 #stMove{left:0;bottom:0;width:42%;height:50%}
-#stFire{right:calc(var(--px)*-1);bottom:calc(var(--px)*-1);width:calc(var(--px)*54);height:calc(var(--px)*54)}
-#stPistol{right:calc(var(--px)*52);bottom:calc(var(--px)*26);width:calc(var(--px)*46);height:calc(var(--px)*46)}
+#stFire{right:calc(var(--px)*51);bottom:calc(var(--px)*2);width:calc(var(--px)*48);height:calc(var(--px)*48)}
+#stPistol{right:calc(var(--px)*1);bottom:calc(var(--px)*2);width:calc(var(--px)*48);height:calc(var(--px)*48)}
+#stNade{right:calc(var(--px)*29);bottom:calc(var(--px)*77);width:calc(var(--px)*40);height:calc(var(--px)*40)}
 .sbase,.sknob{position:absolute;left:50%;top:50%;border-radius:50%;pointer-events:none;will-change:transform}
 .sbase{width:calc(var(--px)*42);height:calc(var(--px)*42);margin:calc(var(--px)*-21) 0 0 calc(var(--px)*-21);background:rgba(20,16,41,.42);border:max(2px,calc(var(--px)*1)) solid rgba(243,234,214,.3);box-sizing:border-box}
 .sbase::before,.sbase::after{content:'';position:absolute;top:50%;width:0;height:0;margin-top:calc(var(--px)*-3);border:calc(var(--px)*3) solid transparent}
@@ -57,10 +58,16 @@ body{margin:0;background:var(--night);color:var(--ink);font-family:var(--body);o
 #stPistol.firing .sknob{background:rgba(110,140,235,.85);border-color:#dde4ff}
 .stick > .stick-tag{top:calc(50% + var(--px)*11)}
 #stPistol > .stick-tag{top:calc(50% + var(--px)*9.5)}
+#stNade .sbase{width:calc(var(--px)*30);height:calc(var(--px)*30);margin:calc(var(--px)*-15) 0 0 calc(var(--px)*-15);background:rgba(110,140,60,.26);border-color:rgba(210,230,170,.45)}
+#stNade .sknob{width:calc(var(--px)*15);height:calc(var(--px)*15);margin:calc(var(--px)*-7.5) 0 0 calc(var(--px)*-7.5);background:rgba(120,150,65,.45);border-color:rgba(210,230,170,.7)}
+#stNade.firing .sknob{background:rgba(150,190,80,.85);border-color:#e6f2c8}
+#stNade .sgun{width:62%;height:62%}
+#stNade > .stick-tag{top:calc(50% + var(--px)*9.5)}
+#stNade.empty{opacity:.4}
 .stick.fire.on > .stick-tag{opacity:0}
 .stick-tag{position:absolute;left:50%;top:calc(100% + var(--px)*1.5);transform:translateX(-50%);font:700 calc(var(--px)*3.6)/1 var(--body);letter-spacing:.1em;color:rgba(243,234,214,.55);white-space:nowrap}
 #bSearch{left:calc(var(--px)*8);bottom:calc(var(--px)*94);width:calc(var(--px)*40);height:calc(var(--px)*17);background:rgba(255,180,58,.85);color:var(--amber-ink);border-color:#ffe2a8;animation:pulse .8s steps(2) infinite}
-#bMelee{right:calc(var(--px)*6);bottom:calc(var(--px)*94);width:calc(var(--px)*31);height:calc(var(--px)*21);font-size:calc(var(--px)*4.8);background:rgba(150,100,55,.45);border-color:rgba(240,210,170,.55)}
+#bMelee{right:calc(var(--px)*14);bottom:calc(var(--px)*54);width:calc(var(--px)*70);height:calc(var(--px)*20);font-size:calc(var(--px)*4.8);background:rgba(150,100,55,.45);border-color:rgba(240,210,170,.55)}
 .cbtn.cool{opacity:.4}
 #bPause{position:absolute;z-index:4;top:calc(var(--px)*4);right:calc(var(--px)*4);width:calc(var(--px)*16);height:calc(var(--px)*16);font-size:calc(var(--px)*6)}
 @keyframes pulse{50%{background:rgba(255,210,120,.95)}}
@@ -171,6 +178,7 @@ body{margin:0;background:var(--night);color:var(--ink);font-family:var(--body);o
       <div class="stick fire" id="stFire" aria-label="Your gun: push the stick the way you want to shoot"><div class="sbase"></div><div class="sknob"><img class="sgun" id="gunFire" alt=""></div><span class="stick-tag" id="tagFire">SHOOT</span></div>
       <div class="stick fire" id="stPistol" aria-label="Your revolver: push the stick the way you want to shoot"><div class="sbase"></div><div class="sknob"><img class="sgun" id="gunPistol" alt=""></div><span class="stick-tag" id="tagPistol">PISTOL</span></div>
       <button class="cbtn" id="bMelee" data-k="melee" aria-label="Swing your bat">BAT</button>
+      <div class="stick fire nade" id="stNade" aria-label="Grenade: push the stick the way you want to throw, let go to throw"><div class="sbase"></div><div class="sknob"><img class="sgun" id="gunNade" alt=""></div><span class="stick-tag" id="tagNade">x3</span></div>
       <button class="cbtn" id="bSearch" data-k="search" data-t="cSearch" hidden>SEARCH</button>
     </div>
     <button class="cbtn" id="bPause" aria-label="Pause" hidden>II</button>
@@ -404,7 +412,7 @@ const STR = {
     logoSub: '',
     start1: 'Start night 1', cont: 'Continue: night {n}', startN: 'Start night {n}', shop: 'Supply shop',
     keys: '<kbd>A</kbd> <kbd>D</kbd> walk &middot; <kbd>J</kbd> or <kbd>Space</kbd> fire your gun &middot; <kbd>L</kbd> fire the revolver (hold <kbd>W</kbd> / <kbd>S</kbd> to aim up / down) &middot; <kbd>E</kbd> search a lit porch &middot; <kbd>F</kbd> swing bat &middot; <kbd>G</kbd> grenade (or click and pull back) &middot; <kbd>R</kbd> reload &middot; <kbd>P</kbd> pause',
-    touch: 'Left stick walks &middot; the corner stick fires your gun, the one beside it your revolver &middot; press and pull back anywhere to throw a grenade &middot; BAT swings &middot; SEARCH at a lit porch',
+    touch: 'Left stick walks &middot; bottom right: your gun, then the revolver in the corner &middot; BAT above them &middot; the grenade stick on top: push the way to throw and let go &middot; SEARCH at a lit porch',
     soundOn: 'Sound: on', soundOff: 'Sound: off', fs: 'Full screen', fsExit: 'Exit full screen', pick: 'Pick night: {n}',
     reset: 'Reset progress', resetSure: 'Tap again to erase all progress', langBtn: '中文',
     titleSub: 'Night {n} · {street}', titleSubEsc: 'Escaped once · Night {n} · {street}',
@@ -433,6 +441,8 @@ const STR = {
     d_shotgun: 'Six pellets a blast. Knocks them back. Loud.', d_smg: 'Eleven rounds a second. Eats ammo.', d_rifle: 'Five rounds. Each one goes through every zombie in line, half the damage at each.',
     pickEyebrow: 'A new run', pickHead: 'Pick your gun', pickNote: 'Your .38 revolver always comes along, on its own stick. You keep this gun until you are bitten.', nextGun: 'Gun for the next run', yourGun: 'Your gun',
     rifleAmmo: 'Rifle rounds', rifleFill: 'Fill up to 10 rounds (2 clips)',
+    coopYouDownRv: 'HANG ON. YOUR PARTNER CAN GET YOU BACK UP', coopDownSub: 'STAND OVER THEM FOR 10 SECONDS TO REVIVE', reviving: 'REVIVING', gettingUp: 'GETTING UP', helpF: 'HELP',
+    revived: 'BACK UP!', revivedSub: 'HALF HEALTH. NO MORE REVIVES TONIGHT', cashLost: 'Cash lost', coopWaitShort: 'Waiting for the host',
     items: 'Items', noItems: 'No items yet. Search the houses with a glimmer in the windows.', tapItem: 'Tap an item to read what it does.',
     relicHouse: 'SOMETHING GLIMMERS', relicHouseSub: 'SEARCH THE HOUSE WITH THE GOLDEN WINDOWS', relicDrop: 'SOMETHING GREAT', relicDropSub: 'STAND ON IT TO COLLECT IT',
     collecting: 'COLLECTING', haveIt: 'YOU HAVE THIS', oneEach: 'ONE EACH', newItem: 'NEW ITEM', itemsLost: 'Items lost',
@@ -482,7 +492,7 @@ const STR = {
     logoSub: '门廊灯',
     start1: '开始第 1 夜', cont: '继续：第 {n} 夜', startN: '开始第 {n} 夜', shop: '补给商店',
     keys: '<kbd>A</kbd> <kbd>D</kbd> 移动 &middot; <kbd>J</kbd> 或 <kbd>空格</kbd> 用你的枪射击 &middot; <kbd>L</kbd> 用左轮射击（按住 <kbd>W</kbd> / <kbd>S</kbd> 向上 / 向下瞄准）&middot; <kbd>E</kbd> 搜索亮灯的门廊 &middot; <kbd>F</kbd> 挥棒 &middot; <kbd>G</kbd> 手雷（或按住鼠标往后拉）&middot; <kbd>R</kbd> 换弹 &middot; <kbd>P</kbd> 暂停',
-    touch: '左摇杆移动 &middot; 角落的摇杆用你的枪射击，旁边的用左轮 &middot; 按住屏幕往后拉投手雷 &middot; 「球棒」挥击 &middot; 在亮灯门廊点「搜索」',
+    touch: '左摇杆移动 &middot; 右下角：你的枪，角落是左轮 &middot; 上面是「球棒」 &middot; 最上面的手雷摇杆：往要扔的方向推，松手就扔 &middot; 在亮灯门廊点「搜索」',
     soundOn: '声音：开', soundOff: '声音：关', fs: '全屏', fsExit: '退出全屏', pick: '选择夜晚：{n}',
     reset: '重置进度', resetSure: '再点一次，清除全部进度', langBtn: 'English',
     titleSub: '第 {n} 夜 · {street}', titleSubEsc: '已逃出一次 · 第 {n} 夜 · {street}',
@@ -511,6 +521,8 @@ const STR = {
     d_shotgun: '一枪六颗弹丸，能把它们轰退。声音很大。', d_smg: '每秒十一发，非常费子弹。', d_rifle: '五发子弹。每一枪都能穿透一整排僵尸，每穿过一个伤害减半。',
     pickEyebrow: '新的一局', pickHead: '选择你的枪', pickNote: '.38 左轮手枪永远跟着你，用它自己的摇杆。这把枪会一直陪你，直到你被咬。', nextGun: '下一局的枪', yourGun: '你的枪',
     rifleAmmo: '步枪子弹', rifleFill: '补满到 10 发（2 个弹匣）',
+    coopYouDownRv: '撑住，队友可以把你扶起来', coopDownSub: '站在队友身边 10 秒就能把他扶起来', reviving: '救援中', gettingUp: '正在起身', helpF: '救命',
+    revived: '重新站起来了！', revivedSub: '一半生命。今晚不能再被救了', cashLost: '失去的现金', coopWaitShort: '等待房主',
     items: '道具', noItems: '还没有道具。去搜索窗户在闪光的房子。', tapItem: '点一个道具查看它的效果。',
     relicHouse: '有东西在闪光', relicHouseSub: '搜索窗户发金光的房子', relicDrop: '好东西', relicDropSub: '站在上面就能收集',
     collecting: '收集中', haveIt: '你已经有了', oneEach: '一人一个', newItem: '新道具', itemsLost: '失去的道具',
@@ -1393,8 +1405,9 @@ function normalizeSave(s) {
   return o;
 }
 let save = freshSave();
+let SOLO_SAVE = null;                                 // during a co-op session: your solo game, put aside untouched
 function loadSave() { try { const s = JSON.parse(localStorage.getItem(SAVE_KEY)); if (s && s.v === 1) return normalizeSave(s); } catch (e) {} return null; }
-function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} }
+function persist() { if (SOLO_SAVE) return; try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} }   // a co-op session isn't saved
 
 const maxHp = () => 100 + 25 * save.up.jacket;
 const dmgMul = () => 1 + .2 * save.up.rounds;
@@ -1542,8 +1555,8 @@ const pointers = new Map();
 //      nothing fires until you push it a way. Push left or right to face that way and fire that gun, even while
 //      walking the other way (he backs up, shooting). Let go and each goes back to its resting spot. ----
 const STICK_DEAD = .3;
-const STICK_R = { stMove: 16, stFire: 13, stPistol: 11 };           // how far each knob travels (game units)
-const sticks = ['stMove', 'stFire', 'stPistol'].map(id => { const el = $(id); return { el, base: el.querySelector('.sbase'), knob: el.querySelector('.sknob'), id: null, bx: 0, by: 0, nx: 0, ny: 0, at: 0, aim: 0 }; });
+const STICK_R = { stMove: 16, stFire: 13, stPistol: 11, stNade: 11 };   // how far each knob travels (game units)
+const sticks = ['stMove', 'stFire', 'stPistol', 'stNade'].map(id => { const el = $(id); return { el, base: el.querySelector('.sbase'), knob: el.querySelector('.sknob'), id: null, bx: 0, by: 0, nx: 0, ny: 0, at: 0, aim: 0 }; });
 function stickRest(S) {
   const r = S.el.getBoundingClientRect(), m = (G.px || 2) * 27;
   return S.el.id === 'stMove' ? { x: m, y: r.height - m } : { x: r.width / 2, y: r.height / 2 };
@@ -1568,6 +1581,7 @@ sticks.forEach(S => {
   S.el.addEventListener('pointerdown', e => {
     if (S.id !== null) return;
     e.preventDefault(); unlockAudio(); setTouch(true);
+    if (S.el.id === 'stNade') { if (!nadeStart(e)) return; NADE.stick = true; sfx('pin'); }
     try { S.el.setPointerCapture(e.pointerId); } catch (err) {}
     const r = S.el.getBoundingClientRect(), Rm = (G.px || 2) * 21;
     S.id = e.pointerId; S.at = performance.now(); S.aim = 0; S.nx = S.ny = 0;
@@ -1576,7 +1590,11 @@ sticks.forEach(S => {
     stickMove(S, e);
   });
   S.el.addEventListener('pointermove', e => { if (e.pointerId === S.id) stickMove(S, e); });
-  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => S.el.addEventListener(ev, e => { if (e.pointerId === S.id) stickRelease(S); }));
+  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => S.el.addEventListener(ev, e => {
+    if (e.pointerId !== S.id) return;
+    if (S.el.id === 'stNade' && NADE.on && NADE.stick) { if (ev === 'pointerup') nadeRelease(); else NADE.on = false; }
+    stickRelease(S);
+  }));
   S.el.addEventListener('contextmenu', e => e.preventDefault());
 });
 function resetSticks() { sticks.forEach(stickRelease); }
@@ -1591,7 +1609,10 @@ ctrlEl.addEventListener('pointermove', e => { if (pointers.has(e.pointerId)) poi
 ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => ctrlEl.addEventListener(ev, e => pointers.delete(e.pointerId)));
 ctrlEl.addEventListener('contextmenu', e => e.preventDefault());
 function pollTouch() {
-  const [mv, fa, fb] = sticks;
+  const [mv, fa, fb, fn] = sticks;
+  const nt = 'x' + (save.grenades || 0);
+  if (fn.tag !== nt) { fn.tag = nt; $('tagNade').textContent = nt; fn.el.classList.toggle('empty', !(save.grenades > 0)); }
+  fn.el.classList.toggle('firing', fn.id !== null && Math.hypot(fn.nx, fn.ny) > STICK_DEAD);
   touch.left = mv.id !== null && mv.nx < -STICK_DEAD; touch.right = mv.id !== null && mv.nx > STICK_DEAD;
   // a shooting stick: push it any way to fire that gun that way; left / right turns him, up / down tilts the gun.
   // Both held: the one pressed last wins.
@@ -1958,7 +1979,7 @@ function killZombie(z, dir) {
 }
 // kb: shove him (units/s) — the boss's hits knock him back across the lot
 function dmgPlayer(a, kb = 0, fromX = null) {
-  if (player.dead || player.inBus) return;
+  if (player.dead || player.inBus || player.invulnT > 0) return;
   if (has('vest') && player.reloadT > 0) {             // Loader's Vest: what comes at you from the front, while you reload
     const side = fromX !== null ? Math.sign(fromX - player.x) : kb ? -Math.sign(kb) : 0;
     if (side && side === player.face) a *= .5;
@@ -1971,7 +1992,7 @@ function dmgPlayer(a, kb = 0, fromX = null) {
   if (player.hp <= 0) {
     player.hp = 0; dropGun(); player.dead = true; player.deadT = 0; cancelSearch(); player.hurtT = .26;
     blood(player.x, player.fy - 16, -player.face, 20); sfx('die'); addShake(4);
-    if (upright(mate())) setBanner(tr('coopYouDown'), tr('coopYouDownSub'), 3);
+    if (upright(mate())) setBanner(tr('coopYouDown'), tr(player.reviveUsed ? 'coopYouDownSub' : 'coopYouDownRv'), 3);
   }
 }
 // when he goes down the gun flies out of his hand and clatters onto the pavement
@@ -1979,7 +2000,7 @@ function dropGun() {
   if (CUSTOM && player.weapon === 'pistol') return;
   const P = playerPose(); if (!P.T) return;
   const h = pointOf(P, P.T.handX, P.T.handY);
-  props.push({ art: WEAP[player.weapon].art, x: h.x, y: h.y, vx: -player.face * rnd(12, 30), vy: rnd(-75, -55), a: heldAngle(P.T), va: -player.face * rnd(9, 14), face: player.face, gy: player.fy + 2, bounced: 0 });
+  props.push({ art: WEAP[player.weapon].art, x: h.x, y: h.y, vx: -player.face * rnd(12, 30), vy: rnd(-75, -55), a: heldAngle(P.T), va: -player.face * rnd(9, 14), face: player.face, gy: player.fy + 2, bounced: 0, dropped: true });
 }
 function enterBus() {
   player.inBus = true; player.hidden = true; cancelSearch(); NADE.on = false;
@@ -2005,6 +2026,7 @@ function reloadBeats(a, b) {       // sounds and bits that happen partway throug
 }
 function updPlayer(dt) {
   player.hurtT = Math.max(0, player.hurtT - dt);
+  if (player.invulnT > 0) player.invulnT -= dt;
   if (player.dead) {
     player.deadT += dt;
     const a = coopAlly();                             // co-op: it's over when you're both down (the host decides)
@@ -2486,6 +2508,12 @@ function nadeCalc(p, th, dir) {                       // pull strength + angle -
 }
 function nadePlan() {
   if (!NADE.on) return null;
+  if (NADE.stick) {                                     // the grenade stick: push the way to throw, how far = how far
+    const S = sticks[3], m = Math.hypot(S.nx, S.ny);
+    if (m < STICK_DEAD) return null;
+    const dir = Math.abs(S.nx) > .12 ? Math.sign(S.nx) : player.face;
+    return nadeCalc(clamp((m - STICK_DEAD) / (1 - STICK_DEAD), .08, 1), clamp(Math.atan2(-S.ny, Math.abs(S.nx) || .001), -.35, 1.2), dir);
+  }
   const r = cv.getBoundingClientRect(), sc = r.width / VW;
   const px = (NADE.cx - NADE.ox) / sc, py = (NADE.cy - NADE.oy) / sc, L = Math.hypot(px, py);
   if (L < NADE_MIN) return null;
@@ -2496,7 +2524,7 @@ function nadeReady() { return G.state === 'play' && player && !player.dead && !p
 function nadeStart(e) {
   if (NADE.on || !nadeReady()) return false;
   if ((save.grenades || 0) <= 0) { floater(player.x, player.fy - 40, tr('fNoNades'), '#a99fbd', .8); sfx('empty'); return false; }
-  Object.assign(NADE, { on: true, id: e.pointerId, ox: e.clientX, oy: e.clientY, cx: e.clientX, cy: e.clientY, t0: G.t, pinned: false });
+  Object.assign(NADE, { on: true, id: e.pointerId, ox: e.clientX, oy: e.clientY, cx: e.clientX, cy: e.clientY, t0: G.t, pinned: false, stick: false });
   return true;
 }
 function throwNade(pl) {
@@ -2515,6 +2543,7 @@ function quickNade() {                                  // keyboard: lob one ahe
 }
 cv.addEventListener('pointerdown', e => {
   if (e.pointerType === 'mouse' && e.button !== 0) return;
+  if (e.pointerType !== 'mouse' && G.isTouch) return;
   unlockAudio();
   if (nadeStart(e)) { e.preventDefault(); try { cv.setPointerCapture(e.pointerId); } catch (err) {} }
 });
@@ -2607,9 +2636,11 @@ function drawNadeAim(cam) {
   ctx.fillStyle = 'rgba(243,234,214,.28)'; for (let x = 10; x <= VW - 10; x += 3) ctx.fillRect(x, ty, 2, 1);
   ctx.fillStyle = 'rgba(243,234,214,.6)'; ctx.fillRect(10, ty - 2, 1, 5); ctx.fillRect(VW - 10, ty - 2, 1, 5);
   // the slingshot band from where you pressed to your finger
-  const L = Math.hypot(fx - ox, fy - oy), n = Math.ceil(L);
-  ctx.fillStyle = 'rgba(255,180,58,.7)'; for (let i = 0; i <= n; i += 2) ctx.fillRect(Math.round(ox + (fx - ox) * i / (n || 1)), Math.round(oy + (fy - oy) * i / (n || 1)), 1, 1);
-  ctx.fillStyle = '#ffb43a'; ctx.fillRect(Math.round(ox) - 1, Math.round(oy) - 1, 3, 3); ctx.fillStyle = '#0b0814'; ctx.fillRect(Math.round(ox), Math.round(oy), 1, 1);
+  if (!NADE.stick) {
+    const L = Math.hypot(fx - ox, fy - oy), n = Math.ceil(L);
+    ctx.fillStyle = 'rgba(255,180,58,.7)'; for (let i = 0; i <= n; i += 2) ctx.fillRect(Math.round(ox + (fx - ox) * i / (n || 1)), Math.round(oy + (fy - oy) * i / (n || 1)), 1, 1);
+    ctx.fillStyle = '#ffb43a'; ctx.fillRect(Math.round(ox) - 1, Math.round(oy) - 1, 3, 3); ctx.fillStyle = '#0b0814'; ctx.fillRect(Math.round(ox), Math.round(oy), 1, 1);
+  }
   const pl = nadePlan(); if (!pl) return;
   const px = pl.x0 - cam, lx = pl.lx - cam;
   ctx.fillStyle = 'rgba(255,180,58,.75)'; ctx.fillRect(Math.round(Math.min(px, lx)), ty, Math.round(Math.abs(lx - px)), 1);
@@ -3052,7 +3083,7 @@ function drawRelicPop() {                            // just picked up: the item
    On claude.ai the page's `room` carries the snapshots; on the game's own website PeerJS does (a free
    public server introduces the two browsers, then they talk directly).
    ============================================================ */
-const GAME_BUILD = 38;                              // shown on the co-op screen, so two players can check they have the same game
+const GAME_BUILD = 39;                              // shown on the co-op screen, so two players can check they have the same game
 // on the game's own website: browsers may keep an old copy of the page for up to 10 minutes after an update,
 // so check for a newer upload when the game opens and load it straight away if there is one
 (function checkForUpdate() {
@@ -3064,7 +3095,7 @@ const GAME_BUILD = 38;                              // shown on the co-op screen
     location.replace(location.pathname + '?v=' + n);
   }).catch(() => {});
 })();
-const NET_V = 5, ZTYPES = ['walker', 'runner', 'brute', 'crawler', 'flyer', 'hound'], FLY_ST = ['cruise', 'wind', 'dive', 'leave'];
+const NET_V = 6, ZTYPES = ['walker', 'runner', 'brute', 'crawler', 'flyer', 'hound'], FLY_ST = ['cruise', 'wind', 'dive', 'leave'];
 const NET = { role: 'solo', room: null, code: '', t: 0, push: 0, rate: 20, seq: 0, out: [], seen: 0, run: 0, night: 1, hostRun: 0,
   partner: null, lastP: null, lastSeen: 0, hadPartner: false, mateId: null, rtt: 0, lead: 0, theirTs: 0, theirAt: 0, pend: [], gone: new Set() };
 let ally = null;                                  // the other survivor on this screen, a puppet built from their messages
@@ -3198,7 +3229,7 @@ function testRoom(name) {
 
 // ---- a survivor as a short list of numbers, and back ----
 function pState(p) {
-  const fl = (p.moving ? 1 : 0) | (p.dead ? 2 : 0) | (p.inBus ? 4 : 0) | (p.hidden ? 8 : 0) | (p.backing ? 16 : 0) | (p.searching ? 32 : 0) | (p.flashT > 0 ? 64 : 0);
+  const fl = (p.moving ? 1 : 0) | (p.dead ? 2 : 0) | (p.inBus ? 4 : 0) | (p.hidden ? 8 : 0) | (p.backing ? 16 : 0) | (p.searching ? 32 : 0) | (p.flashT > 0 ? 64 : 0) | (p.dead && !p.reviveUsed ? 128 : 0);
   return [r1(p.x), r1(p.fy), p.face, fl, Math.round(p.aim * 100), Math.round((p.elev || 0) * 100), Math.max(0, WEAPON_ORDER.indexOf(p.weapon)),
     Math.round(Math.min(9, p.shotT) * 100), r1(p.runPhase || 0), Math.round(Math.max(0, p.reloadT) * 100), Math.round((p.reloadDur || 1) * 100),
     Math.round(p.swingT * 100), Math.round(Math.max(0, p.hurtT) * 100), r1(Math.min(9, p.deadT || 0)), r1(p.recoil || 0), Math.round(p.porchT * 100),
@@ -3215,6 +3246,7 @@ function applyPState(q, a) {
   q.rxAt = now;
   if (q.tx === null || Math.abs(a[0] - q.x) > 80) q.x = a[0];
   q.tx = a[0]; q.fy = a[1]; q.face = a[2] < 0 ? -1 : 1;
+  q.revivable = !!(f & 128);
   q.moving = !!(f & 1); q.inBus = !!(f & 4); q.hidden = !!(f & 8); q.backing = !!(f & 16); q.searching = (f & 32) ? true : null;
   if (f & 64) q.flashT = .05;
   q.aim = a[4] / 100; q.elev = a[5] / 100; q.weapon = WEAPON_ORDER[a[6]] || 'pistol'; q.shotT = a[7] / 100;
@@ -3299,7 +3331,7 @@ function hostIn(P) {
     if (ally.run !== NET.run) Object.assign(ally, { run: NET.run, dead: false, deadT: 0, tx: null, vxm: 0 });
     const wasDead = ally.dead;
     applyPState(ally, P.p);
-    if (!wasDead && ally.dead && G.state === 'play' && !player.dead) setBanner(tr('coopDown'), '', 1.8);
+    if (!wasDead && ally.dead && G.state === 'play' && !player.dead) setBanner(tr('coopDown'), ally.revivable ? tr('coopDownSub') : '', 2.4);
     ally.owned = Array.isArray(P.o) ? P.o : [0, 0, 0];
   }
   for (const e of Array.isArray(P.e) ? P.e : []) {
@@ -3313,6 +3345,7 @@ function hostIn(P) {
     else if (type === 'parry') allyParry();
     else if (type === 'loot') allyLoot(a[0]);
     else if (type === 'grab') drops = drops.filter(d => d.uid !== +a[0]);        // they took an item off the sidewalk
+    else if (type === 'rv') getRevived();
     else if (type === 'fire') ignite(+a[0], false);
   }
 }
@@ -3420,7 +3453,7 @@ function guestIn(P) {
   const wasDead = ally.dead;
   applyPState(ally, P.p);
   ally.run = P.run;
-  if (cur && !wasDead && ally.dead && !player.dead) setBanner(tr('coopDown'), '', 1.8);
+  if (cur && !wasDead && ally.dead && !player.dead) setBanner(tr('coopDown'), ally.revivable ? tr('coopDownSub') : '', 2.4);
   if (Number.isFinite(P.ak)) NET.pend = NET.pend.filter(p => p.seq > P.ak && G.t - p.t < 3);   // the host has these hits now
   if (cur && P.st === 'play') {
     stats.kills = P.k || 0;
@@ -3449,6 +3482,7 @@ function guestIn(P) {
     else if (type === 'hs') hostShotFx(a);
     else if (type === 'boom') { explodeFx(+a[0], +a[1]); blastSelf(+a[0]); }
     else if (type === 'atk') guestAttacked(a);
+    else if (type === 'rv') getRevived();
     else if (type === 'fire') ignite(+a[0], false);
     else if (type === 'bn' && typeof a[0] === 'string') { setBanner(tr(a[0]), a[1] ? tr(a[1]) : '', a[2] || 2.5, !!a[3]); if (typeof a[4] === 'string') sfx(a[4]); }
   }
@@ -3590,8 +3624,10 @@ function guestEnd(won) {
   const lost = !won ? (save.relics || []).length : 0;
   if (lost) save.relics = [];
   if (!won) save.runNew = true;
+  const cashLost = !won ? Math.min(save.cash, stats.cash) : 0;
+  save.cash -= cashLost;
   persist();
-  const list = [[stats.kills, tr('sKills')], ['$' + stats.cash, tr('sCash')], [fmtTime(stats.t), tr('sTime')]];
+  const list = [[stats.kills, tr('sKills')], cashLost ? ['-$' + cashLost, tr('cashLost')] : ['$' + stats.cash, tr('sCash')], [fmtTime(stats.t), tr('sTime')]];
   if (lost) list.push([lost, tr('itemsLost')]);
   if (won) {
     $('winSub').textContent = tr('winSub', { n: NET.night }); $('winHead').textContent = tr('winHead'); $('winLede').hidden = true;
@@ -3603,7 +3639,7 @@ function guestEnd(won) {
 }
 // on the guest's end screens the next move is the host's
 function coopEndUI(guest) {
-  for (const id of ['winShop', 'retryBtn', 'deadShop']) $(id).hidden = guest;
+  $('retryBtn').hidden = guest; $('winShop').hidden = false; $('deadShop').hidden = false;
   for (const id of ['winWait', 'deadWait', 'winLeave', 'deadLeave']) $(id).hidden = !guest;
 }
 
@@ -3653,10 +3689,22 @@ function partnerGone() {
     openCoop(true); $('coopStatus').textContent = tr('coopHostLeft');
   }
 }
+// a co-op session starts from scratch: night 1, no cash, no upgrades, no items (your solo game waits, untouched)
+function enterCoopSave() {
+  if (SOLO_SAVE) return;
+  SOLO_SAVE = save;
+  save = normalizeSave({ v: 1, muted: SOLO_SAVE.muted, lang: SOLO_SAVE.lang, tips: SOLO_SAVE.tips, primary: SOLO_SAVE.primary || 'shotgun', runNew: true });
+  syncControlText();
+}
+function leaveCoopSave() {
+  if (!SOLO_SAVE) return;
+  SOLO_SAVE.muted = save.muted; SOLO_SAVE.lang = save.lang; SOLO_SAVE.tips = { ...(SOLO_SAVE.tips || {}), ...(save.tips || {}) };
+  save = SOLO_SAVE; SOLO_SAVE = null; persist(); syncControlText();
+}
 async function netLeave() {
   const room = NET.room;
   Object.assign(NET, { role: 'solo', room: null, code: '', partner: null, lastP: null, hadPartner: false, mateId: null, seen: 0, out: [], seq: 0, hostRun: 0, rtt: 0, lead: 0, theirTs: 0, pend: [] });
-  ally = null; hostNades = []; coopEndUI(false); wearOwn();
+  ally = null; hostNades = []; coopEndUI(false); wearOwn(); leaveCoopSave();
   if (room) try { await room.leave(); } catch (e) {}
 }
 
@@ -3697,6 +3745,7 @@ async function coopHost() {
   coopBusy = false;
   if (G.screen !== 'sCoop') { const r = NET.room; NET.room = null; try { r.leave(); } catch (e) {} return; }
   Object.assign(NET, { role: 'host', code, run: 0, seen: 0, out: [], seq: 0, hadPartner: false, mateId: null, t: 0, rate: NET.room.rate || 20, rtt: 0, lead: 0, theirTs: 0 });
+  enterCoopSave();
   $('coopCode').textContent = code; $('coopCode').hidden = false; $('coopPick').hidden = true;
   coopLobbyUI();
 }
@@ -3712,9 +3761,52 @@ async function coopJoin() {
   coopBusy = false;
   if (G.screen !== 'sCoop') { const r = NET.room; NET.room = null; try { r.leave(); } catch (e) {} return; }
   Object.assign(NET, { role: 'guest', code, seen: 0, out: [], seq: 0, hadPartner: false, mateId: null, hostRun: 0, t: 0, rate: NET.room.rate || 20, rtt: 0, lead: 0, theirTs: 0, pend: [] });
+  enterCoopSave();
   $('coopCode').textContent = code; $('coopCode').hidden = false; $('coopPick').hidden = true;
   coopLobbyUI();
   setTimeout(() => { if (NET.role === 'guest' && NET.code === code && !NET.hadPartner && G.screen === 'sCoop') $('coopStatus').textContent = tr('coopNoHost'); }, 6000);
+}
+const REVIVE_T = 10, REVIVE_R = 14;
+let reviveThem = 0, reviveMe = 0, reviveTick = 0;
+function updRevive(dt) {
+  G.revive = null;
+  const m = mate();
+  if (!m || G.state !== 'play' || !player) { reviveThem = reviveMe = 0; return; }
+  // me getting my partner up: stand over them (stepping away to fight keeps the progress)
+  if (m.dead && m.revivable && upright(player) && !player.hidden) {
+    if (Math.abs(player.x - m.x) < REVIVE_R) {
+      reviveThem += dt / REVIVE_T; G.revive = { me: true, p: reviveThem, x: player.x, fy: player.fy };
+      if ((reviveTick -= dt) <= 0) { reviveTick = 1; sfx('collect'); }
+      if (reviveThem >= 1) { reviveThem = 0; m.revivable = false; netEv('rv'); floater(m.x, m.fy - 40, tr('revived'), '#7fd08a', 1.2); sfx('med'); }
+    }
+  } else reviveThem = 0;
+  // them getting me up (my screen's view of it)
+  if (player.dead && !player.reviveUsed && upright(m) && !m.hidden && Math.abs(player.x - m.x) < REVIVE_R) {
+    reviveMe = Math.min(.99, reviveMe + dt / REVIVE_T); G.revive = { me: false, p: reviveMe, x: player.x, fy: player.fy };
+  } else if (!player.dead) reviveMe = 0;
+}
+function getRevived() {                              // my partner got me back up: half health, and that's tonight's one revive
+  if (!player || !player.dead || player.reviveUsed || G.state !== 'play') return;
+  Object.assign(player, { dead: false, deadT: 0, reviveUsed: true, hp: Math.max(1, Math.round(maxHp() / 2)), hurtT: 0, kbv: 0, invulnT: 2, swingT: -1, reloadT: 0, searching: null });
+  props = props.filter(p => !p.dropped);
+  G.hurtFlash = 0; reviveMe = 0; setBanner(tr('revived'), tr('revivedSub'), 2.4); sfx('med');
+  for (let i = 0; i < 14; i++) parts.push({ k: 'y', x: player.x + rnd(-8, 8), y: player.fy - rnd(0, 30), vx: rnd(-30, 30), vy: rnd(-60, -10), life: rnd(.4, .8), t: 0 });
+}
+function drawReviveFx(cam) {
+  if (G.state !== 'play' || !player) return;
+  const m = mate();
+  if (m && m.dead && m.revivable && upright(player)) {             // where your partner is lying
+    const x = Math.round(m.x - cam), blink = Math.floor(G.t * 4) % 2;
+    if (x > 8 && x < VW - 8) drawText(tr('helpF'), x, m.fy - 30 - blink, blink ? '#7fd08a' : '#f3ead6', 1, 'center');
+    else drawText(x <= 8 ? '< ' + tr('helpF') : tr('helpF') + ' >', x <= 8 ? 18 : VW - 18, 72, '#7fd08a', 1, 'center');
+  }
+  const R = G.revive; if (!R) return;
+  const x = Math.round(R.x - cam), y = R.fy - (R.me ? 52 : 30), f = clamp(R.p, 0, 1);
+  ctx.fillStyle = '#0b0814'; ctx.fillRect(x - 14, y - 1, 28, 5);
+  ctx.fillStyle = '#3a3157'; ctx.fillRect(x - 13, y, 26, 3);
+  ctx.fillStyle = '#7fd08a'; ctx.fillRect(x - 13, y, Math.round(26 * f), 3);
+  ctx.fillStyle = 'rgba(255,255,255,.4)'; ctx.fillRect(x - 13, y, Math.round(26 * f), 1);
+  drawText(tr(R.me ? 'reviving' : 'gettingUp'), x, y - 8, Math.floor(G.t * 4) % 2 ? '#7fd08a' : '#f3ead6', 1, 'center');
 }
 function coopStart() { if (NET.role !== 'host' || !NET.hadPartner) return; unlockAudio(); sfx('click'); startNight(); }
 function coopLeave() { sfx('click'); netLeave(); toTitle(); }
@@ -3811,6 +3903,7 @@ function update(dt) {
   }
   updMisc(dt);
   updRelics(dt);
+  updRevive(dt);
   const F = player ? camSubject() : null;
   if (G.state === 'title') G.camX = 40 + (Math.sin(G.t * .045) * .5 + .5) * 1150;
   else if (F && !F.inBus && !F.hidden) {
@@ -4164,6 +4257,7 @@ function drawCan(x, y, a) {
   ctx.restore();
 }
 function drawPlayer(cam) {
+  if (player && player.invulnT > 0 && Math.floor(G.t * 14) % 2) return;
   if (!player || player.hidden) return;
   const P = playerPose(), d = player.face;
   if (!P.L || !P.T) return;
@@ -4470,6 +4564,7 @@ function draw() {
   drawLighting(cam, sx, sy);
   drawWeatherFront(cam);
   drawRelicFx(cam);
+  drawReviveFx(cam);
   // prompts & floating text (after lighting so they stay readable)
   if (G.state === 'play' && player && !player.dead && !player.inBus) {
     drawNadeAim(cam);
@@ -4572,11 +4667,13 @@ function endNight(won) {
   const S = streetOf(n), escaped = won && !!S.boss;
   const lost = !won ? (save.relics || []).length : 0;
   if (lost) save.relics = [];                         // bitten for good: the items go with you
+  const cashLost = !won && online() ? Math.min(save.cash, stats.cash) : 0;      // co-op: the night's cash only counts if you make the bus
+  save.cash -= cashLost;
   if (!won) save.runNew = true;                       // ...and the next night starts a new run (pick a gun on the way)
   if (won) { save.night++; save.best = Math.max(save.best, save.night); if (escaped) save.escaped = true; delete save.checkpoint; }
   else if (G.arena) save.checkpoint = n;              // reached the boss: next try starts at the depot
   persist();
-  const list = [[stats.kills, tr('sKills')], [stats.searched + '/' + stats.lit, tr('sPorch')], ['$' + stats.cash, tr('sCash')], [fmtTime(stats.t), tr('sTime')]];
+  const list = [[stats.kills, tr('sKills')], [stats.searched + '/' + stats.lit, tr('sPorch')], cashLost ? ['-$' + cashLost, tr('cashLost')] : ['$' + stats.cash, tr('sCash')], [fmtTime(stats.t), tr('sTime')]];
   if (lost) list.push([lost, tr('itemsLost')]);
   if (won) {
     $('winSub').textContent = tr(escaped ? 'winSubBoss' : 'winSub', { n });
@@ -4615,7 +4712,9 @@ function shopItems() {
 }
 function renderShop() {
   $('shopCash').textContent = '$' + save.cash;
-  $('shopGo').textContent = tr('startN', { n: save.night });
+  const gw = NET.role === 'guest';                    // co-op guest: shop, then wait for the host to start the night
+  $('shopGo').textContent = gw ? tr('coopWaitShort') : tr('startN', { n: save.night }); $('shopGo').disabled = gw;
+  $('shopTitle').textContent = tr(gw ? 'back' : 'backTitle');
   $('items').innerHTML = shopItems().map(it => {
     const pips = it.max ? `<div class="pips" aria-label="Level ${it.lv} of ${it.max}">${Array.from({ length: it.max }, (_, i) => `<span class="pip${i < it.lv ? ' on' : ''}"></span>`).join('')}</div>` : `<span class="own">${it.have}</span>`;
     const btn = it.price === null ? `<button class="btn buy" disabled>${tr(it.full ? 'fullBtn' : 'maxed')}</button>` : `<button class="btn buy" data-buy="${it.key}" ${save.cash < it.price ? 'disabled' : ''}>$${it.price}</button>`;
@@ -4633,7 +4732,7 @@ function buy(key) {
   else if (key === 'nades') save.grenades = (save.grenades || 0) + 3;
   persist(); sfx('buy'); renderShop();
 }
-function openShop() { G.state = G.state === 'play' ? 'play' : 'shop'; renderShop(); showScreen('sShop'); }
+function openShop() { G.shopFrom = G.screen; G.state = G.state === 'play' ? 'play' : 'shop'; renderShop(); showScreen('sShop'); }
 
 let resetArmed = false;
 $('playBtn').addEventListener('click', () => { unlockAudio(); sfx('click'); startNight(); });
@@ -4650,6 +4749,7 @@ function syncControlText() {
   $('tagFire').textContent = tr('t_' + P); $('tagPistol').textContent = tr('t_pistol');
   if (SPR.gunURL[P]) $('gunFire').src = SPR.gunURL[P];
   if (SPR.gunURL.pistol) $('gunPistol').src = SPR.gunURL.pistol;
+  if (SPR.nadeURL) $('gunNade').src = SPR.nadeURL;
 }
 // ---- picking your gun: a new game shows the big picker; the death screen and the co-op lobby have a small one ----
 function renderGunPick(el, big) {
@@ -5160,7 +5260,7 @@ $('winShop').addEventListener('click', () => { sfx('click'); openShop(); });
 $('retryBtn').addEventListener('click', () => { sfx('click'); startNight(); });
 $('deadShop').addEventListener('click', () => { sfx('click'); openShop(); });
 $('shopGo').addEventListener('click', () => { sfx('click'); startNight(); });
-$('shopTitle').addEventListener('click', () => { sfx('click'); netLeave(); toTitle(); });
+$('shopTitle').addEventListener('click', () => { sfx('click'); if (NET.role === 'guest') { showScreen(G.shopFrom && G.shopFrom !== 'sShop' ? G.shopFrom : 'sWin'); return; } netLeave(); toTitle(); });
 $('items').addEventListener('click', e => { const b = e.target.closest('[data-buy]'); if (b) buy(b.dataset.buy); });
 $('bPause').addEventListener('click', () => { unlockAudio(); pauseGame(); });
 $('rotateAnyway').addEventListener('click', () => { G.allowPortrait = true; checkOrientation(); });
@@ -5250,7 +5350,7 @@ try { if (hot && typeof hot.snapshot === 'function') hot.snapshot(() => ({ save 
 try {
   if (hot && typeof hot.ready === 'function') hot.ready(start); else start((hot && hot.data) || {});
 } catch (e) { console.error(e); start({}); }
-window.__porch = { PRIMARIES, pickGun, openPick, ensureLoadout, gunFor, sticks, pollTouch, input, WEAP, fire, startReload, moveSpeed, normalizeSave, addAmmo, get fires() { return fires; }, RELICS, AMMO_CAP, has, grabRelic, dropRelics, pickRelicHouses, ignite, renderRelics, relicArt, get drops() { return drops; }, get nums() { return nums; }, shopItems, buy, fillPrice, houndWave, HOUND, buildHoundFrames, batHound, get bullets() { return bullets; }, skinOf, get WORN() { return WORN; }, get AF() { return AF; }, NET, get ally() { return ally; }, hostSnap, areaHit, get hostNades() { return hostNades; }, meleeHit, quickSwing, coopAlly, get stats() { return stats; }, get coins() { return coins; }, get K() { return K; }, noiseHorde, get spawnQ() { return spawnQ; }, spawnFlyer, NADE, get nades() { return nades; }, nadeCalc, throwNade, explode, TRACKS, G, get player() { return player; }, get zombies() { return zombies; }, get save() { return save; }, get boss() { return boss; }, get bus() { return bus; }, get props() { return props; }, get debris() { return debris; }, WX, startNight, startBoss, setWeather, houses: () => houses, dmgPlayer, spawnZombie, CE, makeTemplate, importSheet, get CUSTOM() { return CUSTOM; } };
+window.__porch = { getRevived, updRevive, get SOLO_SAVE() { return SOLO_SAVE; }, nadePlan, openShop, PRIMARIES, pickGun, openPick, ensureLoadout, gunFor, sticks, pollTouch, input, WEAP, fire, startReload, moveSpeed, normalizeSave, addAmmo, get fires() { return fires; }, RELICS, AMMO_CAP, has, grabRelic, dropRelics, pickRelicHouses, ignite, renderRelics, relicArt, get drops() { return drops; }, get nums() { return nums; }, shopItems, buy, fillPrice, houndWave, HOUND, buildHoundFrames, batHound, get bullets() { return bullets; }, skinOf, get WORN() { return WORN; }, get AF() { return AF; }, NET, get ally() { return ally; }, hostSnap, areaHit, get hostNades() { return hostNades; }, meleeHit, quickSwing, coopAlly, get stats() { return stats; }, get coins() { return coins; }, get K() { return K; }, noiseHorde, get spawnQ() { return spawnQ; }, spawnFlyer, NADE, get nades() { return nades; }, nadeCalc, throwNade, explode, TRACKS, G, get player() { return player; }, get zombies() { return zombies; }, get save() { return save; }, get boss() { return boss; }, get bus() { return bus; }, get props() { return props; }, get debris() { return debris; }, WX, startNight, startBoss, setWeather, houses: () => houses, dmgPlayer, spawnZombie, CE, makeTemplate, importSheet, get CUSTOM() { return CUSTOM; } };
 })();
 </script>
 </body></html>
