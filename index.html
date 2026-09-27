@@ -37,7 +37,11 @@ body{margin:0;background:var(--night);color:var(--ink);font-family:var(--body);o
 #stMove{left:0;bottom:0;width:42%;height:50%}
 #stFire{right:calc(var(--px)*51);bottom:calc(var(--px)*2);width:calc(var(--px)*48);height:calc(var(--px)*48)}
 #stPistol{right:calc(var(--px)*1);bottom:calc(var(--px)*2);width:calc(var(--px)*48);height:calc(var(--px)*48)}
-#stNade{right:calc(var(--px)*29);bottom:calc(var(--px)*77);width:calc(var(--px)*40);height:calc(var(--px)*40)}
+#bNade{right:calc(var(--px)*33);bottom:calc(var(--px)*79);width:calc(var(--px)*32);height:calc(var(--px)*32);border-radius:50%;background:rgba(110,140,60,.42);border-color:rgba(210,230,170,.6)}
+#bNade img{width:52%;height:52%;image-rendering:pixelated;pointer-events:none}
+#bNade span{position:absolute;left:50%;top:calc(100% + var(--px)*1.5);transform:translateX(-50%);font:700 calc(var(--px)*3.6)/1 var(--body);letter-spacing:.1em;color:rgba(243,234,214,.6);pointer-events:none}
+#bNade.charging{background:rgba(150,190,80,.85);border-color:#e6f2c8}
+#bNade.empty{opacity:.4}
 .sbase,.sknob{position:absolute;left:50%;top:50%;border-radius:50%;pointer-events:none;will-change:transform}
 .sbase{width:calc(var(--px)*42);height:calc(var(--px)*42);margin:calc(var(--px)*-21) 0 0 calc(var(--px)*-21);background:rgba(20,16,41,.42);border:max(2px,calc(var(--px)*1)) solid rgba(243,234,214,.3);box-sizing:border-box}
 .sbase::before,.sbase::after{content:'';position:absolute;top:50%;width:0;height:0;margin-top:calc(var(--px)*-3);border:calc(var(--px)*3) solid transparent}
@@ -58,12 +62,7 @@ body{margin:0;background:var(--night);color:var(--ink);font-family:var(--body);o
 #stPistol.firing .sknob{background:rgba(110,140,235,.85);border-color:#dde4ff}
 .stick > .stick-tag{top:calc(50% + var(--px)*11)}
 #stPistol > .stick-tag{top:calc(50% + var(--px)*9.5)}
-#stNade .sbase{width:calc(var(--px)*30);height:calc(var(--px)*30);margin:calc(var(--px)*-15) 0 0 calc(var(--px)*-15);background:rgba(110,140,60,.26);border-color:rgba(210,230,170,.45)}
-#stNade .sknob{width:calc(var(--px)*15);height:calc(var(--px)*15);margin:calc(var(--px)*-7.5) 0 0 calc(var(--px)*-7.5);background:rgba(120,150,65,.45);border-color:rgba(210,230,170,.7)}
-#stNade.firing .sknob{background:rgba(150,190,80,.85);border-color:#e6f2c8}
-#stNade .sgun{width:62%;height:62%}
-#stNade > .stick-tag{top:calc(50% + var(--px)*9.5)}
-#stNade.empty{opacity:.4}
+
 .stick.fire.on > .stick-tag{opacity:0}
 .stick-tag{position:absolute;left:50%;top:calc(100% + var(--px)*1.5);transform:translateX(-50%);font:700 calc(var(--px)*3.6)/1 var(--body);letter-spacing:.1em;color:rgba(243,234,214,.55);white-space:nowrap}
 #bSearch{left:calc(var(--px)*8);bottom:calc(var(--px)*94);width:calc(var(--px)*40);height:calc(var(--px)*17);background:rgba(255,180,58,.85);color:var(--amber-ink);border-color:#ffe2a8;animation:pulse .8s steps(2) infinite}
@@ -186,7 +185,7 @@ body{margin:0;background:var(--night);color:var(--ink);font-family:var(--body);o
       <div class="stick fire" id="stFire" aria-label="Your gun: push the stick the way you want to shoot"><div class="sbase"></div><div class="sknob"><img class="sgun" id="gunFire" alt=""></div><span class="stick-tag" id="tagFire">SHOOT</span></div>
       <div class="stick fire" id="stPistol" aria-label="Your revolver: push the stick the way you want to shoot"><div class="sbase"></div><div class="sknob"><img class="sgun" id="gunPistol" alt=""></div><span class="stick-tag" id="tagPistol">PISTOL</span></div>
       <button class="cbtn" id="bMelee" data-k="melee" aria-label="Swing your bat">BAT</button>
-      <div class="stick fire nade" id="stNade" aria-label="Grenade: push the stick the way you want to throw, let go to throw"><div class="sbase"></div><div class="sknob"><img class="sgun" id="gunNade" alt=""></div><span class="stick-tag" id="tagNade">x3</span></div>
+      <button class="cbtn" id="bNade" aria-label="Grenade: hold to wind up the throw, let go to throw it"><img id="gunNade" alt=""><span id="tagNade">x3</span></button>
       <button class="cbtn" id="bSearch" data-k="search" data-t="cSearch" hidden>SEARCH</button>
     </div>
     <button class="cbtn" id="bPause" aria-label="Pause" hidden>II</button>
@@ -203,7 +202,7 @@ body{margin:0;background:var(--night);color:var(--ink);font-family:var(--body);o
         <button class="btn ghost" id="titleChar" data-t="charBtn">Your character</button>
         <button class="btn ghost" id="titleCoop" data-t="coopBtn">Play with a friend</button>
       </div>
-      <p class="keys" id="keysHint" data-t="keys"><kbd>A</kbd> <kbd>D</kbd> walk &middot; <kbd>J</kbd> or <kbd>Space</kbd> fire (hold <kbd>W</kbd> / <kbd>S</kbd> to aim up / down) &middot; <kbd>E</kbd> search a lit porch &middot; <kbd>Q</kbd> swap gun &middot; <kbd>F</kbd> swing bat &middot; <kbd>G</kbd> grenade (or click and pull back) &middot; <kbd>R</kbd> reload &middot; <kbd>P</kbd> pause</p>
+      <p class="keys" id="keysHint" data-t="keys"><kbd>A</kbd> <kbd>D</kbd> walk &middot; <kbd>J</kbd> or <kbd>Space</kbd> fire (hold <kbd>W</kbd> / <kbd>S</kbd> to aim up / down) &middot; <kbd>E</kbd> search a lit porch &middot; <kbd>Q</kbd> swap gun &middot; <kbd>F</kbd> swing bat &middot; hold <kbd>G</kbd> to wind up a grenade, let go to throw &middot; <kbd>R</kbd> reload &middot; <kbd>P</kbd> pause</p>
       <p class="keys" id="touchHint" data-t="touch" hidden>Arrows to walk &middot; hold FIRE &middot; tap BAT to swing &middot; SWAP changes guns &middot; tap SEARCH at a lit porch</p>
       <div class="row">
         <button class="link" id="setBtnT" data-t="settings">Settings</button>
@@ -432,8 +431,8 @@ const STR = {
     lede: 'The town fell at dusk. The last bus out leaves from the far end of the block. Houses with the porch light on still have supplies inside.',
     logoSub: '',
     start1: 'Start night 1', cont: 'Continue: night {n}', startN: 'Start night {n}', shop: 'Supply shop',
-    keys: '<kbd>A</kbd> <kbd>D</kbd> walk &middot; <kbd>J</kbd> or <kbd>Space</kbd> fire your gun &middot; <kbd>L</kbd> fire the revolver (hold <kbd>W</kbd> / <kbd>S</kbd> to aim up / down) &middot; <kbd>E</kbd> search a lit porch &middot; <kbd>F</kbd> swing bat &middot; <kbd>G</kbd> grenade (or click and pull back) &middot; <kbd>R</kbd> reload &middot; <kbd>P</kbd> pause',
-    touch: 'Left stick walks &middot; bottom right: your gun, then the revolver in the corner &middot; BAT above them &middot; the grenade stick on top: push the way to throw and let go &middot; SEARCH at a lit porch',
+    keys: '<kbd>A</kbd> <kbd>D</kbd> walk &middot; <kbd>J</kbd> or <kbd>Space</kbd> fire your gun &middot; <kbd>L</kbd> fire the revolver (hold <kbd>W</kbd> / <kbd>S</kbd> to aim up / down) &middot; <kbd>E</kbd> search a lit porch &middot; <kbd>F</kbd> swing bat &middot; hold <kbd>G</kbd> to wind up a grenade, let go to throw &middot; <kbd>R</kbd> reload &middot; <kbd>P</kbd> pause',
+    touch: 'Left stick walks &middot; bottom right: your gun, then the revolver in the corner &middot; BAT above them &middot; hold the grenade button to wind up a throw, let go to throw &middot; SEARCH at a lit porch',
     soundOn: 'Sound: on', soundOff: 'Sound: off', fs: 'Full screen', fsExit: 'Exit full screen', pick: 'Pick night: {n}',
     reset: 'Reset progress', resetSure: 'Tap again to erase all progress', langBtn: '中文',
     titleSub: 'Night {n} · {street}', titleSubEsc: 'Escaped once · Night {n} · {street}',
@@ -521,8 +520,8 @@ const STR = {
     lede: '小镇在黄昏时沦陷。最后一班巴士从街区尽头发车。门廊灯还亮着的房子里，还有物资。',
     logoSub: '门廊灯',
     start1: '开始第 1 夜', cont: '继续：第 {n} 夜', startN: '开始第 {n} 夜', shop: '补给商店',
-    keys: '<kbd>A</kbd> <kbd>D</kbd> 移动 &middot; <kbd>J</kbd> 或 <kbd>空格</kbd> 用你的枪射击 &middot; <kbd>L</kbd> 用左轮射击（按住 <kbd>W</kbd> / <kbd>S</kbd> 向上 / 向下瞄准）&middot; <kbd>E</kbd> 搜索亮灯的门廊 &middot; <kbd>F</kbd> 挥棒 &middot; <kbd>G</kbd> 手雷（或按住鼠标往后拉）&middot; <kbd>R</kbd> 换弹 &middot; <kbd>P</kbd> 暂停',
-    touch: '左摇杆移动 &middot; 右下角：你的枪，角落是左轮 &middot; 上面是「球棒」 &middot; 最上面的手雷摇杆：往要扔的方向推，松手就扔 &middot; 在亮灯门廊点「搜索」',
+    keys: '<kbd>A</kbd> <kbd>D</kbd> 移动 &middot; <kbd>J</kbd> 或 <kbd>空格</kbd> 用你的枪射击 &middot; <kbd>L</kbd> 用左轮射击（按住 <kbd>W</kbd> / <kbd>S</kbd> 向上 / 向下瞄准）&middot; <kbd>E</kbd> 搜索亮灯的门廊 &middot; <kbd>F</kbd> 挥棒 &middot; 按住 <kbd>G</kbd> 蓄力投手雷，松手扔出 &middot; <kbd>R</kbd> 换弹 &middot; <kbd>P</kbd> 暂停',
+    touch: '左摇杆移动 &middot; 右下角：你的枪，角落是左轮 &middot; 上面是「球棒」 &middot; 按住手雷按钮蓄力，松手扔出 &middot; 在亮灯门廊点「搜索」',
     soundOn: '声音：开', soundOff: '声音：关', fs: '全屏', fsExit: '退出全屏', pick: '选择夜晚：{n}',
     reset: '重置进度', resetSure: '再点一次，清除全部进度', langBtn: 'English',
     titleSub: '第 {n} 夜 · {street}', titleSubEsc: '已逃出一次 · 第 {n} 夜 · {street}',
@@ -751,7 +750,7 @@ const WEAPON_LIST = [
   { id: 'shotgun', name: 'Pump Shotgun', art: 'g_shotgun', noise: .12, mag: 5, reload: 1.5, cd: .8, dmg: 8, speed: 400, life: .3, pellets: 6, spread: .075, kb: 75, shake: 3.5 },
   { id: 'smg', name: 'Chopper SMG', art: 'g_smg', noise: .015, mag: 30, reload: 1.3, cd: .088, dmg: 6.5, speed: 500, life: .55, pellets: 1, spread: .045, kb: 12, shake: .7 },
   // bolt-action: slow, and each round goes through every zombie in line, losing half its punch at each one
-  { id: 'rifle', name: 'Bolt-Action Rifle', art: 'g_rifle', noise: .1, mag: 5, reload: 1.9, cd: .9, dmg: 40, speed: 900, life: .6, pellets: 1, spread: .004, kb: 40, shake: 3, pierce: true },
+  { id: 'rifle', name: 'Bolt-Action Rifle', art: 'g_rifle', noise: .1, mag: 5, reload: 1.9, cd: .9, dmg: 30, speed: 900, life: .6, pellets: 1, spread: .004, kb: 40, shake: 3, pierce: true },
 ];
 const WEAP = {}; WEAPON_LIST.forEach(w => WEAP[w.id] = w);
 const WEAPON_ORDER = ['pistol', 'shotgun', 'smg', 'rifle'];
@@ -1542,6 +1541,7 @@ function startNight() {
   useStreet(S);
   resetLevel(!!S.boss);
   pickRelicHouses();
+  save.grenades = Math.max(save.grenades || 0, 3);      // (for now: every night starts with at least 3)
   player = { ...PLAYER_BASE, x: 36, hp: maxHp(), dead: false, hidden: false, mag: {} };
   WEAPON_LIST.forEach(w => { player.mag[w.id] = w.id === 'pistol' ? w.mag : Math.min(w.mag, save.ammo[w.id]); });
   if (usable(save.primary)) player.weapon = save.primary;
@@ -1594,9 +1594,10 @@ addEventListener('keydown', e => {
   unlockAudio();
   if (G.state === 'play') e.preventDefault();
   if (e.repeat) return;
+  if (a === 'nade') { if (G.state === 'play' && player && !player.dead) nadeChargeStart('key'); return; }
   if (a === 'left' || a === 'right' || a === 'fire' || a === 'fire2') keys.add(a); else action(a);
 });
-addEventListener('keyup', e => { const a = KEYMAP[e.code]; if (a) keys.delete(a); if (e.code === 'ArrowUp' || e.code === 'KeyW') keys.delete('up'); if (e.code === 'ArrowDown' || e.code === 'KeyS') keys.delete('down'); });
+addEventListener('keyup', e => { const a = KEYMAP[e.code]; if (a === 'nade' && NADE.on && NADE.id === 'key') nadeChargeEnd(true); if (a) keys.delete(a); if (e.code === 'ArrowUp' || e.code === 'KeyW') keys.delete('up'); if (e.code === 'ArrowDown' || e.code === 'KeyS') keys.delete('down'); });
 addEventListener('blur', () => { keys.clear(); pointers.clear(); resetSticks(); });
 
 const ctrlEl = $('controls');
@@ -1608,8 +1609,8 @@ const pointers = new Map();
 //      nothing fires until you push it a way. Push left or right to face that way and fire that gun, even while
 //      walking the other way (he backs up, shooting). Let go and each goes back to its resting spot. ----
 const STICK_DEAD = .3;
-const STICK_R = { stMove: 16, stFire: 13, stPistol: 11, stNade: 11 };   // how far each knob travels (game units)
-const sticks = ['stMove', 'stFire', 'stPistol', 'stNade'].map(id => { const el = $(id); return { el, base: el.querySelector('.sbase'), knob: el.querySelector('.sknob'), id: null, bx: 0, by: 0, nx: 0, ny: 0, at: 0, aim: 0 }; });
+const STICK_R = { stMove: 16, stFire: 13, stPistol: 11 };           // how far each knob travels (game units)
+const sticks = ['stMove', 'stFire', 'stPistol'].map(id => { const el = $(id); return { el, base: el.querySelector('.sbase'), knob: el.querySelector('.sknob'), id: null, bx: 0, by: 0, nx: 0, ny: 0, at: 0, aim: 0 }; });
 function stickRest(S) {
   const r = S.el.getBoundingClientRect(), m = (G.px || 2) * 27;
   return S.el.id === 'stMove' ? { x: m, y: r.height - m } : { x: r.width / 2, y: r.height / 2 };
@@ -1634,7 +1635,6 @@ sticks.forEach(S => {
   S.el.addEventListener('pointerdown', e => {
     if (S.id !== null) return;
     e.preventDefault(); unlockAudio(); setTouch(true);
-    if (S.el.id === 'stNade') { if (!nadeStart(e)) return; NADE.stick = true; sfx('pin'); }
     try { S.el.setPointerCapture(e.pointerId); } catch (err) {}
     const r = S.el.getBoundingClientRect(), Rm = (G.px || 2) * 21;
     S.id = e.pointerId; S.at = performance.now(); S.aim = 0; S.nx = S.ny = 0;
@@ -1645,14 +1645,15 @@ sticks.forEach(S => {
   S.el.addEventListener('pointermove', e => { if (e.pointerId === S.id) stickMove(S, e); });
   ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => S.el.addEventListener(ev, e => {
     if (e.pointerId !== S.id) return;
-    if (S.el.id === 'stNade' && NADE.on && NADE.stick) { if (ev === 'pointerup') nadeRelease(); else NADE.on = false; }
     stickRelease(S);
   }));
   S.el.addEventListener('contextmenu', e => e.preventDefault());
 });
 function resetSticks() { sticks.forEach(stickRelease); }
+$('bNade').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); unlockAudio(); setTouch(true); try { $('bNade').setPointerCapture(e.pointerId); } catch (err) {} nadeChargeStart(e.pointerId); });
+['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => $('bNade').addEventListener(ev, e => { if (NADE.on && NADE.charge && NADE.id === e.pointerId) nadeChargeEnd(ev === 'pointerup' || ev === 'lostpointercapture'); }));
 ctrlEl.addEventListener('pointerdown', e => {
-  const b = e.target.closest('.cbtn'); if (!b) return;
+  const b = e.target.closest('.cbtn'); if (!b || b.id === 'bNade') return;
   e.preventDefault(); unlockAudio(); setTouch(true);
   try { b.setPointerCapture(e.pointerId); } catch (err) {}
   pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -1662,10 +1663,9 @@ ctrlEl.addEventListener('pointermove', e => { if (pointers.has(e.pointerId)) poi
 ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => ctrlEl.addEventListener(ev, e => pointers.delete(e.pointerId)));
 ctrlEl.addEventListener('contextmenu', e => e.preventDefault());
 function pollTouch() {
-  const [mv, fa, fb, fn] = sticks;
-  const nt = 'x' + (save.grenades || 0);
-  if (fn.tag !== nt) { fn.tag = nt; $('tagNade').textContent = nt; fn.el.classList.toggle('empty', !(save.grenades > 0)); }
-  fn.el.classList.toggle('firing', fn.id !== null && Math.hypot(fn.nx, fn.ny) > STICK_DEAD);
+  const [mv, fa, fb] = sticks;
+  const nt = 'x' + (save.grenades || 0), nb = $('bNade');
+  if (nb.dataset.n !== nt) { nb.dataset.n = nt; $('tagNade').textContent = nt; nb.classList.toggle('empty', !(save.grenades > 0)); }
   touch.left = mv.id !== null && mv.nx < -STICK_DEAD; touch.right = mv.id !== null && mv.nx > STICK_DEAD;
   // a shooting stick: push it any way to fire that gun that way; left / right turns him, up / down tilts the gun.
   // Both held: the one pressed last wins.
@@ -1704,7 +1704,7 @@ function action(a) {
   if (a === 'reload') startReload();
   if (a === 'melee') quickSwing();
   if (a[0] === 'w' && a.length === 2) selectWeapon(WEAPON_ORDER[+a[1] - 1]);
-  if (a === 'nade') quickNade();
+  if (a === 'nade') quickNade();         // (unused: G winds up a throw, see keydown)
 }
 
 /* ============================================================
@@ -1957,7 +1957,7 @@ function fire() {
 // quick melee: the bat button plays one swing (hits up to M.max zombies in front, knocks them back and
 // staggers them), then he goes straight back to the gun he has equipped
 function quickSwing() {
-  if (player.swingT >= 0 || player.meleeCd > 0) return;
+  if (player.swingT >= 0 || player.meleeCd > 0 || NADE.on) return;
   cancelSearch();
   const M = melee();
   player.meleeCd = M.cd; player.swingT = 0; player.swingHit = false; player.swingN = (player.swingN || 0) + 1;
@@ -2123,7 +2123,8 @@ function updPlayer(dt) {
   if (player.calmT > 1.4 && !input.fire && player.reloadT <= 0) startReload();
   if (player.pumpT > 0) { player.pumpT -= dt; if (player.pumpT <= 0) { sfx(player.weapon === 'rifle' ? 'bolt' : 'pump'); casing(); } }
   const dir = (input.right ? 1 : 0) - (input.left ? 1 : 0), aimDir = player.swingT < 0 ? input.aim : 0;
-  if (aimDir) player.face = aimDir;                   // the shooting stick turns him to face where he shoots
+  if (NADE.on && NADE.charge) player.face = NADE.dir;   // winding up a grenade: he keeps facing the way he'll throw
+  else if (aimDir) player.face = aimDir;                   // the shooting stick turns him to face where he shoots
   else if (NADE.on) { const pl = nadePlan(); if (pl) player.face = pl.dir; }
   else if (dir) player.face = dir;
   if ((dir || input.fire) && player.searching) cancelSearch();
@@ -2153,7 +2154,7 @@ function updPlayer(dt) {
   // As soon as he moves again the gun drops straight back to the normal run animation.
   if (moving && !runGun) { player.aim = 0; player.aimHoldT = 0; }
   // the gun comes down while he reloads; holding FIRE brings it straight back up once he's done
-  const gunOut = player.swingT < 0 && player.reloadT <= 0;
+  const gunOut = player.swingT < 0 && player.reloadT <= 0 && !NADE.on;
   player.aimHoldT -= dt; player.shotT += dt;
   if (gunOut && (input.fire || player.aimHoldT > 0)) player.aim = Math.min(1, player.aim + dt / RAISE_T);
   else player.aim = player.swingT < 0 ? Math.max(0, player.aim - dt / LOWER_T) : 0;
@@ -2575,13 +2576,34 @@ function nadeCalc(p, th, dir) {                       // pull strength + angle -
   const c = Math.cos(th), v = Math.sqrt(NADE_G * D * D / (2 * c * c * (h0 + D * Math.tan(th))));
   return { dir, th, v, x0, y0, gy, D, lx: x0 + dir * D, p };
 }
+// the grenade button: hold it and the throw winds up, reaching further the longer you hold (up to about
+// three quarters of the screen: he's strong, not superhuman). It goes the way he's facing when you pressed.
+const NADE_CHARGE = 1.1, NADE_TH = .72, NADE_MIN_D = 42;
+const nadeMaxD = () => Math.round(VW * .75);
+function nadeCalcD(D, th, dir) {
+  const x0 = player.x + dir * 4, y0 = player.fy - 24, gy = GROUND + 2, h0 = gy - y0;
+  th = clamp(th, Math.atan(-h0 / D) + .08, 1.2);
+  const c = Math.cos(th), v = Math.sqrt(NADE_G * D * D / (2 * c * c * (h0 + D * Math.tan(th))));
+  return { dir, th, v, x0, y0, gy, D, lx: x0 + dir * D, p: D / nadeMaxD() };
+}
+function nadeChargeStart(id) {
+  if (NADE.on || !nadeReady()) return false;
+  if ((save.grenades || 0) <= 0) { floater(player.x, player.fy - 40, tr('fNoNades'), '#a99fbd', .8); sfx('empty'); return false; }
+  Object.assign(NADE, { on: true, id, t0: G.t, pinned: false, charge: true, stick: false, dir: player.face });
+  $('bNade').classList.add('charging');
+  return true;
+}
+function nadeChargeEnd(throwIt) {
+  if (!NADE.on || !NADE.charge) return;
+  const pl = throwIt ? nadePlan() : null;
+  NADE.on = false; NADE.charge = false; $('bNade').classList.remove('charging');
+  if (pl) throwNade(pl);
+}
 function nadePlan() {
   if (!NADE.on) return null;
-  if (NADE.stick) {                                     // the grenade stick: push the way to throw, how far = how far
-    const S = sticks[3], m = Math.hypot(S.nx, S.ny);
-    if (m < STICK_DEAD) return null;
-    const dir = Math.abs(S.nx) > .12 ? Math.sign(S.nx) : player.face;
-    return nadeCalc(clamp((m - STICK_DEAD) / (1 - STICK_DEAD), .08, 1), clamp(Math.atan2(-S.ny, Math.abs(S.nx) || .001), -.35, 1.2), dir);
+  if (NADE.charge) {
+    const p = clamp((G.t - NADE.t0) / NADE_CHARGE, 0, 1);
+    return nadeCalcD(NADE_MIN_D + p * Math.max(0, nadeMaxD() - NADE_MIN_D), NADE_TH, NADE.dir);
   }
   const r = cv.getBoundingClientRect(), sc = r.width / VW;
   const px = (NADE.cx - NADE.ox) / sc, py = (NADE.cy - NADE.oy) / sc, L = Math.hypot(px, py);
@@ -2611,8 +2633,7 @@ function quickNade() {                                  // keyboard: lob one ahe
   sfx('pin'); throwNade(nadeCalc(.55, .8, player.face));
 }
 cv.addEventListener('pointerdown', e => {
-  if (e.pointerType === 'mouse' && e.button !== 0) return;
-  if (e.pointerType !== 'mouse' && G.isTouch) return;
+  unlockAudio(); return;                                 // (grenades: the button, or hold G)
   unlockAudio();
   if (nadeStart(e)) { e.preventDefault(); try { cv.setPointerCapture(e.pointerId); } catch (err) {} }
 });
@@ -2621,7 +2642,7 @@ cv.addEventListener('pointerup', e => { if (NADE.on && e.pointerId === NADE.id) 
 ['pointercancel', 'lostpointercapture'].forEach(ev => cv.addEventListener(ev, e => { if (NADE.on && e.pointerId === NADE.id && ev === 'pointercancel') NADE.on = false; }));
 function updNades(dt) {
   if (NADE.on) {
-    if (!nadeReady()) NADE.on = false;
+    if (!nadeReady()) { NADE.on = false; NADE.charge = false; $('bNade').classList.remove('charging'); }
     else if (!NADE.pinned && G.t - NADE.t0 > .12) { NADE.pinned = true; sfx('pin'); }      // the pin comes out
   }
   for (const n of nades) {
@@ -2630,7 +2651,7 @@ function updNades(dt) {
       n.vy += NADE_G * dt; n.x += n.vx * dt; n.y += n.vy * dt; n.a += n.va * dt;
       if (n.y >= n.gy) {
         n.y = n.gy;
-        if (n.vy > 45 && n.bounces < 3) { n.vy *= -.25; n.vx *= .3; n.va *= .5; n.bounces++; sfx('clink', 60); }
+        if (n.vy > 45 && n.bounces < 3) { n.vy *= -.25; n.vx *= .15; n.va *= .5; n.bounces++; sfx('clink', 60); }   // (a short hop: it stops about where the aim showed)
         else { n.vy = 0; n.rest = true; }
       }
     } else { n.x += n.vx * dt; n.a += n.vx * dt * .35; n.vx *= Math.exp(-8 * dt); }
@@ -2698,24 +2719,16 @@ function drawBoom(cam) {
 }
 function drawNadeAim(cam) {
   if (!NADE.on) return;
-  const r = cv.getBoundingClientRect(), sc = r.width / VW;
-  const ox = (NADE.ox - r.left) / sc, oy = (NADE.oy - r.top) / sc, fx = (NADE.cx - r.left) / sc, fy = (NADE.cy - r.top) / sc;
-  // the range: a track along the street spanning nearly the whole screen
-  const ty = GROUND + 7;
-  ctx.fillStyle = 'rgba(243,234,214,.28)'; for (let x = 10; x <= VW - 10; x += 3) ctx.fillRect(x, ty, 2, 1);
-  ctx.fillStyle = 'rgba(243,234,214,.6)'; ctx.fillRect(10, ty - 2, 1, 5); ctx.fillRect(VW - 10, ty - 2, 1, 5);
-  // the slingshot band from where you pressed to your finger
-  if (!NADE.stick) {
-    const L = Math.hypot(fx - ox, fy - oy), n = Math.ceil(L);
-    ctx.fillStyle = 'rgba(255,180,58,.7)'; for (let i = 0; i <= n; i += 2) ctx.fillRect(Math.round(ox + (fx - ox) * i / (n || 1)), Math.round(oy + (fy - oy) * i / (n || 1)), 1, 1);
-    ctx.fillStyle = '#ffb43a'; ctx.fillRect(Math.round(ox) - 1, Math.round(oy) - 1, 3, 3); ctx.fillStyle = '#0b0814'; ctx.fillRect(Math.round(ox), Math.round(oy), 1, 1);
-  }
   const pl = nadePlan(); if (!pl) return;
-  const px = pl.x0 - cam, lx = pl.lx - cam;
-  ctx.fillStyle = 'rgba(255,180,58,.75)'; ctx.fillRect(Math.round(Math.min(px, lx)), ty, Math.round(Math.abs(lx - px)), 1);
+  const px = pl.x0 - cam, lx = pl.lx - cam, ty = GROUND + 7;
+  // how far he can throw at most, and how far this one will go
+  const mx = pl.x0 + pl.dir * nadeMaxD() - cam;
+  ctx.fillStyle = 'rgba(243,234,214,.25)'; for (let x = Math.min(px, mx); x <= Math.max(px, mx); x += 3) ctx.fillRect(Math.round(x), ty, 2, 1);
+  ctx.fillStyle = 'rgba(243,234,214,.6)'; ctx.fillRect(Math.round(mx), ty - 2, 1, 5);
+  ctx.fillStyle = 'rgba(255,180,58,.85)'; ctx.fillRect(Math.round(Math.min(px, lx)), ty, Math.round(Math.abs(lx - px)), 1);
   // the flight: dots along the arc to where it lands
   const vx = pl.dir * pl.v * Math.cos(pl.th), vy = -pl.v * Math.sin(pl.th), T = Math.abs(pl.D / vx);
-  for (let i = 1, N = Math.max(24, Math.round(pl.D / 3.5)); i <= N; i++) {
+  for (let i = 1, N = Math.max(18, Math.round(pl.D / 4)); i <= N; i++) {
     const t = T * i / N, x = Math.round(px + vx * t), y = Math.round(pl.y0 + vy * t + NADE_G * t * t / 2);
     ctx.fillStyle = 'rgba(11,8,20,.6)'; ctx.fillRect(x, y + 1, 2, 1);
     ctx.fillStyle = i % 2 ? '#fff3c4' : '#ffb43a'; ctx.fillRect(x, y, 2, 1);
@@ -2726,6 +2739,10 @@ function drawNadeAim(cam) {
   ctx.fillStyle = `rgba(255,90,74,${pulse.toFixed(2)})`;
   for (let a = 0; a < Math.PI * 2; a += .09) ctx.fillRect(Math.round(lx + Math.cos(a) * NADE_R), Math.round(pl.gy + 1 + Math.sin(a) * 4), 1, 1);
   ctx.fillStyle = '#ff5a4a'; ctx.fillRect(Math.round(lx) - 1, pl.gy, 3, 1); ctx.fillRect(Math.round(lx), pl.gy - 1, 1, 3);
+  // the wind-up, over his head
+  const bx = Math.round(player.x - cam) - 8, by = player.fy - 44, f = clamp((G.t - NADE.t0) / NADE_CHARGE, 0, 1);
+  ctx.fillStyle = '#0b0814'; ctx.fillRect(bx - 1, by - 1, 18, 4); ctx.fillStyle = '#3a3157'; ctx.fillRect(bx, by, 16, 2);
+  ctx.fillStyle = f >= 1 ? '#fff3c4' : '#a8c46a'; ctx.fillRect(bx, by, Math.round(16 * f), 2);
 }
 function segDist(ax, ay, bx, by, px, py) {             // distance from a point to a line segment
   const dx = bx - ax, dy = by - ay, L = dx * dx + dy * dy, t = L ? clamp(((px - ax) * dx + (py - ay) * dy) / L, 0, 1) : 0;
@@ -3152,7 +3169,7 @@ function drawRelicPop() {                            // just picked up: the item
    On claude.ai the page's `room` carries the snapshots; on the game's own website PeerJS does (a free
    public server introduces the two browsers, then they talk directly).
    ============================================================ */
-const GAME_BUILD = 41;                              // shown on the co-op screen, so two players can check they have the same game
+const GAME_BUILD = 42;                              // shown on the co-op screen, so two players can check they have the same game
 // on the game's own website: browsers may keep an old copy of the page for up to 10 minutes after an update,
 // so check for a newer upload when the game opens and load it straight away if there is one
 (function checkForUpdate() {
@@ -3677,6 +3694,7 @@ function guestStart(n, run, hx) {
   NET.night = n; cfg = nightCfg(n);
   useStreet(S); resetLevel(!!S.boss); hordeMarks = []; hostNades = []; NET.pend = []; NET.gone = new Set(); wearSkin('guest');
   ensureLoadout();
+  save.grenades = Math.max(save.grenades || 0, 3);
   player = { ...PLAYER_BASE, x: clamp((+hx || 36) - 16, 12, BUS_X - 20), hp: maxHp(), dead: false, hidden: false, mag: {} };
   WEAPON_LIST.forEach(w => { player.mag[w.id] = w.id === 'pistol' ? w.mag : Math.min(w.mag, save.ammo[w.id]); });
   if (usable(save.primary)) player.weapon = save.primary;
@@ -5517,7 +5535,7 @@ try { if (hot && typeof hot.snapshot === 'function') hot.snapshot(() => ({ save 
 try {
   if (hot && typeof hot.ready === 'function') hot.ready(start); else start((hot && hot.data) || {});
 } catch (e) { console.error(e); start({}); }
-window.__porch = { openIntro, closeIntro, checkIntros, nightCfg, unlocked, ROSTER, openSettings, cancelReload, roundsIn, getRevived, updRevive, get SOLO_SAVE() { return SOLO_SAVE; }, nadePlan, openShop, PRIMARIES, pickGun, openPick, ensureLoadout, gunFor, sticks, pollTouch, input, WEAP, fire, startReload, moveSpeed, normalizeSave, addAmmo, get fires() { return fires; }, RELICS, AMMO_CAP, has, grabRelic, dropRelics, pickRelicHouses, ignite, renderRelics, relicArt, get drops() { return drops; }, get nums() { return nums; }, shopItems, buy, fillPrice, houndWave, HOUND, buildHoundFrames, batHound, get bullets() { return bullets; }, skinOf, get WORN() { return WORN; }, get AF() { return AF; }, NET, get ally() { return ally; }, hostSnap, areaHit, get hostNades() { return hostNades; }, meleeHit, quickSwing, coopAlly, get stats() { return stats; }, get coins() { return coins; }, get K() { return K; }, noiseHorde, get spawnQ() { return spawnQ; }, spawnFlyer, NADE, get nades() { return nades; }, nadeCalc, throwNade, explode, TRACKS, G, get player() { return player; }, get zombies() { return zombies; }, get save() { return save; }, get boss() { return boss; }, get bus() { return bus; }, get props() { return props; }, get debris() { return debris; }, WX, startNight, startBoss, setWeather, houses: () => houses, dmgPlayer, spawnZombie, CE, makeTemplate, importSheet, get CUSTOM() { return CUSTOM; } };
+window.__porch = { nadeChargeStart, nadeChargeEnd, nadeMaxD, openIntro, closeIntro, checkIntros, nightCfg, unlocked, ROSTER, openSettings, cancelReload, roundsIn, getRevived, updRevive, get SOLO_SAVE() { return SOLO_SAVE; }, nadePlan, openShop, PRIMARIES, pickGun, openPick, ensureLoadout, gunFor, sticks, pollTouch, input, WEAP, fire, startReload, moveSpeed, normalizeSave, addAmmo, get fires() { return fires; }, RELICS, AMMO_CAP, has, grabRelic, dropRelics, pickRelicHouses, ignite, renderRelics, relicArt, get drops() { return drops; }, get nums() { return nums; }, shopItems, buy, fillPrice, houndWave, HOUND, buildHoundFrames, batHound, get bullets() { return bullets; }, skinOf, get WORN() { return WORN; }, get AF() { return AF; }, NET, get ally() { return ally; }, hostSnap, areaHit, get hostNades() { return hostNades; }, meleeHit, quickSwing, coopAlly, get stats() { return stats; }, get coins() { return coins; }, get K() { return K; }, noiseHorde, get spawnQ() { return spawnQ; }, spawnFlyer, NADE, get nades() { return nades; }, nadeCalc, throwNade, explode, TRACKS, G, get player() { return player; }, get zombies() { return zombies; }, get save() { return save; }, get boss() { return boss; }, get bus() { return bus; }, get props() { return props; }, get debris() { return debris; }, WX, startNight, startBoss, setWeather, houses: () => houses, dmgPlayer, spawnZombie, CE, makeTemplate, importSheet, get CUSTOM() { return CUSTOM; } };
 })();
 </script>
 </body></html>
