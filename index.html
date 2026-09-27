@@ -3052,7 +3052,18 @@ function drawRelicPop() {                            // just picked up: the item
    On claude.ai the page's `room` carries the snapshots; on the game's own website PeerJS does (a free
    public server introduces the two browsers, then they talk directly).
    ============================================================ */
-const GAME_BUILD = 37;                              // shown on the co-op screen, so two players can check they have the same game
+const GAME_BUILD = 38;                              // shown on the co-op screen, so two players can check they have the same game
+// on the game's own website: browsers may keep an old copy of the page for up to 10 minutes after an update,
+// so check for a newer upload when the game opens and load it straight away if there is one
+(function checkForUpdate() {
+  if (window.__NET_TEST || !/\.github\.io$/.test(location.hostname)) return;
+  fetch(location.pathname, { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(t => {
+    const m = t.match(/GAME_BUILD = (\d+)/), n = m ? +m[1] : 0;
+    if (!(n > GAME_BUILD)) return;
+    try { if (sessionStorage.getItem('porchlight.updatedTo') === String(n)) return; sessionStorage.setItem('porchlight.updatedTo', String(n)); } catch (e) {}
+    location.replace(location.pathname + '?v=' + n);
+  }).catch(() => {});
+})();
 const NET_V = 5, ZTYPES = ['walker', 'runner', 'brute', 'crawler', 'flyer', 'hound'], FLY_ST = ['cruise', 'wind', 'dive', 'leave'];
 const NET = { role: 'solo', room: null, code: '', t: 0, push: 0, rate: 20, seq: 0, out: [], seen: 0, run: 0, night: 1, hostRun: 0,
   partner: null, lastP: null, lastSeen: 0, hadPartner: false, mateId: null, rtt: 0, lead: 0, theirTs: 0, theirAt: 0, pend: [], gone: new Set() };
