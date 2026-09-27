@@ -1686,10 +1686,7 @@ function quickSwing() {
   player.aim = 0; player.aimHoldT = 0; player.fireCd = Math.max(player.fireCd, SWING);
   sfx('whoosh');
 }
-function meleeHit() {
-  if (NET.role === 'guest') { netEv('mel', r1(player.x), player.face, save.meleeTier || 0); return; }
-  meleeHitFrom(player, melee());
-}
+function meleeHit() { meleeHitFrom(player, melee()); }
 function meleeHitFrom(src, M) {
   const targets = [];
   for (const z of zombies) {
@@ -1702,6 +1699,7 @@ function meleeHitFrom(src, M) {
   targets.sort((p, q) => p[0] - q[0]);
   let hits = 0;
   for (const [, z] of targets.slice(0, M.max)) {
+    if (NET.role === 'guest') { hits++; guestHit(z, M.dmg, src.face, M.kb, M.stun * (z.type === 'brute' ? .6 : 1), 1); continue; }
     hits++; z.idle = false; z.flash = .07;
     if (z.type === 'boss') {                     // too big to stagger with a bat, unless it's a parry (see updBoss)
       z.hp -= M.dmg * bossMul(z); blood(z.x - src.face * 6, z.fy - 34, src.face, 4);
@@ -1765,7 +1763,7 @@ function dmgPlayer(a, kb = 0) {
   if (player.hp <= 0) {
     player.hp = 0; dropGun(); player.dead = true; player.deadT = 0; cancelSearch(); player.hurtT = .26;
     blood(player.x, player.fy - 16, -player.face, 20); sfx('die'); addShake(4);
-    if (upright(coopAlly())) setBanner(tr('coopYouDown'), tr('coopYouDownSub'), 3);
+    if (upright(mate())) setBanner(tr('coopYouDown'), tr('coopYouDownSub'), 3);
   }
 }
 // when he goes down the gun flies out of his hand and clatters onto the pavement
@@ -1974,7 +1972,7 @@ function updBoss(z, dt) {
       if (z.dropY >= 0) {
         addShake(7); sfx('slam');
         for (let i = 0; i < 16; i++) parts.push({ k: 'd', x: z.x + rnd(-24, 24), y: z.fy - 1, vx: rnd(-60, 60), vy: rnd(-25, -5), life: rnd(.4, .8), t: 0 });
-        for (const q of livePlayers()) if (upright(q) && Math.abs(q.x - z.x) < 40) hurtEnt(q, 10, Math.sign(q.x - z.x || 1) * 160);
+        areaHit(z.x, 40, 10, 160);
         go('roar');
       }
       break;
@@ -2005,7 +2003,8 @@ function updBoss(z, dt) {
       const tell = .6 * f2;
       if (z.stT >= tell && !z.hit) {
         z.hit = true; sfx('whoosh');
-        if (alive && adx < 42 && Math.sign(dx || z.face) === z.face) { hurtEnt(P, 16, z.face * 190); addShake(3); z.landed = true; }
+        areaHit(z.x, 42, 16, 190, z.face, z.face);
+        if (livePlayers().some(q => upright(q) && !q.hidden && inArea(q.x, z.x, 42, z.face))) z.landed = true;
       }
       // after a backhand lands he gloats for a moment: time to slip past him or back off
       if (z.stT >= tell + .45) { z.cd.atk = rnd(.7, 1.2) * f2; if (z.landed) { z.landed = false; go('recover'); } else go('walk'); }
@@ -2016,7 +2015,7 @@ function updBoss(z, dt) {
       if (z.stT >= tell && !z.hit) {
         z.hit = true; addShake(6); sfx('slam');
         for (let i = 0; i < 24; i++) { const d = i % 2 ? 1 : -1; parts.push({ k: 'd', x: z.x + d * rnd(4, 60), y: z.fy - 1, vx: d * rnd(40, 110), vy: rnd(-30, -6), life: rnd(.3, .6), t: 0 }); }
-        for (const q of livePlayers()) if (upright(q) && Math.abs(q.x - z.x) < SLAM_R) hurtEnt(q, 22, Math.sign(q.x - z.x || 1) * 200);
+        areaHit(z.x, SLAM_R, 22, 200);
         for (const q of zombies) if (q !== z && !q.dead && Math.abs(q.x - z.x) < SLAM_R) { q.kbv += Math.sign(q.x - z.x || 1) * 140; q.stun = Math.max(q.stun, .5); q.hp -= 20; q.flash = .07; if (q.hp <= 0) killZombie(q, Math.sign(q.x - z.x || 1)); }
       }
       if (z.stT >= tell + .8) { z.cd.slam = rnd(4.5, 6.5) * f2; z.cd.atk = .7; go('walk'); }
@@ -2035,12 +2034,13 @@ function updBoss(z, dt) {
       if (alive && ahead < z.half + 7 && ahead > -z.half) {
         z.run = false; z.cd.charge = rnd(5, 7) * f2; z.cd.atk = .8;
         // parry: a bat swing landing as he arrives stops him cold
-        if (P.swingT >= 0 && P.swingT < .26 && P.face === -z.dir) {
+        if (P === player && P.swingT >= 0 && P.swingT < .26 && P.face === -z.dir) {
           z.kbv = -z.dir * 110; z.flash = .12; sfx('parry'); addShake(5);
           floater(z.x, z.fy - 70, tr('staggeredF'), '#ffb43a', 1.2); G.tips.parried = true;
           go('stagger'); break;
         }
-        hurtEnt(P, 30, z.dir * 260); addShake(5);
+        if (P === player) dmgPlayer(30, z.dir * 260); else if (coopAlly()) netEv('atk', r1(z.x), z.half + 10, 30, 260, 0, z.dir, 'c');   // their screen decides (and whether they parried)
+        addShake(5);
         go('recover'); break;
       }
       const wall = z.x <= ARENA_L + 16 || z.x >= ARENA_R - 16;
@@ -2083,7 +2083,7 @@ function updDebris(dt) {
     if (d.t >= d.T) {
       d.done = true; sfx('crash'); addShake(2.5);
       for (let i = 0; i < 10; i++) parts.push({ k: 'i', x: d.tx, y: GROUND - 4, vx: rnd(-70, 70), vy: rnd(-80, -30), life: 1, t: 0, gy: GROUND + irnd(-2, 4), c: pick(['#6a6f7a', '#8a8f9a', '#4a4f5a', '#c9b98a']), sz: 1 });
-      for (const q of livePlayers()) if (upright(q) && Math.abs(q.x - d.tx) < 17) hurtEnt(q, 18, Math.sign(q.x - d.tx || 1) * 150);
+      areaHit(d.tx, 17, 18, 150);
       for (const q of zombies) if (q.type !== 'boss' && !q.dead && Math.abs(q.x - d.tx) < 17) { q.hp -= 25; q.flash = .07; q.kbv += Math.sign(q.x - d.tx || 1) * 90; if (q.hp <= 0) killZombie(q, 1); }
     }
   }
@@ -2217,7 +2217,8 @@ function throwNade(pl) {
   if (!pl || (save.grenades || 0) <= 0) return;
   save.grenades--;
   const n = { x: pl.x0, y: pl.y0, vx: pl.dir * pl.v * Math.cos(pl.th), vy: -pl.v * Math.sin(pl.th), t: 0, a: 0, va: pl.dir * 14, gy: pl.gy, rest: false, bounces: 0 };
-  if (NET.role === 'guest') netEv('nade', r1(n.x), r1(n.y), r1(n.vx), r1(n.vy), n.gy); else nades.push(n);
+  nades.push(n);                                        // it flies on my screen; in co-op the host flies a copy
+  if (NET.role === 'guest') netEv('nade', r1(n.x), r1(n.y), r1(n.vx), r1(n.vy), n.gy);
   player.face = pl.dir; cancelSearch(); sfx('whoosh');
 }
 function nadeRelease() { const pl = nadePlan(); NADE.on = false; if (pl) throwNade(pl); }
@@ -2239,7 +2240,6 @@ function updNades(dt) {
     if (!nadeReady()) NADE.on = false;
     else if (!NADE.pinned && G.t - NADE.t0 > .12) { NADE.pinned = true; sfx('pin'); }      // the pin comes out
   }
-  if (NET.role === 'guest') { if (G.boom) { G.boom.t += dt; if (G.boom.t > 1) G.boom = null; } return; }   // the host flies them
   for (const n of nades) {
     n.t += dt;
     if (!n.rest) {
@@ -2251,31 +2251,41 @@ function updNades(dt) {
       }
     } else { n.x += n.vx * dt; n.a += n.vx * dt * .35; n.vx *= Math.exp(-8 * dt); }
     n.x = clamp(n.x, G.arena ? ARENA_L + 4 : 4, G.arena ? ARENA_R - 4 : WORLD_LEN - 4);
-    if (n.t >= NADE_FUSE) { n.done = true; explode(n.x, n.y - 2); }
+    if (n.t >= NADE_FUSE) { n.done = true; (NET.role === 'guest' ? explodeGuest : n.cos ? explodeCos : explode)(n.x, n.y - 2); }
   }
   nades = nades.filter(n => !n.done);
   if (G.boom) { G.boom.t += dt; if (G.boom.t > 1) G.boom = null; }
 }
-function explode(x, y) {
-  explodeFx(x, y); netEv('boom', r1(x), r1(y));
-  noiseHorde('grenade', NADE_NOISE);
+// everything the blast reaches: k = 1 at the centre, 0 at the edge
+function blastHits(x, y, fn) {
   for (const z of zombies) {
     if (z.dead || z.vaultT >= 0 || (z.type === 'boss' && z.st === 'drop')) continue;
     const air = z.type === 'flyer', zy = air ? z.y : z.fy - z.h / 2;
     const d = Math.max(0, Math.hypot(z.x - x, (zy - y) * (air ? 1 : .5)) - z.half);
     if (d > NADE_R) continue;
-    const k = 1 - d / NADE_R, dir = Math.sign(z.x - x) || 1;
+    fn(z, 1 - d / NADE_R, Math.sign(z.x - x) || 1, zy);
+  }
+}
+function blastSelf(x) {                                 // too close and it gets you as well
+  if (!upright(player) || player.hidden) return;
+  const d = Math.abs(player.x - x), R = NADE_R * .8;
+  if (d < R) { const k = 1 - d / R; dmgPlayer(Math.round(8 + 27 * k), (Math.sign(player.x - x) || 1) * 120 * k); }
+}
+function explode(x, y) {                                // my grenade (solo, or the host's)
+  explodeFx(x, y); netEv('boom', r1(x), r1(y));
+  noiseHorde('grenade', NADE_NOISE);
+  blastHits(x, y, (z, k, dir, zy) => {
     z.hp -= (25 + 85 * k) * (z.type === 'boss' ? .6 : 1); z.flash = .1; z.idle = false;
     if (z.type !== 'boss') { z.kbv += dir * 170 * k * (1 - z.kbRes); z.stun = Math.max(z.stun || 0, .2 + .6 * k); }
     blood(z.x, zy, dir, 4);
     if (z.hp <= 0) killZombie(z, dir);
-  }
-  for (const q of livePlayers()) {                     // too close and it gets you as well
-    if (!upright(q)) continue;
-    const d = Math.abs(q.x - x), R = NADE_R * .8;
-    if (d < R) { const k = 1 - d / R; hurtEnt(q, Math.round(8 + 27 * k), (Math.sign(q.x - x) || 1) * 120 * k); }
-  }
+  });
+  blastSelf(x);
 }
+// host: the guest's grenade going off (their screen does the damage to zombies; it still makes noise)
+function explodeCos(x, y) { explodeFx(x, y); noiseHorde('grenade', NADE_NOISE); blastSelf(x); }
+// guest: my grenade, on my screen
+function explodeGuest(x, y) { explodeFx(x, y); blastHits(x, y, (z, k, dir) => guestHit(z, 25 + 85 * k, dir, 170 * k, .2 + .6 * k, 2)); blastSelf(x); }
 function explodeFx(x, y) {                               // the flash, the smoke, the scorch (no damage)
   sfx('boom'); addShake(6.5); G.boom = { x, y, t: 0 };
   for (let i = 0; i < 28; i++) { const a = rnd(Math.PI * 1.05, Math.PI * 1.95), sp = rnd(40, 160); parts.push({ k: 'f', x, y: y - 2, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp * .8, life: rnd(.22, .5), t: 0, sz: irnd(1, 3) }); }
@@ -2348,7 +2358,7 @@ function updBullets(dt) {
       if (z.type === 'boss' && z.st === 'drop') continue;
       const d = Math.abs(z.x - b.px); if (d < best) { best = d; hit = z; }
     }
-    if (hit) { if (NET.role !== 'guest') hurtZombie(hit, b); b.life = 0; }
+    if (hit) { if (b.cos) {} else if (NET.role === 'guest') guestHit(hit, b.dmg, b.face, b.kb, 0, 0); else hurtZombie(hit, b); b.life = 0; }
     if (b.own === 2 ? Math.abs(b.x - b.ox) > VW * .75 : b.x < G.camX - 30 || b.x > G.camX + VW + 30) b.life = 0;
   }
   bullets = bullets.filter(b => b.life > 0);
@@ -2416,19 +2426,25 @@ function updMisc(dt) {
   }
 }
 /* ============================================================
-   ONLINE CO-OP (early test)
-   Two people on claude.ai share one street through the page's `room`. Each page keeps a small "presence"
-   object that the platform shares about 30 times a second with the other page in the same named room.
-   The host runs the real game (zombies, spawns, damage, loot, the boss) and puts a compact snapshot of it
-   in its presence. The guest moves their own survivor on their own screen, draws the host's street from
-   those snapshots, and puts where they are and what they just did (shots, swings, grenades, searches) in
-   theirs. Presence is the only channel used, because anyone in the room may set it (topic events need
-   edit access to the artifact).
+   ONLINE CO-OP
+   The host's phone runs the street (zombies, spawns, loot, the boss) and sends a compact snapshot of it
+   about 30 times a second. The guest moves their own survivor on their own screen and draws the host's
+   street from those snapshots. To make it feel as if nobody is on the internet:
+   - each player decides what THEY hit: the guest's bullets, swings and grenades land on the guest's screen
+     straight away (flash, blood, sound, even the kill) and the host is told "I hit zombie 12 for 12";
+   - each player decides what hits THEM: bites, bat swoops, boss attacks and thrown cans are checked on
+     your own screen, so a dodge you see is a dodge;
+   - between snapshots zombies, bats, the boss and your partner keep moving the way they were going,
+     led a little by half the ping so they're drawn where they are now, not where they were;
+   - messages go 30 times a second, unordered, so one slow message never holds up the next.
+   On claude.ai the page's `room` carries the snapshots; on the game's own website PeerJS does (a free
+   public server introduces the two browsers, then they talk directly).
    ============================================================ */
-const NET_V = 1, ZTYPES = ['walker', 'runner', 'brute', 'crawler', 'flyer'], FLY_ST = ['cruise', 'wind', 'dive', 'leave'];
-const NET = { role: 'solo', room: null, code: '', t: 0, push: 0, seq: 0, out: [], seen: 0, run: 0, night: 1, hostRun: 0,
-  partner: null, lastP: null, lastSeen: 0, hadPartner: false, mateId: null };
-let ally = null;                                  // the other survivor on this screen, a puppet built from their presence
+const NET_V = 2, ZTYPES = ['walker', 'runner', 'brute', 'crawler', 'flyer'], FLY_ST = ['cruise', 'wind', 'dive', 'leave'];
+const NET = { role: 'solo', room: null, code: '', t: 0, push: 0, rate: 20, seq: 0, out: [], seen: 0, run: 0, night: 1, hostRun: 0,
+  partner: null, lastP: null, lastSeen: 0, hadPartner: false, mateId: null, rtt: 0, lead: 0, theirTs: 0, theirAt: 0, pend: [] };
+let ally = null;                                  // the other survivor on this screen, a puppet built from their messages
+let hostNades = [];                               // guest: the host's grenades in the air (drawn only)
 const online = () => NET.role !== 'solo';
 const r1 = v => Math.round(v * 10) / 10, r2 = v => Math.round(v * 100) / 100;
 const nightNo = () => online() ? NET.night : save.night;
@@ -2454,23 +2470,22 @@ function camSubject() {
   if (m && (player.dead || player.inBus || player.hidden) && upright(m) && !m.hidden && m.x > -900) return m;
   return player;
 }
-function hurtEnt(P, a, kb = 0) { if (P === player) dmgPlayer(a, kb); else allyHurt(a, kb); }
-function allyHurt(a, kb = 0) {
-  const q = coopAlly(); if (!q || q.dead || q.inBus) return;
-  q.hp -= a; q.hurtT = .26;
-  if (kb) netEv('kb', Math.round(kb));
-  if (q.hp <= 0) {
-    q.hp = 0; q.dead = true; q.deadT = 0; blood(q.x, q.fy - 16, -q.face, 20);
-    if (!player.dead) setBanner(tr('coopDown'), '', 1.8);
-  }
+// damage to a survivor: only your own screen hurts you (your partner's screen decides about them)
+function hurtEnt(P, a, kb = 0) { if (P === player) dmgPlayer(a, kb); }
+const inArea = (px, x, r, face) => Math.abs(px - x) < r && (!face || Math.sign(px - x || face) === face);
+// an attack that covers ground (the boss's slam, a thrown can): it hurts you here, and your partner is told
+// where it landed so their own screen can decide whether they were standing in it
+function areaHit(x, r, dmg, kb, face = 0, dir = 0, kind = '') {
+  if (upright(player) && !player.hidden && inArea(player.x, x, r, face)) dmgPlayer(dmg, (dir || Math.sign(player.x - x) || 1) * kb);
+  if (coopAlly()) netEv('atk', r1(x), r, dmg, kb, face, dir, kind);
 }
 function netEv(type, ...a) {                    // something that just happened, for the other screen
   if (!online()) return;
   NET.out.push([++NET.seq, type, ...a]);
-  if (NET.out.length > 40) NET.out.splice(0, NET.out.length - 40);
+  if (NET.out.length > 48) NET.out.splice(0, NET.out.length - 48);
 }
 
-// ---- the connection: claude.ai's room, or (for testing in one browser) a BroadcastChannel stand-in ----
+// ---- the connection: claude.ai's room there, PeerJS on the game's own website, a stand-in for tests ----
 async function netOpen(code, role) {
   const name = 'porch-' + code.toLowerCase();
   if (window.__NET_TEST) return testRoom(name);
@@ -2492,19 +2507,25 @@ function peerRoom(code, role) {
     const hostId = PEER_PREFIX + code.toLowerCase();
     let peer;
     try { peer = role === 'host' ? new Peer(hostId, opts) : new Peer(opts); } catch (e) { reject({ code: 'unavailable' }); return; }
-    const conns = new Map(), others = new Map();
-    let mine = {}, dirty = false, ready = false, closed = false, retry = null;
+    const conns = new Map(), others = new Map(), lastQ = new Map();
+    let mine = {}, sq = 0, ready = false, closed = false, retry = null;
     const redial = ms => { if (role === 'guest' && !closed && !retry) retry = setTimeout(dial, ms); };
+    const sendAll = () => { const m = { p: mine, q: ++sq }; for (const c of conns.values()) if (c.open) try { c.send(m); } catch (e) {} };
     function attach(c) {
-      c.on('open', () => { conns.set(c.peer, c); try { c.send({ p: mine }); } catch (e) {} });
-      c.on('data', d => { if (d && typeof d === 'object' && d.p && typeof d.p === 'object' && !Array.isArray(d.p)) others.set(c.peer, { peer: c.peer, isMe: false, sameTab: false, presence: d.p, at: Date.now() }); });
-      const drop = () => { if (conns.get(c.peer) === c) { conns.delete(c.peer); others.delete(c.peer); } redial(1000); };
+      c.on('open', () => { conns.set(c.peer, c); sendAll(); });
+      c.on('data', d => {
+        if (!d || typeof d !== 'object' || !d.p || typeof d.p !== 'object' || Array.isArray(d.p)) return;
+        const q = +d.q || 0; if (q && q <= (lastQ.get(c.peer) || 0)) return;          // arrived late: a newer one is already here
+        lastQ.set(c.peer, q);
+        others.set(c.peer, { peer: c.peer, isMe: false, sameTab: false, presence: d.p, at: Date.now() });
+      });
+      const drop = () => { if (conns.get(c.peer) === c) { conns.delete(c.peer); others.delete(c.peer); } redial(800); };
       c.on('close', drop); c.on('error', drop);
     }
     function dial() {
       retry = null;
       if (closed || role !== 'guest' || peer.destroyed || [...conns.values()].some(c => c.open)) return;
-      try { attach(peer.connect(hostId, { reliable: true, serialization: 'json' })); } catch (e) { redial(2500); }
+      try { attach(peer.connect(hostId, { reliable: false, serialization: 'json' })); } catch (e) { redial(2500); }
     }
     peer.on('open', () => { ready = true; if (role === 'guest') dial(); resolve(api); });
     peer.on('connection', c => { if (role === 'host' && !closed) attach(c); else try { c.close(); } catch (e) {} });
@@ -2517,31 +2538,37 @@ function peerRoom(code, role) {
       }
     });
     peer.on('disconnected', () => { if (!closed) setTimeout(() => { try { if (!closed && !peer.destroyed && peer.disconnected) peer.reconnect(); } catch (e) {} }, 1500); });
-    const iv = setInterval(() => {
-      if (!dirty) return; dirty = false;
-      for (const c of conns.values()) if (c.open) try { c.send({ p: mine }); } catch (e) {}
-    }, 33);
     const api = {
-      name: hostId,
-      presence(patch) { mine = { ...mine, ...patch }; for (const k in patch) if (patch[k] === null) delete mine[k]; dirty = true; return Promise.resolve(); },
+      name: hostId, rate: 30,
+      presence(patch) { mine = { ...mine, ...patch }; for (const k in patch) if (patch[k] === null) delete mine[k]; sendAll(); return Promise.resolve(); },
       peers() { const now = Date.now(); return [{ peer: peer.id, isMe: true, sameTab: true, presence: mine }, ...[...others.values()].filter(o => now - o.at < 10000)]; },
       connected: () => ready && !peer.disconnected,
-      leave() { closed = true; clearInterval(iv); clearTimeout(retry); try { peer.destroy(); } catch (e) {} return Promise.resolve(); },
+      leave() { closed = true; clearTimeout(retry); try { peer.destroy(); } catch (e) {} return Promise.resolve(); },
     };
   });
 }
+// for testing in one browser: a BroadcastChannel, with made-up lag (window.__NET_LAG ms each way, plus jitter)
 function testRoom(name) {
-  const ch = new BroadcastChannel(name), me = Math.random().toString(36).slice(2), others = new Map();
-  let mine = {}, dirty = false;
-  ch.onmessage = e => { const m = e.data; if (m.left) others.delete(m.peer); else others.set(m.peer, Object.freeze({ peer: m.peer, isMe: false, sameTab: false, presence: m.p, updatedAt: Date.now() })); };
-  const iv = setInterval(() => { if (dirty) { ch.postMessage({ peer: me, p: mine }); dirty = false; } }, 33);
-  const ka = setInterval(() => ch.postMessage({ peer: me, p: mine }), 1000);
+  const ch = new BroadcastChannel(name), me = Math.random().toString(36).slice(2), others = new Map(), lastQ = new Map();
+  let mine = {}, sq = 0;
+  const lag = () => (window.__NET_LAG || 0) + Math.random() * (window.__NET_JITTER || 0);
+  ch.onmessage = e => {
+    const m = e.data;
+    const go = () => {
+      if (m.left) { others.delete(m.peer); return; }
+      if (m.q <= (lastQ.get(m.peer) || 0)) return; lastQ.set(m.peer, m.q);
+      others.set(m.peer, Object.freeze({ peer: m.peer, isMe: false, sameTab: false, presence: m.p, updatedAt: Date.now() }));
+    };
+    const L = lag(); if (L > 0) setTimeout(go, L); else go();
+  };
+  const send = () => ch.postMessage({ peer: me, p: mine, q: ++sq });
+  const ka = setInterval(send, 1000);
   return {
-    name,
-    presence(patch) { mine = { ...mine, ...patch }; for (const k in patch) if (patch[k] === null) delete mine[k]; dirty = true; return Promise.resolve(); },
+    name, rate: 30,
+    presence(patch) { mine = { ...mine, ...patch }; for (const k in patch) if (patch[k] === null) delete mine[k]; send(); return Promise.resolve(); },
     peers: () => [{ peer: me, isMe: true, sameTab: true, presence: mine }, ...others.values()],
     connected: () => true,
-    leave() { clearInterval(iv); clearInterval(ka); ch.postMessage({ peer: me, left: true }); ch.close(); return Promise.resolve(); },
+    leave() { clearInterval(ka); ch.postMessage({ peer: me, left: true }); ch.close(); return Promise.resolve(); },
   };
 }
 
@@ -2553,13 +2580,17 @@ function pState(p) {
     Math.round(p.swingT * 100), Math.round(Math.max(0, p.hurtT) * 100), r1(Math.min(9, p.deadT || 0)), r1(p.recoil || 0), Math.round(p.porchT * 100),
     Math.round(Math.max(0, p.hp)), Math.round(p === player ? maxHp() : (p.maxHp || 100)), p === player ? (save.meleeTier || 0) : (p.meleeTier || 0)];
 }
-function makePuppet() { return { ...PLAYER_BASE, x: -999, tx: null, hp: 100, maxHp: 100, dead: false, hidden: true, mag: { pistol: 6, shotgun: 5, smg: 30 }, puppet: true, run: -1 }; }
-// theirs = their own hp and death come from them (the guest's view of the host); the host decides the guest's
-function applyPState(q, a, theirs) {
+function makePuppet() { return { ...PLAYER_BASE, x: -999, tx: null, vxm: 0, rxAt: 0, hp: 100, maxHp: 100, dead: false, hidden: true, mag: { pistol: 6, shotgun: 5, smg: 30 }, puppet: true, run: -1 }; }
+// each survivor's own screen is the word on their health and whether they're down
+function applyPState(q, a) {
   if (!Array.isArray(a) || a.length < 19) return;
+  const f = a[3], now = G.t;
+  // how fast they're going, from the last two positions (to keep them moving between messages)
+  if (q.tx !== null && q.rxAt && now - q.rxAt > .004) { const v = clamp((a[0] - q.tx) / (now - q.rxAt), -160, 160); q.vxm = (f & 1) ? q.vxm * .4 + v * .6 : 0; }
+  else if (!(f & 1)) q.vxm = 0;
+  q.rxAt = now;
   if (q.tx === null || Math.abs(a[0] - q.x) > 80) q.x = a[0];
   q.tx = a[0]; q.fy = a[1]; q.face = a[2] < 0 ? -1 : 1;
-  const f = a[3];
   q.moving = !!(f & 1); q.inBus = !!(f & 4); q.hidden = !!(f & 8); q.backing = !!(f & 16); q.searching = (f & 32) ? true : null;
   if (f & 64) q.flashT = .05;
   q.aim = a[4] / 100; q.elev = a[5] / 100; q.weapon = WEAPON_ORDER[a[6]] || 'pistol'; q.shotT = a[7] / 100;
@@ -2567,61 +2598,81 @@ function applyPState(q, a, theirs) {
   q.reloadT = a[9] / 100; q.reloadDur = a[10] / 100 || 1; q.reloadW = q.weapon; q.swingT = a[11] / 100; q.recoil = a[14]; q.porchT = a[15] / 100;
   q.maxHp = a[17] || 100; q.meleeTier = clamp(a[18] || 0, 0, 2);
   if (a[12] > 0) q.hurtT = Math.max(q.hurtT, a[12] / 100);
-  if (theirs) {
-    q.hp = a[16];
-    if ((f & 2) && !q.dead) { q.dead = true; q.deadT = Math.min(a[13], .05); } else if (!(f & 2)) q.dead = false;
-  }
+  q.hp = a[16];
+  if ((f & 2) && !q.dead) { q.dead = true; q.deadT = Math.min(a[13], .05); blood(q.x, q.fy - 16, -q.face, 20); }
+  else if (!(f & 2)) q.dead = false;
 }
 function tickPuppet(q, dt) {
   if (!q) return;
-  if (q.tx !== null) q.x += (q.tx - q.x) * Math.min(1, dt * 14);
+  if (q.tx !== null) {
+    const tgt = q.dead ? q.tx : q.tx + (q.vxm || 0) * Math.min(.2, G.t - q.rxAt + NET.lead);
+    q.x += (tgt - q.x) * Math.min(1, dt * 14);
+  }
   if (q.moving) q.runPhase += (q.backing ? -1 : 1) * dt * 24 * .9;
   q.shotT += dt; if (q.swingT >= 0) q.swingT += dt; if (q.dead) q.deadT += dt;
   q.hurtT = Math.max(0, q.hurtT - dt); q.flashT -= dt; q.recoil = Math.max(0, q.recoil - dt * 20);
 }
+// ping: each side stamps its messages with its own clock and echoes the other's latest stamp
+function stamp(o) { const now = performance.now(); o.ts = Math.round(now); o.ec = NET.theirTs || 0; o.eh = NET.theirTs ? Math.round(now - NET.theirAt) : 0; return o; }
+function readStamp(P) {
+  const now = performance.now();
+  if (Number.isFinite(P.ts)) { NET.theirTs = P.ts; NET.theirAt = now; }
+  if (Number.isFinite(P.ec) && P.ec > 0) {
+    const s = now - P.ec - (+P.eh || 0);
+    if (s >= 0 && s < 5000) NET.rtt = NET.rtt ? NET.rtt * .85 + s * .15 : s;
+    NET.lead = clamp(NET.rtt / 2000, 0, .12);
+  }
+}
 
 // ---- HOST: the snapshot of the street ----
 function hostSnap() {
-  const a = coopAlly(), zs = [];
+  const a = coopAlly(), zs = [], now = NET.t;
   const dist = x => Math.min(Math.abs(x - player.x), a ? Math.abs(x - a.x) : 1e9);
   for (const z of zombies) {
     if (z.type === 'boss' || dist(z.x) > 420 || (z.dead && z.deadT > .6)) continue;
     const t = ZTYPES.indexOf(z.type); if (t < 0) continue;
-    const fl = (z.dead ? 1 : 0) | (z.atk ? 2 : 0) | (z.idle ? 4 : 0) | (z.flash > 0 ? 8 : 0) | (z.stun > 0 ? 16 : 0) | (z.vaultT >= 0 ? 32 : 0) | (z.fallDir < 0 ? 64 : 0) | (z.landed ? 128 : 0);
-    zs.push([z.id, t, Math.round(z.x), Math.round(z.type === 'flyer' ? z.y : z.fy), z.face > 0 ? 1 : 0, fl, Math.max(0, (ZLOOK[z.type] || []).indexOf(z.v)), z.type === 'flyer' ? Math.max(0, FLY_ST.indexOf(z.st)) : (z.vaultDir || 0)]);
+    const air = z.type === 'flyer';
+    if (z._st !== undefined && now - z._st > .01) { const el = now - z._st; z._vx = (z.x - z._sx) / el; z._vy = air ? (z.y - z._sy) / el : 0; }
+    if (z._st === undefined || now - z._st > .01) { z._sx = z.x; z._sy = z.y; z._st = now; }
+    const fl = (z.dead ? 1 : 0) | (z.atk ? 2 : 0) | (z.idle ? 4 : 0) | (z.flash > 0 ? 8 : 0) | (z.stun > 0 ? 16 : 0) | (z.vaultT >= 0 ? 32 : 0) | (z.fallDir < 0 ? 64 : 0) | (z.landed ? 128 : 0) | (a && z.tgt === a ? 256 : 0);
+    zs.push([z.id, t, Math.round(z.x), Math.round(air ? z.y : z.fy), z.face > 0 ? 1 : 0, fl, Math.max(0, (ZLOOK[z.type] || []).indexOf(z.v)), air ? Math.max(0, FLY_ST.indexOf(z.st)) : (z.vaultDir || 0),
+      Math.max(0, Math.round(z.hp)), z.dead ? 0 : Math.round(clamp(z._vx || 0, -250, 250)), z.dead || !air ? 0 : Math.round(clamp(z._vy || 0, -300, 300))]);
   }
   zs.sort((p, q) => dist(p[2]) - dist(q[2]));
   const st = G.state === 'play' || G.state === 'pause' ? 'play' : G.state === 'won' || G.state === 'dead' ? G.state : 'lobby';
   const live = st === 'play';
-  const snap = {
-    r: 'h', v: NET_V, st, n: NET.night, run: NET.run, k: stats ? stats.kills : 0, p: pState(player),
-    g: a ? [Math.round(a.hp), a.dead ? 1 : 0] : 0,
+  let bvx = 0;
+  if (boss) { if (boss._st !== undefined && now - boss._st > .01) boss._vx = (boss.x - boss._sx) / (now - boss._st); if (boss._st === undefined || now - boss._st > .01) { boss._sx = boss.x; boss._st = now; } bvx = boss.dead ? 0 : Math.round(clamp(boss._vx || 0, -250, 250)); }
+  const snap = stamp({
+    r: 'h', v: NET_V, st, n: NET.night, run: NET.run, k: stats ? stats.kills : 0, p: pState(player), ak: NET.seen,
     z: live ? zs.slice(0, 40) : [],
-    b: live && boss ? [Math.round(boss.x), boss.fy, boss.face, boss.st, r2(boss.stT), boss.dir || 1, boss.run ? 1 : 0, Math.round(boss.dropY || 0), boss.dead ? 1 : 0, r1(boss.deadT || 0), boss.flash > 0 ? 1 : 0, Math.round(boss.hp), boss.maxHp, r1(boss.anim || 0)] : 0,
+    b: live && boss ? [Math.round(boss.x), boss.fy, boss.face, boss.st, r2(boss.stT), boss.dir || 1, boss.run ? 1 : 0, Math.round(boss.dropY || 0), boss.dead ? 1 : 0, r1(boss.deadT || 0), boss.flash > 0 ? 1 : 0, Math.round(boss.hp), boss.maxHp, r1(boss.anim || 0), bvx] : 0,
     bu: live && bus ? [Math.round(bus.x), r2(bus.door), bus.leaving ? 1 : 0, Math.round(bus.wheel || 0) % 1000, r1(bus.t || 0)] : 0,
     a: [G.arena ? 1 : 0, r2(G.gateT || 0), G.bossDone ? 1 : 0],
     lit: houses.reduce((m, h, i) => m | (h.lit ? 1 << i : 0), 0),
-    nd: live ? nades.map(n => [Math.round(n.x), Math.round(n.y), r1(n.a), r2(n.t)]) : [],
+    nd: live ? nades.filter(n => !n.cos).map(n => [Math.round(n.x), Math.round(n.y), r1(n.a), r2(n.t)]) : [],
     cn: live ? coins.slice(0, 16).map(c => [Math.round(c.x), Math.round(c.y), r1(c.t)]) : [],
     db: live ? debris.map(d => [Math.round(d.x0), Math.round(d.y0), Math.round(d.tx), r2(d.t), r2(d.T), r1(d.a)]) : [],
     e: NET.out.slice(),
-  };
-  // stay inside the platform's 4 KiB: drop the zombies furthest from both of you first, then the oldest news
+  });
+  // stay inside 4 KiB (claude.ai's limit): drop the zombies furthest from both of you first, then the oldest news
   let len = JSON.stringify(snap).length;
   while (len > 3800 && snap.z.length > 6) { snap.z.length -= 4; len = JSON.stringify(snap).length; }
   while (len > 3800 && snap.e.length > 4) { snap.e.splice(0, 4); len = JSON.stringify(snap).length; }
   return snap;
 }
 function guestSnap() {
-  return { r: 'g', v: NET_V, st: G.state, run: NET.hostRun, p: pState(player), o: [save.owned.shotgun ? 1 : 0, save.owned.smg ? 1 : 0], e: NET.out.slice() };
+  return stamp({ r: 'g', v: NET_V, st: G.state, run: NET.hostRun, p: pState(player), o: [save.owned.shotgun ? 1 : 0, save.owned.smg ? 1 : 0], e: NET.out.slice() });
 }
 
 // ---- HOST: what the guest did ----
 function hostIn(P) {
   if (!ally) ally = makePuppet();
   if (P.run === NET.run && G.state !== 'title') {
-    if (ally.run !== NET.run) Object.assign(ally, { run: NET.run, hp: (Array.isArray(P.p) && P.p[17]) || 100, dead: false, deadT: 0, tx: null });
-    applyPState(ally, P.p, false);
+    if (ally.run !== NET.run) Object.assign(ally, { run: NET.run, dead: false, deadT: 0, tx: null, vxm: 0 });
+    const wasDead = ally.dead;
+    applyPState(ally, P.p);
+    if (!wasDead && ally.dead && G.state === 'play' && !player.dead) setBanner(tr('coopDown'), '', 1.8);
     ally.owned = Array.isArray(P.o) ? P.o : [0, 0];
   }
   for (const e of Array.isArray(P.e) ? P.e : []) {
@@ -2630,21 +2681,49 @@ function hostIn(P) {
     if (P.run !== NET.run || G.state !== 'play' || !coopAlly()) continue;
     const [, type, ...a] = e;
     if (type === 'shot') allyShot(a);
-    else if (type === 'mel') meleeHitFrom({ x: +a[0] || ally.x, fy: ally.fy, face: a[1] < 0 ? -1 : 1 }, MELEE[clamp(a[2] || 0, 0, 2)]);
-    else if (type === 'nade') nades.push({ x: +a[0], y: +a[1], vx: +a[2], vy: +a[3], t: 0, a: 0, va: Math.sign(a[2] || 1) * 14, gy: +a[4] || GROUND + 2, rest: false, bounces: 0 });
+    else if (type === 'hit') allyHit(a);
+    else if (type === 'nade') nades.push({ x: +a[0], y: +a[1], vx: +a[2], vy: +a[3], t: 0, a: 0, va: Math.sign(a[2] || 1) * 14, gy: +a[4] || GROUND + 2, rest: false, bounces: 0, cos: true });
+    else if (type === 'parry') allyParry();
     else if (type === 'loot') allyLoot(a[0]);
   }
 }
+// their shot, drawn here (the tracers stop at zombies but don't hurt them: their own screen says what they hit)
 function allyShot(a) {
   const w = WEAP[WEAPON_ORDER[a[0]]]; if (!w || !Number.isFinite(+a[1])) return;
-  const el = clamp((a[4] || 0) / 100, AIM_DOWN, AIM_UP), ce = Math.cos(el), se = Math.sin(el), face = a[3] < 0 ? -1 : 1, mul = clamp((a[5] || 100) / 100, 1, 3);
+  const el = clamp((a[4] || 0) / 100, AIM_DOWN, AIM_UP), ce = Math.cos(el), se = Math.sin(el), face = a[3] < 0 ? -1 : 1;
   for (let i = 0; i < w.pellets; i++) {
     const sp = w.speed * rnd(.92, 1.05), dv = w.speed * w.spread * rnd(-1, 1);
-    bullets.push({ x: +a[1], y: +a[2] + rnd(-.5, .5), px: +a[1], py: +a[2], vx: face * (sp * ce + dv * se), vy: -sp * se + dv * ce, life: w.life * rnd(.85, 1.1), dmg: w.dmg * mul, kb: w.kb, face, low: w.id === 'shotgun', own: 2, ox: +a[1] });
+    bullets.push({ x: +a[1], y: +a[2] + rnd(-.5, .5), px: +a[1], py: +a[2], vx: face * (sp * ce + dv * se), vy: -sp * se + dv * ce, life: w.life * rnd(.85, 1.1), dmg: 0, kb: 0, face, low: w.id === 'shotgun', own: 2, ox: +a[1], cos: true });
   }
   ally.flashT = .06; ally.shotT = 0;
   sfx(w.id, 30);
   noiseHorde(w.id, w.noise || 0);
+}
+// "I hit zombie #id": kind 0 bullet, 1 bat, 2 blast
+function allyHit(a) {
+  const [id, dmg, face, kb, stun, kind] = a;
+  const z = id === -1 ? boss : zombies.find(q => q.id === id);
+  if (!z || z.dead || z.vaultT >= 0) return;
+  const f = face < 0 ? -1 : 1, d = clamp(+dmg || 0, 0, 120), k = clamp(+kb || 0, 0, 300);
+  z.idle = false; z.flash = .07;
+  if (z.type === 'boss') {
+    if (z.st === 'drop') return;
+    z.hp -= d * (kind === 2 ? .6 : bossMul(z)); blood(z.x - f * 6, z.fy - 34, f, 3);
+    if (z.hp <= 0) killZombie(z, f);
+    return;
+  }
+  z.kbv += f * k * (1 - z.kbRes * (kind === 1 ? .6 : 1));
+  if (stun > 0) z.stun = Math.max(z.stun || 0, clamp(+stun, 0, 1) * (kind === 1 && z.type === 'brute' ? .6 : 1));
+  z.hp -= d;
+  blood(z.x - f * 2, z.type === 'flyer' ? z.y : z.fy - Math.round(z.h * .55), f, 2);
+  if (z.hp <= 0) killZombie(z, f);
+}
+// their bat caught the boss mid-charge on their screen
+function allyParry() {
+  const z = boss; if (!z || z.dead || (z.st !== 'recover' && z.st !== 'charge')) return;
+  z.run = false; z.kbv = (z.dir || -1) * -110; z.flash = .12; sfx('parry'); addShake(3);
+  floater(z.x, z.fy - 70, tr('staggeredF'), '#ffb43a', 1.2); G.tips.parried = true;
+  z.st = 'stagger'; z.stT = 0; z.hit = false;
 }
 function allyLoot(i) {
   const H = houses[i], q = coopAlly(); if (!H || !q) return;
@@ -2656,7 +2735,7 @@ function allyLoot(i) {
   const res = rollLoot(H, unowned, ammoGuns, q.hp > q.maxHp - 8);
   if (res === 'cash') { const v = H.type === 'house' ? irnd(8, 26) : irnd(22, 40); addCash(v); floater(fx, fy, '+$' + v, '#ffb43a'); }
   else if (res === 'ammo') { const w = pick(ammoGuns), n = w.id === 'shotgun' ? irnd(6, 10) : irnd(40, 70); netEv('loot', 'ammo', n, WEAPON_ORDER.indexOf(w.id)); floater(fx, fy, tr(w.id === 'shotgun' ? 'fShells' : 'fRounds', { n }), '#e2bf62'); }
-  else if (res === 'med') { q.hp = Math.min(q.maxHp, q.hp + 35); netEv('loot', 'med', 35, 0); floater(fx, fy, tr('fHealth', { n: 35 }), '#7fd08a'); }
+  else if (res === 'med') { netEv('loot', 'med', 35, 0); floater(fx, fy, tr('fHealth', { n: 35 }), '#7fd08a'); }
   else if (res === 'weapon') { const w = unowned[0]; netEv('loot', 'gun', 0, WEAPON_ORDER.indexOf(w.id)); floater(fx, fy, tr(w.id === 'shotgun' ? 'fFoundSg' : 'fFoundSmg'), '#ffb43a'); }
   else if (res === 'nade') { const n = irnd(1, 2); netEv('loot', 'nade', n, 0); floater(fx, fy, tr('fNades', { n }), '#a8c46a'); }
   else { netEv('loot', 'empty', 0, 0); floater(fx, fy, tr('fEmpty'), '#a99fbd'); }
@@ -2670,33 +2749,48 @@ function hostTick() {
   if (streetOf(NET.night).boss && !G.arena && !G.bossDone && upright(a) && a.x > ARENA_L + 34) startBoss(a.x);
 }
 
+// ---- GUEST: what I hit (my screen decides; the host is told) ----
+const pendingOn = id => NET.pend.reduce((s, p) => s + (p.id === id ? p.d : 0), 0);
+function guestHit(z, dmg, face, kb, stun, kind) {
+  if (z.dead) return;
+  const isBoss = z.type === 'boss', d = dmg * (isBoss ? (kind === 2 ? .6 : bossMul(z)) : 1);
+  if (isBoss && z.st === 'drop') return;
+  z.flash = .07; z.localHitT = G.t; z.idle = false;
+  blood(z.x - face * (isBoss ? 6 : 2), isBoss ? z.fy - 34 : z.type === 'flyer' ? z.y : z.fy - Math.round(z.h * .55), face, kind === 2 ? 4 : 3);
+  if (kind === 0) sfx('hit', 45);
+  if (!isBoss) {
+    z.kbv = (z.kbv || 0) + face * kb * (1 - (z.kbRes || 0) * (kind === 1 ? .6 : 1));
+    if (stun > 0) z.stunUntil = G.t + stun;
+  }
+  netEv('hit', isBoss ? -1 : z.id, r1(dmg), face, Math.round(kb), r2(stun || 0), kind);
+  NET.pend.push({ seq: NET.seq, id: isBoss ? -1 : z.id, d, t: G.t });
+  z.hp = (z.hp || 0) - d;
+  if (!isBoss && z.hp <= 0) predictKill(z, face);
+}
+// down on my screen right away; the host will agree a moment later (if it doesn't, it gets back up)
+function predictKill(z, face) {
+  z.dead = true; z.deadT = 0; z.fallDir = face; z.predDead = G.t; z.flash = 0; z.atk = false;
+  if (z.type === 'flyer') { z.vx = face * 35; z.vy = -40; z.spin = 0; z.landed = false; blood(z.x, z.y, face, 8); sfx('batdie'); }
+  else { blood(z.x, z.fy - z.h / 2, face, z.type === 'brute' ? 16 : 10); sfx('zdie', 70); }
+}
+
 // ---- GUEST: the host's street ----
 function guestIn(P) {
   if (P.st === 'play' && P.run !== NET.hostRun && Array.isArray(P.p)) { NET.hostRun = P.run; guestStart(P.n || 1, P.run, P.p[0]); }
   if (!ally) ally = makePuppet();
   const cur = P.run === NET.hostRun && (G.state === 'play' || G.state === 'pause');
   const wasDead = ally.dead;
-  applyPState(ally, P.p, true);
+  applyPState(ally, P.p);
   ally.run = P.run;
   if (cur && !wasDead && ally.dead && !player.dead) setBanner(tr('coopDown'), '', 1.8);
+  if (Number.isFinite(P.ak)) NET.pend = NET.pend.filter(p => p.seq > P.ak && G.t - p.t < 3);   // the host has these hits now
   if (cur && P.st === 'play') {
-    // my health is the host's call
-    if (Array.isArray(P.g)) {
-      const hp = +P.g[0] || 0;
-      if (hp < player.hp - .5 && !player.dead) { G.hurtFlash = Math.min(.45, G.hurtFlash + (player.hp - hp) * .03); if (player.hurtSfxT <= 0) { sfx('hurt'); player.hurtSfxT = .45; player.hurtT = .26; addShake(1.6); } }
-      if (!player.dead) player.hp = hp;
-      if (P.g[1] && !player.dead) {
-        player.hp = 0; player.dead = true; player.deadT = 0; player.hurtT = .26; cancelSearch(); NADE.on = false;
-        blood(player.x, player.fy - 16, -player.face, 20); sfx('die'); addShake(4);
-        if (!ally.dead) setBanner(tr('coopYouDown'), tr('coopYouDownSub'), 3);
-      }
-    }
     stats.kills = P.k || 0;
     applyZombies(Array.isArray(P.z) ? P.z : [], Array.isArray(P.b) ? P.b : null);
     if (Array.isArray(P.bu)) { bus.x = P.bu[0]; bus.door = P.bu[1]; bus.leaving = !!P.bu[2]; bus.wheel = P.bu[3]; bus.t = P.bu[4]; }
     if (Array.isArray(P.a)) { G.arena = !!P.a[0]; G.gateT = P.a[1]; G.bossDone = !!P.a[2]; }
     houses.forEach((h, i) => { const lit = !!(P.lit & (1 << i)); if (!lit) { if (h.lit) h.searched = true; h.lit = false; } else h.lit = !h.searched; });
-    nades = (P.nd || []).map(n => ({ x: n[0], y: n[1], a: n[2], t: n[3], gy: GROUND + 2 }));
+    hostNades = (P.nd || []).map(n => ({ x: n[0], y: n[1], a: n[2], t: n[3], gy: GROUND + 2 }));
     coins = (P.cn || []).map(c => ({ x: c[0], y: c[1], t: c[2], fy: GROUND }));
     debris = (P.db || []).map(d => ({ x0: d[0], y0: d[1], tx: d[2], t: d[3], T: d[4], a: d[5] }));
   }
@@ -2708,16 +2802,24 @@ function guestIn(P) {
     else if (type === 'loot') guestLoot(a);
     else if (!cur) continue;
     else if (type === 'hs') hostShotFx(a);
-    else if (type === 'boom') explodeFx(+a[0], +a[1]);
+    else if (type === 'boom') { explodeFx(+a[0], +a[1]); blastSelf(+a[0]); }
+    else if (type === 'atk') guestAttacked(a);
     else if (type === 'bn' && typeof a[0] === 'string') { setBanner(tr(a[0]), a[1] ? tr(a[1]) : '', a[2] || 2.5, !!a[3]); if (typeof a[4] === 'string') sfx(a[4]); }
-    else if (type === 'kb') { player.kbv += clamp(+a[0] || 0, -300, 300); cancelSearch(); }
   }
   if (cur && (P.st === 'won' || P.st === 'dead')) guestEnd(P.st === 'won');
 }
-function hostShotFx(a) {                           // the host's shot: tracers and the bang (the host does the damage)
+// an attack landed somewhere on the host's street: was I standing in it (on my screen)?
+function guestAttacked(a) {
+  const [x, r, dmg, kb, face, dir, kind] = a;
+  if (!upright(player) || player.hidden || !inArea(player.x, +x, +r, +face || 0)) return;
+  // the boss charging into me while my bat is coming round: a parry
+  if (kind === 'c' && player.swingT >= 0 && player.swingT < .36 && player.face === -(dir || 1)) { sfx('parry'); addShake(4); netEv('parry'); return; }
+  dmgPlayer(clamp(+dmg || 0, 0, 60), (dir || Math.sign(player.x - x) || 1) * clamp(+kb || 0, 0, 300));
+}
+function hostShotFx(a) {                           // the host's shot: tracers and the bang (the host's screen decides what it hit)
   const w = WEAP[WEAPON_ORDER[a[0]]]; if (!w) return;
   const el = (a[4] || 0) / 100, ce = Math.cos(el), se = Math.sin(el), face = a[3] < 0 ? -1 : 1;
-  for (let i = 0; i < w.pellets; i++) { const sp = w.speed * rnd(.92, 1.05), dv = w.speed * w.spread * rnd(-1, 1); bullets.push({ x: +a[1], y: +a[2], px: +a[1], py: +a[2], vx: face * (sp * ce + dv * se), vy: -sp * se + dv * ce, life: w.life, face, own: 2, ox: +a[1] }); }
+  for (let i = 0; i < w.pellets; i++) { const sp = w.speed * rnd(.92, 1.05), dv = w.speed * w.spread * rnd(-1, 1); bullets.push({ x: +a[1], y: +a[2], px: +a[1], py: +a[2], vx: face * (sp * ce + dv * se), vy: -sp * se + dv * ce, life: w.life, face, own: 2, ox: +a[1], cos: true }); }
   if (ally) { ally.flashT = .06; ally.shotT = 0; }
   sfx(w.id, 30);
 }
@@ -2730,57 +2832,78 @@ function guestLoot(a) {
     setBanner(tr('newGun'), tr('w_' + w.id).toUpperCase(), 2); sfx('gun');
   }
   else if (kind === 'nade') { save.grenades = (save.grenades || 0) + k; floater(fx, fy, tr('fNades', { n: k }), '#a8c46a'); sfx('loot'); }
-  else if (kind === 'med') { floater(fx, fy, tr('fHealth', { n: k }), '#7fd08a'); sfx('med'); }
+  else if (kind === 'med') { if (!player.dead) player.hp = Math.min(maxHp(), player.hp + k); floater(fx, fy, tr('fHealth', { n: k }), '#7fd08a'); sfx('med'); }
   else { floater(fx, fy, tr('fEmpty'), '#a99fbd'); sfx('empty'); }
   persist();
 }
 function applyZombies(list, B) {
-  const byId = new Map(zombies.map(z => [z.id, z])), next = [];
+  const byId = new Map(zombies.map(z => [z.id, z])), next = [], now = G.t;
   for (const e of list) {
     if (!Array.isArray(e)) continue;
-    const [id, t, x, y, face, fl, look, ex] = e, type = ZTYPES[t];
+    const [id, t, x, y, face, fl, look, ex, hp, vx, vy] = e, type = ZTYPES[t];
     if (!type) continue;
     let z = byId.get(id);
     if (!z || z.type !== type) {
       const T = ZT[type];
       z = { id, type, x, tx: x, fy: type === 'flyer' ? GROUND : y, y, ty: y, v: (ZLOOK[type] || [])[look] || ZLOOK[type][0], h: T.h, half: T.half, kbRes: T.kbRes, anim: rnd(10), atkT: 0,
-        deadT: 0, fallDir: 1, flash: 0, stun: 0, idle: false, atk: false, vaultT: -1, vaultDir: 1, trail: 0, rank: 0, face: 1, spin: 0, landed: false, st: 'cruise', t: 0, kbv: 0, vx: 0, vy: 0, hp: 1 };
+        deadT: 0, fallDir: 1, flash: 0, stun: 0, idle: false, atk: false, vaultT: -1, vaultDir: 1, trail: 0, rank: 0, face: 1, spin: 0, landed: false, st: 'cruise', t: 0, kbv: 0, vx: 0, vy: 0, hp: 1, rxAt: now };
     }
-    z.tx = x; if (type === 'flyer') z.ty = y; else z.fy = y;
+    if (z.predDead) {                                // I killed it here; the host hasn't caught up yet
+      if (fl & 1) z.predDead = 0;
+      else if (now - z.predDead < 1.2) { next.push(z); continue; }
+      else { z.dead = false; z.predDead = 0; z.deadT = 0; }                  // the host says it's still up
+    }
+    z.tx = x; z.rxAt = now; z.vx = +vx || 0;
+    if (type === 'flyer') { z.ty = y; z.vy = +vy || 0; } else z.fy = y;
+    z.hp = Math.max(0, (Number.isFinite(hp) ? hp : z.hp) - pendingOn(id));
     z.face = face ? 1 : -1;
     if ((fl & 1) && !z.dead) {
       z.dead = true; z.deadT = 0; z.fallDir = (fl & 64) ? -1 : 1;
       blood(z.x, type === 'flyer' ? z.y : z.fy - z.h / 2, z.fallDir, type === 'brute' ? 16 : 10); sfx(type === 'flyer' ? 'batdie' : 'zdie', 70);
       if (type === 'flyer') { z.vy = -40; z.vx = z.fallDir * 35; }
     }
-    z.atk = !!(fl & 2); z.idle = !!(fl & 4);
-    if ((fl & 8) && z.flash <= 0 && !z.dead) { blood(z.x, type === 'flyer' ? z.y : z.fy - z.h * .6, -z.face, 2); sfx('hit', 45); }
+    z.atk = !!(fl & 2); z.idle = !!(fl & 4); z.mine = !!(fl & 256);
+    const fresh = now - (z.localHitT || -9) < .6;                           // I already showed my own hit
+    if ((fl & 8) && z.flash <= 0 && !z.dead && !fresh) { blood(z.x, type === 'flyer' ? z.y : z.fy - z.h * .6, -z.face, 2); sfx('hit', 45); }
     if (fl & 8) z.flash = .07;
-    z.stun = (fl & 16) ? .1 : 0;
+    z.stun = (fl & 16) || (z.stunUntil || 0) > now ? .1 : 0;
     if (fl & 32) { if (z.vaultT < 0) z.vaultT = 0; } else z.vaultT = -1;
-    if (type === 'flyer') { if (fl & 128) z.landed = true; const s = FLY_ST[ex] || 'cruise'; if (s !== z.st) z.t = 0; z.st = s; } else z.vaultDir = ex || 1;
+    if (type === 'flyer') { if (fl & 128) z.landed = true; const s = FLY_ST[ex] || 'cruise'; if (s !== z.st) { z.t = 0; if (s === 'dive') z.hitDone = false; } z.st = s; } else z.vaultDir = ex || 1;
     next.push(z);
   }
   for (const z of zombies) if (!next.includes(z) && z.type !== 'boss' && z.dead && z.deadT < 5) next.push(z);   // let the fallen finish falling
   if (B) {
-    if (!boss) boss = { id: -1, type: 'boss', v: 'X', h: 60, half: 17, kbRes: .97, anim: 0, flash: 0, dead: false, deadT: 0, x: B[0], tx: B[0], fy: B[1], face: -1, st: 'drop', stT: 0, dir: -1, cd: {}, hp: 1, maxHp: 1 };
-    boss.tx = B[0]; boss.fy = B[1]; boss.face = B[2] < 0 ? -1 : 1; boss.st = String(B[3]); boss.stT = B[4]; boss.dir = B[5]; boss.run = !!B[6]; boss.dropY = B[7];
+    if (!boss) boss = { id: -1, type: 'boss', v: 'X', h: 60, half: 17, kbRes: .97, anim: 0, flash: 0, dead: false, deadT: 0, x: B[0], tx: B[0], fy: B[1], face: -1, st: 'drop', stT: 0, dir: -1, cd: {}, hp: 1, maxHp: 1, rxAt: now };
+    boss.tx = B[0]; boss.rxAt = now; boss.vx = +B[14] || 0; boss.fy = B[1]; boss.face = B[2] < 0 ? -1 : 1; boss.st = String(B[3]); boss.stT = B[4]; boss.dir = B[5]; boss.run = !!B[6]; boss.dropY = B[7];
     if (B[8] && !boss.dead) { boss.dead = true; boss.deadT = B[9]; blood(boss.x, boss.fy - 30, -boss.face, 30); }
-    boss.flash = B[10] ? .07 : 0; boss.hp = B[11]; boss.maxHp = B[12] || 1; boss.anim = B[13];
+    if (B[10] && !(now - (boss.localHitT || -9) < .6)) boss.flash = .07;
+    boss.hp = Math.max(0, B[11] - pendingOn(-1)); boss.maxHp = B[12] || 1; boss.anim = B[13];
     next.push(boss);
   } else boss = null;
   zombies = next;
 }
 function tickGuestWorld(dt) {
+  const me = upright(player) && !player.hidden && G.state === 'play';
   for (const z of zombies) {
+    // keep it moving the way it was going since the last snapshot (and a little ahead, for the trip here)
+    const ahead = Math.min(.25, G.t - (z.rxAt || G.t) + NET.lead);
     const ox = z.x;
-    if (z.tx !== undefined) z.x += (z.tx - z.x) * Math.min(1, dt * 12);
+    if (z.kbv) { z.x += z.kbv * dt; z.kbv *= Math.exp(-9 * dt); if (Math.abs(z.kbv) < 3) z.kbv = 0; }
+    if (z.tx !== undefined && !(z.dead && z.type !== 'boss')) z.x += (z.tx + (z.vx || 0) * ahead - z.x) * Math.min(1, dt * 10);
     if (z.type === 'boss') { if (z.dead) z.deadT += dt; z.stT += dt; z.flash = Math.max(0, z.flash - dt); continue; }
     if (z.type === 'flyer') {
-      if (z.dead && !z.landed) { z.vy = (z.vy || 0) + 420 * dt; z.y += z.vy * dt; z.spin += dt * 10 * z.fallDir; if (z.y >= z.fy - 2) { z.y = z.fy - 2; z.landed = true; } }
-      else if (!z.dead) z.y += ((z.ty ?? z.y) - z.y) * Math.min(1, dt * 12);
-      z.vx = (z.x - ox) / Math.max(dt, 1e-3); z.anim += dt; z.t += dt;
-    } else z.anim += Math.abs(z.x - ox) * .16 + (z.idle || z.atk ? dt * 1.2 : 0);
+      if (z.dead && !z.landed) { z.vy = (z.vy || 0) + 420 * dt; z.x += (z.vx || 0) * dt; z.y += z.vy * dt; z.spin += dt * 10 * z.fallDir; if (z.y >= z.fy - 2) { z.y = z.fy - 2; z.landed = true; } }
+      else if (!z.dead) z.y += (z.ty + (z.vy || 0) * ahead - z.y) * Math.min(1, dt * 10);
+      z.anim += dt; z.t += dt;
+      // a swoop that goes through me on my screen
+      if (me && !z.dead && z.st === 'dive' && !z.hitDone && Math.abs(z.x - player.x) < 8 && z.y > player.fy - 31 && z.y < player.fy - 3) {
+        z.hitDone = true; dmgPlayer(FLY_DMG, Math.sign(player.x - z.x || z.face) * 45); sfx('bite');
+      }
+    } else {
+      z.anim += Math.abs(z.x - ox) * .16 + (z.idle || z.atk ? dt * 1.2 : 0);
+      // a zombie that's after me and biting: it only hurts if it's in reach of where I am on my screen
+      if (me && z.mine && z.atk && !z.dead && Math.abs(z.x - player.x) < z.half + 12) dmgPlayer(ZT[z.type].dps * dt);
+    }
     if (z.atk) z.atkT += dt;
     z.flash = Math.max(0, z.flash - dt);
     if (z.dead) z.deadT += dt;
@@ -2788,12 +2911,12 @@ function tickGuestWorld(dt) {
   }
   zombies = zombies.filter(z => !(z.dead && z.deadT > 5));
   for (const c of coins) c.t += dt;
-  for (const n of nades) n.t += dt;
+  for (const n of hostNades) n.t += dt;
 }
 function guestStart(n, run, hx) {
   const S = streetOf(n);
   NET.night = n; cfg = nightCfg(n);
-  useStreet(S); resetLevel(!!S.boss); hordeMarks = [];
+  useStreet(S); resetLevel(!!S.boss); hordeMarks = []; hostNades = []; NET.pend = [];
   player = { ...PLAYER_BASE, x: clamp((+hx || 36) - 16, 12, BUS_X - 20), hp: maxHp(), dead: false, hidden: false, mag: {} };
   WEAPON_LIST.forEach(w => { player.mag[w.id] = w.id === 'pistol' ? w.mag : Math.min(w.mag, save.ammo[w.id]); });
   if (save.owned.shotgun && save.ammo.shotgun > 0) player.weapon = 'shotgun';
@@ -2839,20 +2962,23 @@ function netTick(dt) {
       if (NET.role === 'host') ally = null;
     }
     if (!NET.hadPartner) { NET.hadPartner = true; coopLobbyUI(); }
-    if (m.presence !== NET.lastP) { NET.lastP = m.presence; NET.partner = m.presence; if (NET.role === 'host') hostIn(NET.partner); else guestIn(NET.partner); }
-  } else if (NET.hadPartner && NET.t - NET.lastSeen > 5) partnerGone();
+    if (m.presence !== NET.lastP) {
+      NET.lastP = m.presence; NET.partner = m.presence; readStamp(NET.partner);
+      if (NET.role === 'host') hostIn(NET.partner); else guestIn(NET.partner);
+    }
+  } else if (NET.hadPartner && NET.t - NET.lastSeen > 6) partnerGone();
   if (NET.role === 'host') hostTick();
   if (ally && mate()) tickPuppet(ally, dt);
   NET.push -= dt;
   if (NET.push <= 0) {
-    NET.push = 1 / 15;
-    const cut = NET.seq - 40;
+    NET.push = Math.max(0, NET.push) + 1 / NET.rate;
+    const cut = NET.seq - 48;
     NET.out = NET.out.filter(e => e[0] > cut);
     try { const r = NET.room && NET.room.presence(NET.role === 'host' ? hostSnap() : guestSnap()); if (r && r.catch) r.catch(() => {}); } catch (e) {}
   }
 }
 function partnerGone() {
-  NET.hadPartner = false; NET.partner = null; NET.lastP = null; NET.mateId = null;
+  NET.hadPartner = false; NET.partner = null; NET.lastP = null; NET.mateId = null; NET.rtt = 0; NET.lead = 0;
   if (NET.role === 'host') {
     ally = null;
     if (G.state === 'play') setBanner(tr('coopLeft'), '', 2.5);
@@ -2866,8 +2992,8 @@ function partnerGone() {
 }
 async function netLeave() {
   const room = NET.room;
-  Object.assign(NET, { role: 'solo', room: null, code: '', partner: null, lastP: null, hadPartner: false, mateId: null, seen: 0, out: [], seq: 0, hostRun: 0 });
-  ally = null; coopEndUI(false);
+  Object.assign(NET, { role: 'solo', room: null, code: '', partner: null, lastP: null, hadPartner: false, mateId: null, seen: 0, out: [], seq: 0, hostRun: 0, rtt: 0, lead: 0, theirTs: 0, pend: [] });
+  ally = null; hostNades = []; coopEndUI(false);
   if (room) try { await room.leave(); } catch (e) {}
 }
 
@@ -2904,7 +3030,7 @@ async function coopHost() {
   if (!NET.room) { $('coopStatus').textContent = coopErr(err); coopBusy = false; return; }
   coopBusy = false;
   if (G.screen !== 'sCoop') { const r = NET.room; NET.room = null; try { r.leave(); } catch (e) {} return; }
-  Object.assign(NET, { role: 'host', code, run: 0, seen: 0, out: [], seq: 0, hadPartner: false, mateId: null, t: 0 });
+  Object.assign(NET, { role: 'host', code, run: 0, seen: 0, out: [], seq: 0, hadPartner: false, mateId: null, t: 0, rate: NET.room.rate || 20, rtt: 0, lead: 0, theirTs: 0 });
   $('coopCode').textContent = code; $('coopCode').hidden = false; $('coopPick').hidden = true;
   coopLobbyUI();
 }
@@ -2919,7 +3045,7 @@ async function coopJoin() {
   try { NET.room = await netOpen(code, 'guest'); } catch (e) { $('coopStatus').textContent = coopErr(e); coopBusy = false; return; }
   coopBusy = false;
   if (G.screen !== 'sCoop') { const r = NET.room; NET.room = null; try { r.leave(); } catch (e) {} return; }
-  Object.assign(NET, { role: 'guest', code, seen: 0, out: [], seq: 0, hadPartner: false, mateId: null, hostRun: 0, t: 0 });
+  Object.assign(NET, { role: 'guest', code, seen: 0, out: [], seq: 0, hadPartner: false, mateId: null, hostRun: 0, t: 0, rate: NET.room.rate || 20, rtt: 0, lead: 0, theirTs: 0, pend: [] });
   $('coopCode').textContent = code; $('coopCode').hidden = false; $('coopPick').hidden = true;
   coopLobbyUI();
   setTimeout(() => { if (NET.role === 'guest' && NET.code === code && !NET.hadPartner && G.screen === 'sCoop') $('coopStatus').textContent = tr('coopNoHost'); }, 6000);
@@ -2963,6 +3089,12 @@ function drawMateTag(cam) {
   ctx.fillStyle = '#0b0814'; ctx.fillRect(x - 7, y + 7, 14, 3);
   ctx.fillStyle = '#3a1420'; ctx.fillRect(x - 6, y + 8, 12, 1);
   ctx.fillStyle = m.dead ? '#4a4263' : '#d0435a'; ctx.fillRect(x - 6, y + 8, Math.round(12 * f), 1);
+}
+// the connection's round trip, top left (green is good, amber is playable, red is rough)
+function drawPing() {
+  if (!online() || !NET.hadPartner || !NET.rtt) return;
+  const ms = Math.round(NET.rtt), col = ms < 90 ? '#7fd08a' : ms < 180 ? '#ffb43a' : '#ff5a6a';
+  drawText('PING ' + ms, 5, save.grenades > 0 || NADE.on ? 36 : 26, col);
 }
 
 function update(dt) {
@@ -3525,6 +3657,7 @@ function draw() {
   drawGate(cam);
   for (const dbr of debris) { const p = debrisPos(dbr); drawCan(p.x - cam, p.y, dbr.a); }
   for (const n of nades) drawNade(n, cam);
+  for (const n of hostNades) drawNade(n, cam);
   drawBoom(cam);
   for (const b of bullets) {
     const sp = Math.hypot(b.vx, b.vy) || 1, dx = b.vx / sp, dy = b.vy / sp, x = b.x - cam, y = b.y;     // a short tracer along its flight
@@ -3570,7 +3703,7 @@ function draw() {
     drawText(f.text, f.x - cam, f.y, f.col, 1, 'center'); ctx.globalAlpha = 1;
   }
   drawMateTag(cam);
-  if (G.state === 'play' || G.state === 'pause') drawHUD();
+  if (G.state === 'play' || G.state === 'pause') { drawHUD(); drawPing(); }
   if (G.banner && G.state === 'play') {
     const b = G.banner, vis = b.t < .25 ? Math.floor(b.t * 16) % 2 : 1;
     if (vis) {
@@ -4274,7 +4407,7 @@ try { if (hot && typeof hot.snapshot === 'function') hot.snapshot(() => ({ save 
 try {
   if (hot && typeof hot.ready === 'function') hot.ready(start); else start((hot && hot.data) || {});
 } catch (e) { console.error(e); start({}); }
-window.__porch = { NET, get ally() { return ally; }, hostSnap, coopAlly, get stats() { return stats; }, get coins() { return coins; }, get K() { return K; }, noiseHorde, get spawnQ() { return spawnQ; }, spawnFlyer, NADE, get nades() { return nades; }, nadeCalc, throwNade, explode, TRACKS, G, get player() { return player; }, get zombies() { return zombies; }, get save() { return save; }, get boss() { return boss; }, get bus() { return bus; }, get props() { return props; }, get debris() { return debris; }, WX, startNight, startBoss, setWeather, houses: () => houses, dmgPlayer, spawnZombie, CE, makeTemplate, importSheet, get CUSTOM() { return CUSTOM; } };
+window.__porch = { NET, get ally() { return ally; }, hostSnap, areaHit, get hostNades() { return hostNades; }, meleeHit, quickSwing, coopAlly, get stats() { return stats; }, get coins() { return coins; }, get K() { return K; }, noiseHorde, get spawnQ() { return spawnQ; }, spawnFlyer, NADE, get nades() { return nades; }, nadeCalc, throwNade, explode, TRACKS, G, get player() { return player; }, get zombies() { return zombies; }, get save() { return save; }, get boss() { return boss; }, get bus() { return bus; }, get props() { return props; }, get debris() { return debris; }, WX, startNight, startBoss, setWeather, houses: () => houses, dmgPlayer, spawnZombie, CE, makeTemplate, importSheet, get CUSTOM() { return CUSTOM; } };
 })();
 </script>
 </body></html>
