@@ -286,6 +286,7 @@ body{margin:0;background:var(--night);color:var(--ink);font-family:var(--body);o
         <button class="set-row" id="setIntros" aria-pressed="true"><span data-t="setIntros">Enemy intros</span><b id="setIntrosVal">On</b></button>
         <p class="keys set-note" data-t="setIntrosNote">A card that explains each new enemy the first time it shows up in a run.</p>
         <button class="set-row" id="setSound" aria-pressed="true"><span data-t="setSound">Sound</span><b id="setSoundVal">On</b></button>
+        <button class="set-row" id="setFs"><span data-t="setFs">Full screen</span><b id="setFsVal">Off</b></button>
         <button class="set-row" id="setTuning"><span data-t="setTuning">Tuning</span><b id="setTuningVal">Locked</b></button>
         <p class="keys set-note" data-t="setTuningNote">The game's balance numbers. Needs the password.</p>
       </div>
@@ -516,7 +517,7 @@ const STR = {
     smgAmmo: 'SMG rounds', rounds90: '90 rounds', smgDesc: 'Eleven rounds a second. Eats ammo.', smgHave: 'Comes with 60 rounds',
     mDesc0: 'Replaces the bat. Hits harder.', mDesc1: 'Heavy swing, hits up to four.', mDesc2: 'Your best melee weapon.',
     rotEyebrow: 'Porchlight plays sideways', rotHead: 'Turn your phone', rotLede: 'Hold it in landscape for the full street view and room for the controls.', rotAnyway: 'Play in portrait anyway',
-    fsHelpHead: 'Full screen on iPhone', fsHelpLede: 'iPhones don’t let web pages go full screen. For the most room: turn the phone sideways, tap the <b>aA</b> button in Safari’s address bar, then choose <b>Hide Toolbar</b>.', gotIt: 'Got it',
+    fsHelpHead: 'Full screen on iPhone', fsHelpLede: 'iPhones don’t let web pages go full screen. Two ways to get it anyway: tap <b>Share</b>, then <b>Add to Home Screen</b>, and play from the new icon (it opens with no Safari bars). Or turn the phone sideways, tap <b>aA</b> in the address bar and choose <b>Hide Toolbar</b>.', fsHelpHead2: 'Full screen', fsHelpLede2: 'This browser won’t let the game go full screen from here. Open the game in Chrome or Safari, or add it to your home screen, and try again.', setFs: 'Full screen', setFsHow: 'How?', gotIt: 'Got it',
     langEyebrow: 'Language · 语言', langHead: 'Choose a language',
     charBtn: 'Your character', charHead: 'Your character', charSave: 'Play as this character', charDefault: 'Use the default hero', back: 'Back',
     coopBtn: 'Play with a friend', coopEyebrow: 'Online co-op · early test', coopHead: 'Play with a friend', coopHostBtn: 'Host a game', coopJoinBtn: 'Join', coopLeave: 'Leave co-op',
@@ -771,7 +772,7 @@ const STR = {
     smgAmmo: '冲锋枪子弹', rounds90: '90 发子弹', smgDesc: '每秒十一发，非常费子弹。', smgHave: '附赠 60 发子弹',
     mDesc0: '替换球棒，打得更重。', mDesc1: '重击，最多同时命中四个。', mDesc2: '你最好的近战武器。',
     rotEyebrow: '门廊灯需要横屏', rotHead: '请把手机横过来', rotLede: '横屏才能看到整条街，也有空间放按键。', rotAnyway: '仍然竖屏玩',
-    fsHelpHead: 'iPhone 上的全屏', fsHelpLede: 'iPhone 不允许网页进入全屏。想要最大的画面：把手机横过来，点 Safari 地址栏里的 <b>aA</b> 按钮，再选<b>隐藏工具栏</b>。', gotIt: '知道了',
+    fsHelpHead: 'iPhone 上的全屏', fsHelpLede: 'iPhone 不允许网页进入全屏。两个办法：点<b>分享</b>，再点<b>添加到主屏幕</b>，然后从新图标打开游戏（没有 Safari 的工具栏）。或者把手机横过来，点地址栏里的 <b>aA</b>，选<b>隐藏工具栏</b>。', fsHelpHead2: '全屏', fsHelpLede2: '这个浏览器不允许游戏在这里全屏。请用 Chrome 或 Safari 打开游戏，或把它添加到主屏幕，再试一次。', setFs: '全屏', setFsHow: '怎么做？', gotIt: '知道了',
     langEyebrow: 'Language · 语言', langHead: '选择语言',
     charBtn: '你的角色', charHead: '你的角色', charSave: '用这个角色开始', charDefault: '使用默认角色', back: '返回',
     coopBtn: '和朋友一起玩', coopEyebrow: '在线合作 · 测试版', coopHead: '和朋友一起玩', coopHostBtn: '创建游戏', coopJoinBtn: '加入', coopLeave: '退出合作',
@@ -6110,7 +6111,7 @@ function drawRelicPop() {                            // just picked up: the item
    On claude.ai the page's `room` carries the snapshots; on the game's own website PeerJS does (a free
    public server introduces the two browsers, then they talk directly).
    ============================================================ */
-const GAME_BUILD = 66;                              // shown on the co-op screen, so two players can check they have the same game
+const GAME_BUILD = 67;                              // shown on the co-op screen, so two players can check they have the same game
 // on the game's own website: browsers may keep an old copy of the page for up to 10 minutes after an update,
 // so check for a newer upload when the game opens and load it straight away if there is one
 (function checkForUpdate() {
@@ -8412,7 +8413,7 @@ const tuneFields = () => { const out = []; for (const S of TUNE_SCHEMA) for (con
 const tuneBuildVal = F => tuneGet(TUNING_BUILD, F.path) ?? F.f.d;
 const tuneCount = () => tuneFields().filter(F => tuneGet(tuneDraft, F.path) !== undefined).length;
 const tuneFmt = v => String(Math.round(v * 10000) / 10000);
-function renderSettingsTune() { $('setTuningVal').textContent = tr(tuneOK ? 'setUnlocked' : 'setLocked'); }
+function renderSettingsTune() { syncFsButtons(); $('setTuningVal').textContent = tr(tuneOK ? 'setUnlocked' : 'setLocked'); }
 function openTuning() {
   sfx('click');
   if (!tuneOK) { $('tunePass').value = ''; $('tunePassErr').hidden = true; showScreen('sTunePass'); setTimeout(() => { try { $('tunePass').focus(); } catch (e) {} }, 60); return; }
@@ -9147,12 +9148,21 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) pause
 // full screen: offered only where the browser lets this page do it (desktop, many Android browsers)
 const fsEl = () => document.fullscreenElement || document.webkitFullscreenElement;
 const fsOK = !!(document.fullscreenEnabled || document.webkitFullscreenEnabled);
-// iPhones have no full screen for web pages: the button is still offered there and explains the Safari workaround
-const isIPhone = /iPhone|iPod/.test(navigator.userAgent);
-function syncFsButtons() { ['fsBtnT', 'fsBtnP'].forEach(id => { const b = $(id); b.hidden = !fsOK && !isIPhone; b.textContent = tr(fsEl() ? 'fsExit' : 'fs'); }); }
+// iPhones have no full screen for web pages (nor do some in-app browsers): the button is still offered everywhere and,
+// where it can't work, explains how to get the most room. Already running from the home screen: nothing to offer.
+const isIPhone = /iPhone|iPod/.test(navigator.userAgent) || (/iPad/.test(navigator.userAgent) && !fsOK) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1 && !fsOK);
+const standalone = () => !!(navigator.standalone || (window.matchMedia && (matchMedia('(display-mode: standalone)').matches || (matchMedia('(display-mode: fullscreen)').matches && !fsEl()))));   // (full screen that we turned on doesn't count)
+function syncFsButtons() {
+  const off = standalone();
+  ['fsBtnT', 'fsBtnP'].forEach(id => { const b = $(id); b.hidden = off; b.textContent = tr(fsEl() ? 'fsExit' : 'fs'); });
+  const r = $('setFs'); if (r) { r.hidden = off; $('setFsVal').textContent = !fsOK ? tr('setFsHow') : tr(fsEl() ? 'setOn' : 'setOff'); r.setAttribute('aria-pressed', !!fsEl()); }
+}
 let fsHelpFrom = null;
 function toggleFullscreen() {
-  if (!fsOK) { fsHelpFrom = G.screen; showScreen('sFsHelp'); return; }
+  if (!fsOK) {                                           // can't here: how to get the most room instead
+    fsHelpFrom = G.screen; $('sFsHelp').querySelector('.head').innerHTML = tr(isIPhone ? 'fsHelpHead' : 'fsHelpHead2'); $('sFsHelp').querySelector('.lede').innerHTML = tr(isIPhone ? 'fsHelpLede' : 'fsHelpLede2');
+    showScreen('sFsHelp'); return;
+  }
   try {
     if (fsEl()) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); return; }
     const el = document.documentElement, req = el.requestFullscreen || el.webkitRequestFullscreen;
@@ -9160,7 +9170,7 @@ function toggleFullscreen() {
     if (p && p.then) p.then(() => { try { screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape').catch(() => {}); } catch (e) {} }).catch(() => {});
   } catch (e) {}
 }
-['fsBtnT', 'fsBtnP'].forEach(id => $(id).addEventListener('click', toggleFullscreen));
+['fsBtnT', 'fsBtnP', 'setFs'].forEach(id => $(id).addEventListener('click', toggleFullscreen));
 $('fsHelpOk').addEventListener('click', () => { sfx('click'); showScreen(fsHelpFrom || (G.state === 'pause' ? 'sPause' : 'sTitle')); });
 ['fullscreenchange', 'webkitfullscreenchange'].forEach(ev => document.addEventListener(ev, () => { syncFsButtons(); setTimeout(resize, 60); }));
 syncFsButtons();
