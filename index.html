@@ -154,7 +154,9 @@ body{margin:0;background:var(--night);color:var(--ink);font-family:var(--body);o
 .item .nm{font:700 clamp(11px,calc(var(--px)*4.8),18px)/1.1 var(--body);color:var(--ink)}
 .item .ds{font:400 clamp(10px,calc(var(--px)*3.9),14px)/1.3 var(--body);color:var(--ink-dim)}
 .item .bot{grid-column:1/3;display:flex;align-items:center;justify-content:space-between;gap:8px}
-.pips{display:flex;gap:3px}
+.pips{display:flex;gap:3px;flex-wrap:wrap}
+.pips.ten{gap:2px;flex-wrap:nowrap}
+.pips.ten .pip{width:max(4px,calc(var(--px)*1.5));height:max(6px,calc(var(--px)*2.4))}
 .pip{width:max(6px,calc(var(--px)*2.4));height:max(6px,calc(var(--px)*2.4));background:var(--line)}
 .pip.on{background:var(--amber)}
 .own{font:600 clamp(9px,calc(var(--px)*3.6),13px)/1 var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-dim)}
@@ -410,7 +412,16 @@ const STREETS = [
   { name: 'BIRCH LN', seed: 3319, weather: 'storm', shops: [2, 7], tip: 'STORM COMING. BIGGER HORDES' },
   { name: 'MAIN ST', seed: 5150, weather: 'blood', shops: [1, 4], boss: true, tip: 'THE BUS DEPOT IS AT THE END OF MAIN ST' },
 ];
-const streetOf = n => STREETS[(Math.max(1, n) - 1) % STREETS.length];
+// the forest: every other time round (nights 6-10, 16-20, ...) the streets give way to trails through the woods
+const FOREST = [
+  { name: 'PINE TRAIL', seed: 6203, weather: 'clear', forest: true },
+  { name: 'BEAR CREEK', seed: 2749, weather: 'rain', forest: true },
+  { name: 'HOLLOW RIDGE', seed: 9133, weather: 'fog', forest: true },
+  { name: 'WOLF RUN', seed: 4418, weather: 'storm', forest: true },
+  { name: 'RANGER STATION', seed: 7771, weather: 'blood', forest: true, boss: true },
+];
+const loopOf = n => Math.floor((Math.max(1, n) - 1) / STREETS.length);          // 0: the town, 1: the forest, 2: the town again...
+const streetOf = n => (loopOf(n) % 2 ? FOREST : STREETS)[(Math.max(1, n) - 1) % STREETS.length];
 const ARENA_L = BUS_X - 280, ARENA_R = BUS_X + 100;   // the depot lot, fenced in during the boss fight
 const PORCH_UP = 13;                                  // how far up the steps he goes to search a house
 let VW = 320;
@@ -540,7 +551,23 @@ const STR = {
     bats: 'BATS', batsSub: 'THEY SWOOP DOWN. AIM THE RIGHT STICK UP', batsSubKey: 'THEY SWOOP DOWN. HOLD W WHILE FIRING',
     boss: 'THE DISPATCHER', bossSub: 'SWING THE BAT AS HE CHARGES TO STOP HIM', bossDown: 'DISPATCHER DOWN', bossDownSub: 'THE LAST BUS IS PULLING IN',
     staggered: 'STAGGERED', staggeredF: 'STAGGERED!', dazed: 'DAZED', reload: 'RELOAD', search: 'SEARCH', searchKey: 'E  SEARCH', searching: 'SEARCHING',
-    fShells: '+{n} SHELLS', fRounds: '+{n} ROUNDS', fAmmoFull: 'AMMO FULL', gunCarry: 'These upgrades go with whichever gun you pick after being bitten.', fHealth: '+{n} HEALTH', fFoundSg: 'FOUND A SHOTGUN', fFoundSmg: 'FOUND AN SMG', fEmpty: 'EMPTY', fNoAmmo: 'OUT OF AMMO', fNades: '+{n} GRENADES', fNoNades: 'NO GRENADES',
+    fShells: '+{n} SHELLS', fRounds: '+{n} ROUNDS', adl_sight: '+{n}% crit chance a level', adl_hot: '+{n}% damage a level', adl_mag: '+{n}% clip size and ammo carried a level', adl_grip: 'Reloads {n}% faster a level', adl_barrel: '+{n}% range and a tighter spread a level', adl_trigger: 'Fires {n}% faster a level', adNow: 'now {n}%', armRefund: 'The Armory changed: every upgrade now has ten levels. You got ${n} back for what you had bought, to spend again.', fNadesFull: 'GRENADES FULL', nadesFull: 'Full ({n} max)', trapped: 'TRAPPED!', trappedSub: 'SWING THE BAT TO PRY IT OPEN', trapFreeF: 'FREE!', trapOffF: 'SNAP!', alphaB: 'THE ALPHA', alphaBSub: 'SWING THE BAT AS IT CHARGES TO STOP IT',
+    iz_ranger: 'RANGERS', id_ranger: 'The park service never left. Slow and stubborn, and there are a lot of them out here.', ih_ranger: 'Same as the walkers: keep your distance and keep shooting.',
+    iz_hunter: 'HUNTERS', id_hunter: 'Still up in their tree stands, waiting. When you walk under one he drops down on you.', ih_hunter: 'Watch the stands up in the trees. Step back as one drops, then shoot.',
+    iz_bear: 'ZOMBIE BEARS', id_bear: 'Rotting grizzlies. Hard to put down, and a swipe takes a big piece of your health.', ih_bear: 'Never let one reach you. Grenades and steady fire from range. They do not burst when they drop.',
+    iz_wolf: 'WOLVES', id_wolf: 'After the howl a pack comes through the trees, faster than anything, going for your throat.', ih_wolf: 'Bullets miss them in the air. Swing the bat as one jumps.',
+    iz_alpha: 'THE ALPHA', id_alpha: 'A giant grizzly that rules these woods. It charges, rakes, slams the ground, hurls logs and calls the pack.', ih_alpha: 'Swing the bat as it charges to stagger it, then unload. Get clear when it rears up to slam.',
+    iz_trap: 'BEAR TRAPS', id_trap: 'Steel jaws set on the trail. Step in one and it clamps your leg and holds you there.', ih_trap: 'Swing the bat at a trap to set it off. Caught? Swing to pry it open.',
+    'sh_PINE TRAIL': 'PINE TRAIL', 'sh_BEAR CREEK': 'BEAR CREEK', 'sh_HOLLOW RIDGE': 'HOLLOW RIDGE', 'sh_WOLF RUN': 'WOLF RUN', 'sh_RANGER STATION': 'RANGER STATION',
+    'tip_PINE TRAIL': 'INTO THE WOODS. THE RANGER TRUCK IS AT THE END OF THE TRAIL', 'tip_BEAR CREEK': 'RAIN IN THE PINES. SOMETHING BIG IS OUT HERE',
+    'tip_HOLLOW RIDGE': 'FOG IN THE HOLLOW. WATCH THE TREE STANDS', 'tip_WOLF RUN': 'STORM COMING. LISTEN FOR THE HOWL', 'tip_RANGER STATION': 'THE RANGER STATION IS AT THE END OF THE TRAIL',
+    sPile: 'Piles searched', winHeadTruck: 'You made the truck.', winHeadWoods: 'Into the woods.',
+    winLedeWoods: 'Past the depot a trail climbs into the hills. It is quieter under the pines than it was on the streets. It will not stay that way.',
+    winSubAlpha: 'Night {n} survived · the Alpha is down', winHeadAlpha: 'Out of the woods.',
+    winLedeAlpha: 'The ranger truck bounces down the fire road toward town. Whatever followed you through the trees is still up there, and the streets are waiting for you again.',
+    retryStation: 'Retry at the station', deadSubAlpha: 'Night {n} · the ranger station, {p}% of the way through the Alpha',
+    station: 'THE RANGER STATION', stationSub: 'IT IS STILL OUT THERE', wolves: 'WOLVES!', wolvesSub: 'BAT THEM AS THEY JUMP',
+    bossDownTrail: 'THE BACK GATE IS OPEN. INTO THE WOODS', alphaDown: 'ALPHA DOWN', alphaDownSub: 'THE RANGER TRUCK IS COMING', fAmmoFull: 'AMMO FULL', gunCarry: 'These upgrades go with whichever gun you pick after being bitten.', fHealth: '+{n} HEALTH', fFoundSg: 'FOUND A SHOTGUN', fFoundSmg: 'FOUND AN SMG', fEmpty: 'EMPTY', fNoAmmo: 'OUT OF AMMO', fNades: '+{n} GRENADES', fNoNades: 'NO GRENADES',
     nades: 'GRENADES', nadesSub: 'HOLD THE GRENADE BUTTON, LET GO TO THROW', nadesSubKey: 'HOLD G, LET GO TO THROW',
     nadeName: 'Grenades', nadeDesc: '+{n} grenades. Hold the grenade button to throw farther. Loud.',
   },
@@ -643,7 +670,23 @@ const STR = {
     bats: '蝙蝠', batsSub: '它们会俯冲下来。右摇杆往上推射击', batsSubKey: '它们会俯冲下来。射击时按住 W',
     boss: '调度员', bossSub: '它冲锋时挥棒，就能拦住它', bossDown: '调度员倒下了', bossDownSub: '最后一班巴士进站了',
     staggered: '踉跄', staggeredF: '踉跄！', dazed: '撞晕了', reload: '换弹', search: '搜索', searchKey: 'E 搜索', searching: '搜索中',
-    fShells: '+{n} 霰弹', fRounds: '+{n} 子弹', fAmmoFull: '弹药已满', gunCarry: '被咬后换枪，这些升级也会跟着新枪。', fHealth: '+{n} 生命', fFoundSg: '找到霰弹枪', fFoundSmg: '找到冲锋枪', fEmpty: '空的', fNoAmmo: '没子弹了', fNades: '+{n} 手雷', fNoNades: '没有手雷',
+    fShells: '+{n} 霰弹', fRounds: '+{n} 子弹', adl_sight: '每级暴击率 +{n}%', adl_hot: '每级伤害 +{n}%', adl_mag: '每级弹匣和携弹量 +{n}%', adl_grip: '每级换弹快 {n}%', adl_barrel: '每级射程 +{n}%，散布更紧', adl_trigger: '每级射速快 {n}%', adNow: '现在 {n}%', armRefund: '军械库改了：每项升级现在有十级。之前买的东西退还你 ${n}，可以重新花。', fNadesFull: '手雷满了', nadesFull: '已满（最多 {n} 个）', trapped: '被夹住了！', trappedSub: '挥棒撬开它', trapFreeF: '挣脱了！', trapOffF: '咔嚓！', alphaB: '头熊', alphaBSub: '它冲过来时挥棒拦住它',
+    iz_ranger: '护林员', id_ranger: '护林员一直没离开。又慢又固执，这里到处都是。', ih_ranger: '跟行尸一样：保持距离，一直开枪。',
+    iz_hunter: '猎人', id_hunter: '还守在树上的狩猎台里。你从下面经过，他就跳下来扑你。', ih_hunter: '留意树上的狩猎台。他跳下来时后退，再开枪。',
+    iz_bear: '僵尸熊', id_bear: '腐烂的灰熊。很难打倒，一爪就能拍掉你一大截血。', ih_bear: '千万别让它靠近。远处用手雷和持续火力。它们倒下时不会爆开。',
+    iz_wolf: '狼', id_wolf: '狼嚎之后，一群狼穿过树林扑来，比什么都快，直咬你的喉咙。', ih_wolf: '它们在空中时子弹打不中。趁它扑过来时挥棒。',
+    iz_alpha: '头熊', id_alpha: '统治这片树林的巨型灰熊。它会冲撞、猛抓、砸地、扔木头，还会召唤狼群。', ih_alpha: '它冲过来时挥棒让它踉跄，然后全力开火。它人立起来要砸地时赶紧躲开。',
+    iz_trap: '捕熊夹', id_trap: '小径上的钢夹。踩上去会夹住你的腿，让你动不了。', ih_trap: '用球棒打夹子让它合上。被夹住了？挥棒撬开它。',
+    'sh_PINE TRAIL': '松林小径', 'sh_BEAR CREEK': '熊溪', 'sh_HOLLOW RIDGE': '空谷岭', 'sh_WOLF RUN': '狼径', 'sh_RANGER STATION': '护林站',
+    'tip_PINE TRAIL': '走进树林。护林员的卡车在小径尽头', 'tip_BEAR CREEK': '松林下雨了，有大家伙出没',
+    'tip_HOLLOW RIDGE': '山谷起雾了，小心树上的狩猎台', 'tip_WOLF RUN': '暴风雨要来了，留意狼嚎', 'tip_RANGER STATION': '护林站就在小径尽头',
+    sPile: '搜过的柴堆', winHeadTruck: '你赶上了卡车。', winHeadWoods: '走进树林。',
+    winLedeWoods: '车站后面有一条小径通往山里。松林下比街上安静。不会一直这样的。',
+    winSubAlpha: '第 {n} 夜 幸存 · 头熊已倒下', winHeadAlpha: '走出了树林。',
+    winLedeAlpha: '护林员的卡车沿着防火道颠簸着开回小镇。一路跟着你穿过树林的东西还在山上，街道也在等着你回去。',
+    retryStation: '在护林站重试', deadSubAlpha: '第 {n} 夜 · 护林站，头熊已被打掉 {p}%',
+    station: '护林站', stationSub: '它还在外面', wolves: '狼群！', wolvesSub: '趁它们扑过来时挥棒',
+    bossDownTrail: '后门开了，走进树林', alphaDown: '头熊倒下了', alphaDownSub: '护林员的卡车来了', fAmmoFull: '弹药已满', gunCarry: '被咬后换枪，这些升级也会跟着新枪。', fHealth: '+{n} 生命', fFoundSg: '找到霰弹枪', fFoundSmg: '找到冲锋枪', fEmpty: '空的', fNoAmmo: '没子弹了', fNades: '+{n} 手雷', fNoNades: '没有手雷',
     nades: '手雷', nadesSub: '按住手雷键，松手投出', nadesSubKey: '按住 G，松手投出',
     nadeName: '手雷', nadeDesc: '+{n} 枚手雷。按住手雷键越久扔得越远。很吵。',
   },
@@ -828,7 +871,17 @@ const SWING = .3;
 const melee = () => MELEE[clamp(save.meleeTier || 0, 0, 1)];
 
 // zombie looks: four shirt colours for walkers, two pale variants for runners, one brute
-const ZLOOK = { walker: ['zw0', 'zw1', 'zw2', 'zw3'], runner: ['zr0', 'zr1'], brute: ['b'], crawler: ['zc0', 'zc1'], boss: ['X'], flyer: ['bat'], hound: ['hound'], trash: ['trash'], spitter: ['zw1', 'zw2'] };
+const ZLOOK_TOWN = { walker: ['zw0', 'zw1', 'zw2', 'zw3'], runner: ['zr0', 'zr1'], brute: ['b'], crawler: ['zc0', 'zc1'], boss: ['X'], flyer: ['bat'], hound: ['hound'], trash: ['trash'], spitter: ['zw1', 'zw2'] };
+const ZLOOK_WOODS = { walker: ['rg0', 'rg1'], runner: ['rg0', 'rg1'], brute: ['bear'], hound: ['wolf'], boss: ['BEAR'] };
+// every look a kind can have (the town's first, then the forest's, then the hunters): co-op sends the index
+const ZLOOK = {}; for (const t in ZLOOK_TOWN) ZLOOK[t] = [...ZLOOK_TOWN[t], ...(ZLOOK_WOODS[t] || [])];
+ZLOOK.walker.push('hu0', 'hu1');
+const lookFor = type => pick((world && world.forest && ZLOOK_WOODS[type]) || ZLOOK_TOWN[type]);
+const WOODS_V = v => typeof v === 'string' && (/^(rg|hu)\d$/.test(v) || v === 'bear' || v === 'wolf' || v === 'BEAR');
+// whose numbers a zombie uses: a ranger's, a hunter's, a bear's or a wolf's out in the forest (a ranger that runs is still a runner)
+const statKind = (type, v) => type === 'walker' && /^rg/.test(v) ? 'ranger' : type === 'walker' && /^hu/.test(v) ? 'hunter' : type === 'brute' && v === 'bear' ? 'bear' : type === 'hound' && v === 'wolf' ? 'wolf' : type;
+// what a player calls it (for the enemy cards)
+const zKind = z => z.type === 'boss' ? (z.v === 'BEAR' ? 'alpha' : 'boss') : statKind(z.type, z.v);
 const C_WALK = ['walk_01', 'walk_02', 'walk_03', 'walk_02'];
 
 const SPR = { gunURL: {}, meleeURL: [] };
@@ -839,7 +892,7 @@ function atlasIcon(k, scale = 3) {
 }
 function loadAtlas(done) {
   const img = new Image();
-  img.onload = () => { ATLAS_BASE = img; setAtlas(img); done(); };   // setAtlas also builds the flash / hurt / doorway silhouettes
+  img.onload = () => { let im = img; try { im = forestSheet(img); } catch (e) { console.error(e); } ATLAS_BASE = im; setAtlas(im); done(); };   // setAtlas also builds the flash / hurt / doorway silhouettes
   img.onerror = () => { console.error('Porchlight: the sprite sheet did not load'); done(); };
   img.src = window.PORCH_ATLAS_PNG || '';
 }
@@ -912,8 +965,629 @@ function buildSprites() {
 let houses = [], lamps = [], winLights = [], signs = [];
 let world = null;                       // the street currently built
 
-function buildWorld(S = STREETS[0]) {
+// ---- THE FOREST'S PEOPLE: park rangers and deer hunters, dressed from the walkers' own drawings (same moves, new
+//      clothes and hats). They're added under the sprite sheet at load, so every tinted copy of it (the hit flash,
+//      the elites' violet, the co-op characters' sheets) has them too. ----
+const FOREST_LOOKS = ['rg0', 'rg1', 'hu0', 'hu1'];
+const ZFRAMES = ['idle', 'walk_01', 'walk_02', 'walk_03', 'attack_windup', 'attack'];
+function forestSheet(img) {
+  const base = 'zw0', f0 = AF[base + '_idle'];
+  if (!img || !f0) return img;
+  const cw = 48, ch = 64, cols = ZFRAMES.length;
+  const out = document.createElement('canvas');
+  out.width = Math.max(img.width, cw * cols); out.height = img.height + ch * FOREST_LOOKS.length;
+  const g = out.getContext('2d', { willReadFrequently: true }); g.drawImage(img, 0, 0);
+  const P = pixelsOf(img);
+  const hsv = (r, gg, b) => { const mx = Math.max(r, gg, b), mn = Math.min(r, gg, b), d = mx - mn; let h = 0;
+    if (d) h = mx === r ? ((gg - b) / d) % 6 : mx === gg ? (b - r) / d + 2 : (r - gg) / d + 4; h *= 60; if (h < 0) h += 360; return [h, mx ? d / mx : 0, mx / 255]; };
+  const ramp = (cols, v) => cols[Math.max(0, Math.min(cols.length - 1, Math.round(v * (cols.length - 1))))];
+  const hex = s => [parseInt(s.slice(1, 3), 16), parseInt(s.slice(3, 5), 16), parseInt(s.slice(5, 7), 16)];
+  const R = cs => cs.map(hex);
+  const STYLE = {
+    rg0: { shirt: R(['#2e2a1c', '#4d4630', '#71684a', '#958a62', '#b3a87c', '#cdc39a']), pants: R(['#10150c', '#1c2515', '#28341e', '#354428', '#425433']), hat: 'ranger' },
+    rg1: { shirt: R(['#232a22', '#3b4638', '#56644f', '#707f66', '#8c9b7f', '#a7b597']), pants: R(['#16110c', '#271e15', '#382b1e', '#4a3a28', '#5b4933']), hat: 'ranger' },
+    hu0: { shirt: R(['#4a1606', '#7a2a0a', '#b0420e', '#dc5a14', '#f27a26', '#ff9d48']), pants: 'camo', hat: 'cap' },
+    hu1: { shirt: 'camo', pants: 'camo', hat: 'cap', vest: true },
+  };
+  const CAMO = R(['#2a2e1c', '#3e4526', '#57492d', '#4a5a2c', '#33301e']);
+  const camo = (x, y, v) => {                       // big soft blotches, darker where the drawing was darker
+    const h = Math.abs(Math.sin(Math.floor(x / 3) * 12.9898 + Math.floor(y / 3) * 78.233 + Math.floor((x + y) / 5) * 3.1) * 43758.5) % 1;
+    const c = CAMO[Math.floor(h * CAMO.length)], k = .55 + v * .9;
+    return [Math.min(255, c[0] * k), Math.min(255, c[1] * k), Math.min(255, c[2] * k)];
+  };
+  FOREST_LOOKS.forEach((lk, row) => {
+    const S = STYLE[lk];
+    ZFRAMES.forEach((fn, col) => {
+      const f = AF[base + '_' + fn]; if (!f) return;
+      const ox = col * cw, oy = img.height + row * ch, w = f.w, h = f.h, split = f.split;
+      const id = g.createImageData(w, h), d = id.data;
+      let ex = -1, ey = -1;
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const si = ((f.y + y) * P.w + f.x + x) * 4, o = (y * w + x) * 4;
+        const r = P.d[si], gg = P.d[si + 1], b = P.d[si + 2], a = P.d[si + 3];
+        if (!a) continue;
+        let c = [r, gg, b];
+        const [hh, s, v] = hsv(r, gg, b);
+        const eye = a > 200 && (Math.min(r, gg, b) >= 225 || (r > 200 && gg < 90 && b < 110 && r - gg > 120));
+        if (eye) { if (ey < 0) { ex = x; ey = y; } }
+        else if (hh >= 36 && hh <= 62 && s >= .3 && v >= .2) { /* zombie skin: keep */ }
+        else if (y < split && ((hh >= 245 && hh <= 305 && s >= .15 && v >= .24) || ((hh < 20 || hh > 330) && s > .35 && v > .2))) {   // the shirt (and the tie on it)
+          const vv = Math.min(1, v / .55);
+          c = S.shirt === 'camo' ? camo(x, y, vv) : ramp(S.shirt, vv);
+        } else if (y >= split - 1 && v > .07 && s < .5) {                                         // trousers (not the outline)
+          const vv = Math.min(1, v / .32);
+          c = S.pants === 'camo' ? camo(x, y, vv) : ramp(S.pants, vv);
+        }
+        d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = a;
+      }
+      // the hat, fitted to the head: find its width a little above the eye
+      if (ey >= 0) {
+        const solid = (x, y) => x >= 0 && y >= 0 && x < w && y < h && d[(y * w + x) * 4 + 3] > 60;
+        const put = (x, y, col) => { if (x < 0 || y < 0 || x >= w || y >= h) return; const o = (y * w + x) * 4; d[o] = col[0]; d[o + 1] = col[1]; d[o + 2] = col[2]; d[o + 3] = 255; };
+        const yr = Math.max(0, ey - 3); let x0 = ex, x1 = ex;
+        while (solid(x0 - 1, yr) && x0 > ex - 13) x0--;
+        while (solid(x1 + 1, yr) && x1 < ex + 4) x1++;
+        let top = ey; for (let x = x0; x <= x1; x++) for (let y = 0; y < ey; y++) if (solid(x, y)) { top = Math.min(top, y); break; }
+        const cx = Math.round((x0 + x1) / 2), hw = Math.max(4, Math.round((x1 - x0 + 1) / 2));
+        const hatPx = [];
+        const H = (x, y, col) => hatPx.push([x, y, col]);
+        if (S.hat === 'ranger') {                       // a flat-brimmed campaign hat: wide brim, tall pinched crown, dark band
+          const by = Math.max(top + 3, ey - 3), BR = hex('#5a4226'), BRL = hex('#7c5e37'), CR = hex('#8f7046'), CRL = hex('#ad8b58'), BAND = hex('#2e1f12');
+          for (let x = cx - hw - 3; x <= cx + hw + 3; x++) H(x, by, x < cx ? BRL : BR);
+          for (let j = 1; j <= 5; j++) {
+            const yy = by - j, half = hw - 1 - (j > 3 ? 1 : 0);
+            for (let x = cx - half; x <= cx + half; x++) {
+              if (j === 5 && Math.abs(x - cx) <= 1) continue;            // the pinch at the top
+              H(x, yy, j === 1 ? BAND : x < cx - 1 ? CRL : CR);
+            }
+          }
+        } else {                                        // a blaze-orange ball cap, bill out front
+          const by = Math.max(top + 2, ey - 3), C = hex('#e3601c'), CL = hex('#ff8a3a'), CD = hex('#a8400e');
+          for (let j = 0; j < 4; j++) { const yy = by - j, half = hw - (j === 3 ? 2 : j === 2 ? 1 : 0); for (let x = cx - half; x <= cx + half; x++) H(x, yy, j === 0 ? CD : x < cx - 1 ? CL : C); }
+          for (let x = cx + hw + 1; x <= cx + hw + 4; x++) H(x, by, CD);
+        }
+        for (const [x, y, col] of hatPx) put(x, y, col);
+        const on = new Set(hatPx.map(([x, y]) => x + ',' + y));
+        for (const [x, y] of hatPx) for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const X = x + dx, Y = y + dy; if (on.has(X + ',' + Y) || X < 0 || Y < 0 || X >= w || Y >= h) continue;
+          if (d[(Y * w + X) * 4 + 3] > 60 && Y >= ey - 2) continue;           // don't outline over the face
+          put(X, Y, [16, 12, 20]);
+        }
+      }
+      if (S.vest) {                                    // a blaze-orange vest band across the camo jacket
+        const vc = hex('#e3601c'), vd = hex('#a8400e');
+        for (let y = Math.max(0, split - 12); y < split - 4; y++) for (let x = 0; x < w; x++) {
+          const o = (y * w + x) * 4; if (d[o + 3] < 60) continue;
+          const [hh, s, v] = hsv(d[o], d[o + 1], d[o + 2]);
+          if (hh >= 36 && hh <= 62 && s >= .3) continue;            // skin (his arm in front)
+          if (v < .08) continue;
+          const c = (y + x) % 7 === 0 ? vd : vc; d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2];
+        }
+      }
+      g.putImageData(id, ox, oy);
+      AF[lk + '_' + fn] = { ...f, x: ox, y: oy };
+    });
+  });
+  return out;
+}
+
+// ---- shapes -> hard pixels with a dark outline (like the bat and the hound), plus a white copy for the hit flash ----
+function pixelize(c, out = [11, 8, 20]) {
+  const W = c.width, H = c.height, g = c.getContext('2d'), id = g.getImageData(0, 0, W, H), d = id.data;
+  for (let i = 0; i < W * H; i++) d[i * 4 + 3] = d[i * 4 + 3] >= 110 ? 255 : 0;
+  const solid = new Uint8Array(W * H); for (let i = 0; i < W * H; i++) solid[i] = d[i * 4 + 3] ? 1 : 0;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = y * W + x; if (solid[i]) continue;
+    if ((x > 0 && solid[i - 1]) || (x < W - 1 && solid[i + 1]) || (y > 0 && solid[i - W]) || (y < H - 1 && solid[i + W])) { d[i * 4] = out[0]; d[i * 4 + 1] = out[1]; d[i * 4 + 2] = out[2]; d[i * 4 + 3] = 255; }
+  }
+  g.putImageData(id, 0, 0); return c;
+}
+function whiteOf(c) { const w = document.createElement('canvas'); w.width = c.width; w.height = c.height; const g = w.getContext('2d'); g.drawImage(c, 0, 0); g.globalCompositeOperation = 'source-in'; g.fillStyle = '#fff4e0'; g.fillRect(0, 0, w.width, w.height); return w; }
+const rgbS = c => `rgb(${c[0]},${c[1]},${c[2]})`;
+
+// ---- WOLVES: the forest's hounds. Grey, rangy, a ruff at the neck, a big brush of a tail, ears up ----
+function buildWolfFrames() {
+  const W = 70, H = 42, GY = 38, CX = 32;
+  const pal = { fur: [98, 100, 108], furL: [146, 146, 150], furD: [58, 58, 66], belly: [170, 166, 158], flesh: [150, 56, 60], bone: [210, 200, 186], eye: [255, 214, 90], tooth: [240, 232, 214] };
+  const make = P => {
+    const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
+    g.lineCap = 'round'; g.lineJoin = 'round';
+    g.save(); g.translate(CX, GY - (P.lift || 16)); g.rotate(P.tilt || 0);
+    const leg = (x, y, a1, a2, col) => {
+      const kx = x + Math.sin(a1) * 7, ky = y + Math.cos(a1) * 7, fx = kx + Math.sin(a2) * 7.5, fy = ky + Math.cos(a2) * 7.5;
+      g.strokeStyle = rgbS(col); g.lineWidth = 3; g.beginPath(); g.moveTo(x, y); g.lineTo(kx, ky); g.lineTo(fx, fy); g.stroke();
+    };
+    const [fa1, fa2, ha1, ha2] = P.legs;
+    leg(8, 2, fa1 + .35, fa2 + .2, pal.furD); leg(-10, 2, ha1 - .35, ha2 - .2, pal.furD);
+    // the brush: thick, low, fanned
+    const tl = P.tail || 0;
+    g.fillStyle = rgbS(pal.fur); g.beginPath(); g.moveTo(-13, -4); g.quadraticCurveTo(-22, -2 + tl, -27, 4 + tl); g.quadraticCurveTo(-24, 7 + tl, -19, 4 + tl * .6); g.quadraticCurveTo(-15, 2, -12, 1); g.fill();
+    g.fillStyle = rgbS(pal.furL); g.beginPath(); g.moveTo(-25, 3 + tl); g.lineTo(-27, 5 + tl); g.lineTo(-23, 5 + tl); g.fill();
+    g.fillStyle = rgbS(pal.fur); g.beginPath(); g.ellipse(0, 0, P.rx || 14, 6, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = rgbS(pal.belly); g.beginPath(); g.ellipse(1, 3.5, (P.rx || 14) - 5, 2, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = rgbS(pal.furL); g.beginPath(); g.ellipse(2, -4, (P.rx || 14) - 4, 2, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = rgbS(pal.furD); for (const sx of [-6, -1, 4]) g.fillRect(sx, -5.6, 1.4, 2.2);                        // dark saddle
+    g.fillStyle = rgbS(pal.flesh); g.beginPath(); g.ellipse(-4, 1.8, 3, 2.2, 0, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = rgbS(pal.bone); g.lineWidth = 1; for (const rx of [-5.5, -3.5]) { g.beginPath(); g.moveTo(rx, .2); g.lineTo(rx + .5, 3.4); g.stroke(); }
+    g.fillStyle = rgbS(pal.fur); g.beginPath(); g.ellipse(11, -3, 6, 6.5, -.4, 0, Math.PI * 2); g.fill();            // the ruff
+    g.save(); g.translate(16, -7); g.rotate(P.head || 0);
+    g.fillStyle = rgbS(pal.fur); g.beginPath(); g.arc(0, 0, 5, 0, Math.PI * 2); g.fill();
+    g.beginPath(); g.moveTo(-2.5, -3); g.lineTo(-1.8, -10); g.lineTo(1, -3.5); g.fill();                                // ears, pricked
+    g.beginPath(); g.moveTo(.5, -3.5); g.lineTo(2.4, -10.5); g.lineTo(4, -3); g.fill();
+    g.fillStyle = rgbS(pal.furD); g.beginPath(); g.moveTo(-1.6, -3.6); g.lineTo(-1.6, -7.5); g.lineTo(0, -4); g.fill();
+    g.fillStyle = rgbS(pal.furL); g.beginPath(); g.moveTo(2, -3.4); g.lineTo(13.5, -1.2); g.lineTo(13.5, 1.2); g.lineTo(3, 2.4); g.fill();   // long muzzle
+    g.fillStyle = rgbS([30, 26, 32]); g.fillRect(12.8, -1.6, 1.6, 1.4);                                                  // nose
+    g.save(); g.translate(3, 1.8); g.rotate(P.jaw || 0);
+    g.fillStyle = rgbS(pal.furD); g.beginPath(); g.moveTo(0, 0); g.lineTo(10, .4); g.lineTo(9.5, 2.2); g.lineTo(0, 2.6); g.fill();
+    if (P.jaw) { g.fillStyle = rgbS(pal.tooth); for (const tx of [3, 5.5, 8]) g.fillRect(tx, -.6, .9, 1.3); }
+    g.restore();
+    if (P.jaw) { g.fillStyle = rgbS(pal.tooth); for (const tx of [5, 7.5, 10.5]) g.fillRect(tx, .9, .9, 1.3); g.fillStyle = rgbS(pal.flesh); g.fillRect(4, 1.7, 8, 1); }
+    g.fillStyle = rgbS(pal.eye); g.fillRect(3, -2.4, 1.8, 1.2);
+    g.restore();
+    leg(9, 2, fa1, fa2, pal.fur); leg(-10, 2, ha1, ha2, pal.fur);
+    g.restore();
+    pixelize(c);
+    // the eyes stay lit: a yellow pixel the outline can't eat
+    return c;
+  };
+  const f = {
+    run0: make({ legs: [1.05, .45, -1.05, -.5], lift: 15, tail: -2 }),
+    run1: make({ legs: [.1, -.5, .6, .1], lift: 17, tail: 0 }),
+    run2: make({ legs: [.5, -.1, -.4, .3], lift: 18, tail: -1 }),
+    run3: make({ legs: [-.2, .2, -.7, -.2], lift: 16, tail: 1 }),
+    crouch: make({ legs: [-.6, .7, .9, -.4], lift: 13, tilt: .16, head: .2, jaw: .4, tail: 3 }),
+    leap: make({ legs: [1.35, 1.2, -1.4, -1.3], lift: 16, tilt: -.1, head: -.12, jaw: .65, rx: 15, tail: -4 }),
+    dead: make({ legs: [1.5, 1.5, -1.5, -1.5], lift: 6, head: .45, tail: 5 }),
+  };
+  const white = {}; for (const k in f) white[k] = whiteOf(f[k]);
+  return { f, white, W, H, cx: CX, gy: GY };
+}
+
+// ---- BEARS: rotting grizzlies. On all fours they lumber; up close they rear up and rake with both paws.
+//      The Alpha is the same animal, bigger, near black, scarred, with bone through its back. ----
+function buildBearFrames(alpha = false) {
+  const S = alpha ? 1.8 : 1, W = Math.round(92 * S), H = Math.round(78 * S), GY = Math.round(74 * S), CX = Math.round(40 * S);
+  const pal = alpha
+    ? { fur: [52, 40, 36], furL: [82, 64, 54], furD: [30, 22, 22], muzzle: [118, 104, 88], flesh: [150, 42, 52], fleshD: [96, 24, 36], bone: [214, 204, 186], claw: [230, 222, 206], eye: [255, 60, 70], tooth: [240, 232, 214], scar: [126, 92, 84] }
+    : { fur: [96, 66, 44], furL: [128, 92, 60], furD: [60, 40, 28], muzzle: [150, 120, 86], flesh: [150, 50, 56], fleshD: [98, 28, 38], bone: [210, 198, 176], claw: [224, 214, 196], eye: [255, 90, 70], tooth: [240, 232, 214], scar: [150, 104, 82] };
+  const make = P => {
+    const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
+    g.lineCap = 'round'; g.lineJoin = 'round';
+    g.translate(CX, GY); g.scale(S, S);
+    const up = P.rear || 0;                          // 0 on all fours .. 1 standing
+    const hipX = -12 + up * 8, hipY = -16 - up * 4;  // (in the unscaled frame, feet at 0)
+    const limb = (x, y, a1, l1, a2, l2, wdt, col, paw) => {
+      const kx = x + Math.sin(a1) * l1, ky = y + Math.cos(a1) * l1, fx = kx + Math.sin(a2) * l2, fy = ky + Math.cos(a2) * l2;
+      g.strokeStyle = rgbS(col); g.lineWidth = wdt; g.beginPath(); g.moveTo(x, y); g.lineTo(kx, ky); g.lineTo(fx, fy); g.stroke();
+      if (paw) { g.fillStyle = rgbS(col); g.beginPath(); g.ellipse(fx + 1, fy - .5, wdt * .62, wdt * .42, 0, 0, Math.PI * 2); g.fill(); g.strokeStyle = rgbS(pal.claw); g.lineWidth = .9;
+        for (let k = 0; k < 3; k++) { const px = fx + 2 + k * .9 + (P.clawOut || 0) * 1.6, py = fy - .8 + k * .6; g.beginPath(); g.moveTo(px, py); g.lineTo(px + 2 + (P.clawOut || 0), py + .6); g.stroke(); } }
+    };
+    const [fa, fb, ha, hb] = P.legs || [0, 0, 0, 0];
+    // far legs
+    limb(hipX - 2, hipY + 2, ha - .25, 9, hb - .1, 8, 6, pal.furD, true);
+    const shX = lerp(14, 4, up), shY = lerp(-24, -40, up);
+    if (up < .5) limb(shX - 1, shY + 6, fa + .3, 10, fb + .15, 9, 6, pal.furD, true);
+    else limb(shX - 1, shY + 3, (P.armB ?? 2.2), 10, (P.armB2 ?? 2.6), 9, 5.5, pal.furD, true);
+    // body: a long barrel with the shoulder hump
+    g.save(); g.translate((hipX + shX) / 2, (hipY + shY) / 2 - 1); g.rotate(Math.atan2(shY - hipY, shX - hipX));
+    const len = Math.hypot(shX - hipX, shY - hipY);
+    g.fillStyle = rgbS(pal.fur); g.beginPath(); g.ellipse(0, 0, len / 2 + 9, 11, 0, 0, Math.PI * 2); g.fill();
+    g.beginPath(); g.ellipse(len / 2 - 2, -6, 9, 8, 0, 0, Math.PI * 2); g.fill();                                   // the hump
+    g.fillStyle = rgbS(pal.furL); g.beginPath(); g.ellipse(2, -8, len / 2 + 3, 3.2, 0, 0, Math.PI * 2); g.fill();
+    g.beginPath(); g.ellipse(len / 2 - 2, -11, 6, 3, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = rgbS(pal.furD); g.beginPath(); g.ellipse(0, 7, len / 2 + 5, 3.4, 0, 0, Math.PI * 2); g.fill();    // belly shadow
+    // rot: a torn flank, ribs showing
+    g.fillStyle = rgbS(pal.fleshD); g.beginPath(); g.ellipse(-3, 1, 7.5, 5.5, .1, 0, Math.PI * 2); g.fill();
+    g.fillStyle = rgbS(pal.flesh); g.beginPath(); g.ellipse(-3, .6, 6.2, 4.2, .1, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = rgbS(pal.bone); g.lineWidth = 1.2; for (const rx of [-7, -4, -1, 2]) { g.beginPath(); g.moveTo(rx, -3.2); g.quadraticCurveTo(rx + 1.4, 1, rx + .6, 4.4); g.stroke(); }
+    if (alpha) {                                     // bone through the back, and old scars
+      g.fillStyle = rgbS(pal.bone);
+      for (const sx of [-10, -4, 2, 8]) { g.beginPath(); g.moveTo(sx - 1.6, -10); g.lineTo(sx + .4, -15.5 - (sx === 2 ? 1.5 : 0)); g.lineTo(sx + 1.8, -10); g.fill(); }
+      g.strokeStyle = rgbS(pal.scar); g.lineWidth = .9;
+      for (const [a, b] of [[[8, -6], [13, 1]], [[10, -7], [15, 0]], [[-14, -4], [-11, 3]]]) { g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); }
+    }
+    g.restore();
+    // head
+    const hx = shX + lerp(10, 6, up) + (P.hx || 0), hy = shY - lerp(-1, 4, up) + (P.hy || 0);
+    g.save(); g.translate(hx, hy); g.rotate(P.head || 0);
+    g.fillStyle = rgbS(pal.fur); g.beginPath(); g.arc(0, 0, 7.5, 0, Math.PI * 2); g.fill();
+    g.beginPath(); g.arc(-3.5, -6.5, 2.8, 0, Math.PI * 2); g.fill(); g.beginPath(); g.arc(1.5, -7.2, 2.6, 0, Math.PI * 2); g.fill();   // round ears
+    if (alpha) { g.fillStyle = rgbS(pal.flesh); g.fillRect(.4, -9.6, 2, 2); }                                           // a torn ear
+    g.fillStyle = rgbS(pal.furL); g.beginPath(); g.arc(-1, -2.5, 4.5, Math.PI, Math.PI * 1.9); g.fill();
+    g.fillStyle = rgbS(pal.muzzle); g.beginPath(); g.moveTo(3.5, -3); g.quadraticCurveTo(12.5, -3.2, 12.5, .8); g.lineTo(4, 2.2); g.closePath(); g.fill();   // muzzle
+    g.fillStyle = rgbS([26, 20, 22]); g.beginPath(); g.ellipse(12, -1.6, 1.6, 1.2, 0, 0, Math.PI * 2); g.fill();       // nose
+    g.save(); g.translate(4, 1.8); g.rotate(P.jaw || 0);
+    g.fillStyle = rgbS(pal.furD); g.beginPath(); g.moveTo(-1, 0); g.lineTo(8, .6); g.lineTo(7, 3); g.lineTo(-1, 3.4); g.fill();
+    if (P.jaw) { g.fillStyle = rgbS(pal.tooth); for (const tx of [2, 4.4, 6.4]) g.fillRect(tx, -.7, 1, 1.5); }
+    g.restore();
+    if (P.jaw) { g.fillStyle = rgbS(pal.tooth); for (const tx of [5.5, 8, 10.5]) g.fillRect(tx, 1, 1, 1.5); g.fillStyle = rgbS(pal.fleshD); g.fillRect(4.5, 2.2, 7, 1.4); }
+    g.fillStyle = rgbS(pal.fleshD); g.beginPath(); g.ellipse(-3, 3, 2.4, 1.6, 0, 0, Math.PI * 2); g.fill();         // a bald, rotten cheek
+    g.restore();
+    // near legs (standing: the near arm raised to rake)
+    limb(hipX + 2, hipY + 3, ha, 9, hb, 8.5, 7, pal.fur, true);
+    if (up < .5) limb(shX + 1, shY + 7, fa, 10, fb, 9, 7, pal.fur, true);
+    else limb(shX + 2, shY + 4, (P.armA ?? 1.9), 10.5, (P.armA2 ?? 2.4), 9.5, 6.5, pal.fur, true);
+    if (P.log) {                                     // the Alpha, a log held up over its head
+      g.save(); g.translate(shX + 2, shY - 16); g.rotate(-.12);
+      g.fillStyle = rgbS([84, 58, 36]); g.fillRect(-16, -3.5, 32, 7); g.fillStyle = rgbS([112, 80, 50]); g.fillRect(-16, -3.5, 32, 2);
+      g.fillStyle = rgbS([150, 118, 80]); g.beginPath(); g.ellipse(16, 0, 1.6, 3.5, 0, 0, Math.PI * 2); g.fill();
+      g.restore();
+    }
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    pixelize(c);
+    // the eyes glow: stamped on after the outline so they stay lit
+    const id = g.getImageData(0, 0, W, H), d = id.data;
+    const eyeAt = (ex, ey) => { const X = Math.round(CX + ex * S), Y = Math.round(GY + ey * S); for (let j = 0; j < (alpha ? 2 : 1); j++) for (let i = 0; i < (alpha ? 2 : 1); i++) { const o = ((Y + j) * W + X + i) * 4; if (o >= 0 && o < d.length && d[o + 3]) { d[o] = pal.eye[0]; d[o + 1] = pal.eye[1]; d[o + 2] = pal.eye[2]; } } };
+    const hx2 = shX + lerp(10, 6, up) + (P.hx || 0), hy2 = shY - lerp(-1, 4, up) + (P.hy || 0), a = P.head || 0;
+    eyeAt(hx2 + Math.cos(a) * 3.5 - Math.sin(a) * -3, hy2 + Math.sin(a) * 3.5 + Math.cos(a) * -3);
+    g.putImageData(id, 0, 0);
+    return c;
+  };
+  const f = {
+    walk0: make({ legs: [.6, -.25, -.5, .3] }),
+    walk1: make({ legs: [.2, .05, -.1, .1], hy: -.6 }),
+    walk2: make({ legs: [-.45, .3, .5, -.3] }),
+    walk3: make({ legs: [.05, .15, .15, -.1], hy: -.6 }),
+    rear: make({ rear: 1, legs: [0, 0, .12, -.1], armA: 2.35, armA2: 1.95, armB: 2.6, armB2: 2.2, head: -.3, jaw: .5, clawOut: 1 }),
+    swipe: make({ rear: .75, legs: [0, 0, .2, -.15], armA: 1.25, armA2: .85, armB: 1.7, armB2: 1.3, head: .2, jaw: .35, clawOut: 1 }),
+    roar: make({ legs: [.3, -.1, -.2, .1], head: -.55, jaw: .75 }),
+    dead: make({ legs: [1.35, 1.2, -1.3, -1.2], hy: 6, head: .5 }),
+  };
+  if (alpha) { f.slam = make({ rear: 1, legs: [0, 0, .08, -.05], armA: 2.9, armA2: 2.7, armB: 3.1, armB2: 2.9, head: -.45, jaw: .6, clawOut: 1 }); f.throw = make({ rear: 1, legs: [0, 0, .1, -.08], armA: 3.4, armA2: 3.2, armB: 3.2, armB2: 3.0, head: -.2, log: true }); }
+  const white = {}; for (const k in f) white[k] = whiteOf(f[k]);
+  return { f, white, W, H, cx: CX, gy: GY, s: S };
+}
+let WOLF_ART = null, BEAR_ART = null, ALPHA_ART = null;
+
+/* ============================================================
+   THE FOREST (every other time round: nights 6-10, 16-20, ...)
+   Trails through the pines instead of streets: stick piles to dig through instead of houses, hunters up in
+   tree stands, bear traps on the path, a ranger's truck at the end of each trail, and on the fifth night the
+   Alpha at the ranger station.
+   ============================================================ */
+const TRAP = { count: Math.max(0, Math.round(tn('forest.traps', 12))), dmg: Math.max(0, tn('forest.trapDmg', 18)), hold: Math.max(0, tn('forest.trapHold', 2.5)) };
+const STAND = { occ: clamp(tn('forest.standOcc', .45), 0, 1), near: Math.max(10, tn('forest.standNear', 70)), land: Math.max(0, tn('forest.hunterLand', 12)) };
+const STAND_Y = 86;                                   // where a hunter crouches on the platform (feet)
+let stands = [], traps = [], radioY = 43;
+function buildForest(S) {
   world = S;
+  const R = mulberry32(S.seed), ri = (a, b) => a + Math.floor(R() * (b - a + 1));
+  houses = []; lamps = []; winLights = []; signs = []; stands = []; traps = [];
+  const end = S.boss ? ARENA_L - 50 : BUS_X - 70;
+  // stick piles every so often (most worth digging through; some already picked over)
+  for (let x = 170; x < end; x += ri(150, 250)) {
+    const w = ri(24, 34), lit = R() < .8, h = ri(10, 14);
+    houses.push({ x: x - w / 2, w, h, type: 'pile', pile: true, doorX: x, litInit: lit, lit, searched: false, lampX: x, lampY: GROUND - 10, wins: [{ x: x - w / 2 + 3, y: GROUND - 3 - h, w: w - 6, h }], relic: false, art: pileArt(ri(1, 1e6), w, h) });
+  }
+  // hunting stands up in the trees along the way
+  for (let sx = 430; sx < end - 80; sx += ri(260, 420)) {
+    let px = sx; for (const H of houses) if (Math.abs(px - H.doorX) < 34) px = H.doorX + 44;
+    stands.push({ x: px, occ: R() < STAND.occ, used: false, face: R() < .5 ? -1 : 1, look: R() < .5 ? 'hu0' : 'hu1', t: 0 });
+  }
+  // bear traps on the path, clear of the piles and of each other
+  const nT = Math.round(TRAP.count * (S.boss ? .5 : 1));
+  for (let i = 0, tries = 0; i < nT && tries < 400; tries++) {
+    const tx = ri(330, end - 30);
+    if (houses.some(H => Math.abs(H.doorX - tx) < 28) || traps.some(t => Math.abs(t.x - tx) < 70) || stands.some(s => Math.abs(s.x - tx) < 20)) continue;
+    traps.push({ x: tx, st: 0, t: 0 }); i++;                     // st: 0 set, 1 sprung on someone, 2 set off with the bat
+  }
+  traps.sort((a, b) => a.x - b.x);
+  // glowing mushrooms along the path (a little light to see by)
+  for (let mx = 90; mx < WORLD_LEN - 40; mx += ri(90, 170)) winLights.push({ x: mx, y: ri(128, 131), shroom: true });
+  if (S.boss) [ARENA_L + 40, ARENA_L + 175, ARENA_L + 330].forEach(px => lamps.push({ x: px, broken: false, ph: 0, lantern: true }));
+  else lamps.push({ x: BUS_X - 34, broken: false, ph: 0, lantern: true });
+  drawForestStreet(R, S); drawForestMid(); drawForestFar();
+}
+// a heap of sticks and brush: the loot's under there somewhere. And the same heap once it's been kicked apart.
+function pileArt(seed, w, h) {
+  const R = mulberry32(seed), mk = (W, H) => { const c = document.createElement('canvas'); c.width = W; c.height = H; return c; };
+  const W = w + 8, H = h + 6, BASE = H - 2;
+  const draw = (flat) => {
+    const c = mk(W, H), g = c.getContext('2d'), r = mulberry32(seed);
+    const cols = ['#4a3322', '#5e4129', '#6f4e30', '#3a281b', '#6b6258', '#7a5a38'];
+    if (!flat) { g.fillStyle = '#1c1812'; g.beginPath(); g.ellipse(W / 2, BASE - h * .35, w / 2, h * .6, 0, Math.PI, 0); g.fill(); g.fillRect(4, BASE - 2, W - 8, 2); }
+    const n = flat ? 14 : 26;
+    for (let i = 0; i < n; i++) {                    // sticks, crossed every which way
+      const len = 5 + r() * (flat ? 9 : 12), a = flat ? (r() - .5) * .5 + (r() < .5 ? 0 : Math.PI) : (r() - .5) * 2.2;
+      const cx = 4 + r() * (W - 8), cy = flat ? BASE - 1 - r() * 3 : BASE - 1 - Math.pow(r(), .7) * h * Math.max(.2, 1 - Math.abs(cx - W / 2) / (w / 2));
+      g.strokeStyle = cols[Math.floor(r() * cols.length)]; g.lineWidth = r() < .3 ? 2 : 1.2;
+      g.beginPath(); g.moveTo(cx - Math.cos(a) * len / 2, cy - Math.sin(a) * len / 2); g.lineTo(cx + Math.cos(a) * len / 2, cy + Math.sin(a) * len / 2); g.stroke();
+    }
+    for (let i = 0; i < (flat ? 10 : 18); i++) {     // dead leaves in it
+      g.fillStyle = ['#6b3a1c', '#7d4a22', '#4a2a16', '#8a5a2a', '#5a4a24'][Math.floor(r() * 5)];
+      g.fillRect(Math.round(4 + r() * (W - 8)), Math.round(flat ? BASE - 1 - r() * 3 : BASE - 1 - r() * h * .9), 2, 1);
+    }
+    pixelize(c, [10, 8, 12]);
+    return c;
+  };
+  return { full: draw(false), flat: draw(true), W, H, base: BASE };
+}
+// ---- a pine: tiers of drooping boughs down a trunk, lit a little from the moon's side ----
+function drawPine(g, x, base, h, w, C, R) {
+  const trunkH = Math.round(h * .22);
+  g.fillStyle = C.trunk; g.fillRect(Math.round(x - 1), base - trunkH - 2, 3, trunkH + 2);
+  g.fillStyle = C.trunkD; g.fillRect(Math.round(x + 1), base - trunkH - 2, 1, trunkH + 2);
+  const tiers = Math.max(3, Math.round(h / 13)), top = base - h, span = h - trunkH;
+  for (let t = 0; t < tiers; t++) {
+    const ty = top + Math.round(t * span / tiers * .92), th = Math.round(span / tiers) + 5;
+    const tw = (w / 2) * (.28 + .72 * (t + 1) / tiers);
+    for (let j = 0; j < th; j++) {
+      const hw = Math.max(1, Math.round(tw * Math.pow((j + 1) / th, .85)));
+      g.fillStyle = C.dark; g.fillRect(Math.round(x - hw), ty + j, hw * 2 + 1, 1);
+      g.fillStyle = C.mid; g.fillRect(Math.round(x - hw), ty + j, Math.max(1, Math.round(hw * .55)), 1);
+      if (j > 1 && R() < .5) { g.fillStyle = C.light; g.fillRect(Math.round(x - hw + R() * hw * .6), ty + j, 1, 1); }
+    }
+    g.fillStyle = C.dark;                                              // the bough tips droop
+    g.fillRect(Math.round(x - tw) - 1, ty + th - 1, 2, 2); g.fillRect(Math.round(x + tw), ty + th - 1, 2, 2);
+  }
+}
+const PINE_BACK = { trunk: '#161212', trunkD: '#0e0c0c', dark: '#0d1716', mid: '#111e1c', light: '#16261f' };
+const PINE_FRONT = { trunk: '#2b2320', trunkD: '#1c1614', dark: '#122019', mid: '#1a2d22', light: '#27402d' };
+function drawForestStreet(R, S) {
+  streetCv.width = WORLD_LEN; streetCv.height = VH;
+  const g = streetCv.getContext('2d');
+  const ri = (a, b) => a + Math.floor(R() * (b - a + 1));
+  // back row: dense, dark pines
+  for (let x = -10; x < WORLD_LEN + 20; x += ri(12, 24)) drawPine(g, x, ri(122, 126), ri(58, 92), ri(26, 38), PINE_BACK, R);
+  // the understory behind the path
+  g.fillStyle = '#0f1a15'; g.fillRect(0, 112, WORLD_LEN, 20);
+  for (let x = 0; x < WORLD_LEN; x += ri(6, 14)) { const r = ri(4, 9), cy = ri(116, 124); g.fillStyle = R() < .5 ? '#132219' : '#17291e'; g.beginPath(); g.arc(x, cy, r, Math.PI, 0); g.fill(); }
+  // front row: big pines, trunks showing (the stands go up these)
+  const trunks = [];
+  for (let x = 10; x < WORLD_LEN; x += ri(34, 78)) {
+    const h = ri(96, 128), w = ri(40, 56); trunks.push(x);
+    const tw = ri(4, 6), tt = 128 - h;
+    g.fillStyle = PINE_FRONT.trunk; g.fillRect(x - (tw >> 1), tt + 20, tw, 132 - tt - 20);
+    g.fillStyle = '#3a302a'; for (let y = tt + 22; y < 130; y += ri(3, 6)) g.fillRect(x - (tw >> 1), y, 1, ri(1, 3));
+    g.fillStyle = PINE_FRONT.trunkD; g.fillRect(x + (tw >> 1) - 1, tt + 20, 1, 132 - tt - 20);
+    g.fillStyle = '#1c1614'; g.fillRect(x - (tw >> 1) - 1, 129, tw + 2, 3);                          // roots
+    drawPine(g, x, 106, h - 22, w, PINE_FRONT, R);
+  }
+  // ferns in front of the trunks
+  for (let x = 0; x < WORLD_LEN; x += ri(10, 26)) {
+    const cy = ri(128, 132), n = ri(3, 5);
+    for (let k = 0; k < n; k++) { const a = -Math.PI / 2 + (k - (n - 1) / 2) * .45, L = ri(5, 9); g.strokeStyle = R() < .5 ? '#1f3a24' : '#2a4a2c'; g.lineWidth = 1; g.beginPath(); g.moveTo(x, cy); g.quadraticCurveTo(x + Math.cos(a) * L * .6, cy + Math.sin(a) * L, x + Math.cos(a) * L, cy + Math.sin(a) * L * .6); g.stroke(); }
+  }
+  // the trail: packed dirt, pebbles, leaf litter, roots across it
+  g.fillStyle = '#3a3029'; g.fillRect(0, 132, WORLD_LEN, 17);
+  g.fillStyle = '#2e2620'; g.fillRect(0, 132, WORLD_LEN, 1);
+  for (let x = 0; x < WORLD_LEN; x += 2) if (R() < .45) { g.fillStyle = '#1f3022'; g.fillRect(x, 132, 1, ri(1, 2)); }          // grass over the edge
+  for (let i = 0; i < WORLD_LEN / 5; i++) { g.fillStyle = ['#453a31', '#30271f', '#4d4238', '#2a221c'][ri(0, 3)]; g.fillRect(ri(0, WORLD_LEN), ri(134, 148), ri(1, 2), 1); }
+  for (let i = 0; i < WORLD_LEN / 22; i++) { g.fillStyle = ['#6b3a1c', '#7d4a22', '#5a4a24', '#8a5a2a'][ri(0, 3)]; g.fillRect(ri(0, WORLD_LEN), ri(134, 148), 2, 1); }
+  for (let i = 0; i < WORLD_LEN / 60; i++) { g.fillStyle = '#5c544c'; const px = ri(0, WORLD_LEN), py = ri(135, 147); g.fillRect(px, py, 2, 1); g.fillStyle = '#3e3832'; g.fillRect(px, py + 1, 2, 1); }
+  for (const tx of trunks) if (R() < .5) {                                                          // roots across the path
+    g.strokeStyle = '#241c17'; g.lineWidth = 1.4; g.beginPath(); g.moveTo(tx, 131); g.quadraticCurveTo(tx + ri(-8, 8), ri(137, 141), tx + ri(-16, 16), ri(143, 147)); g.stroke();
+  }
+  // below the path: the forest floor
+  g.fillStyle = '#26211c'; g.fillRect(0, 149, WORLD_LEN, 1);
+  g.fillStyle = '#131c16'; g.fillRect(0, 150, WORLD_LEN, 30);
+  for (let i = 0; i < WORLD_LEN / 3; i++) { g.fillStyle = R() < .5 ? '#18241b' : '#0f1612'; g.fillRect(ri(0, WORLD_LEN), ri(151, 179), 1, 1); }
+  for (let x = 0; x < WORLD_LEN; x += ri(4, 9)) { g.fillStyle = R() < .5 ? '#1f3022' : '#26392a'; const y = ri(152, 176); g.fillRect(x, y, 1, 2); g.fillRect(x + 1, y + 1, 1, 1); }
+  for (let x = ri(40, 200); x < WORLD_LEN; x += ri(160, 380)) {                                        // fallen logs, stumps, rocks, mushrooms
+    const k = ri(0, 3), y = ri(157, 170);
+    if (k === 0) { const L = ri(26, 46); g.fillStyle = '#1a1310'; g.fillRect(x - 1, y - 1, L + 2, 7); g.fillStyle = '#3b2c22'; g.fillRect(x, y, L, 5); g.fillStyle = '#4d3a2c'; g.fillRect(x, y, L, 1); g.fillStyle = '#6e5840'; g.fillRect(x + L - 2, y, 2, 5); g.fillStyle = '#2a4a2c'; g.fillRect(x + ri(3, 10), y - 1, ri(3, 6), 1); }
+    else if (k === 1) { g.fillStyle = '#1a1310'; g.fillRect(x - 1, y - 6, 9, 7); g.fillStyle = '#3b2c22'; g.fillRect(x, y - 5, 7, 6); g.fillStyle = '#7a6448'; g.fillRect(x, y - 6, 7, 1); }
+    else if (k === 2) { g.fillStyle = '#0e0d10'; g.fillRect(x - 1, y - 4, 11, 5); g.fillStyle = '#3e3d44'; g.fillRect(x, y - 3, 9, 4); g.fillStyle = '#56555e'; g.fillRect(x + 1, y - 3, 5, 1); }
+    else for (let m = 0; m < 3; m++) { g.fillStyle = '#e8dcc0'; g.fillRect(x + m * 3, y, 1, 2); g.fillStyle = '#b8403a'; g.fillRect(x + m * 3 - 1, y - 1, 3, 1); g.fillStyle = '#f3ead6'; g.fillRect(x + m * 3, y - 1, 1, 1); }
+  }
+  // the stands: a ladder up a trunk to a little platform with a rail, camo netting round it
+  for (const st of stands) {
+    const x = st.x;
+    g.fillStyle = PINE_FRONT.trunk; g.fillRect(x - 2, 60, 5, 72); g.fillStyle = PINE_FRONT.trunkD; g.fillRect(x + 2, 60, 1, 72);
+    g.fillStyle = '#4a4238'; g.fillRect(x - 5, STAND_Y + 3, 1, 132 - STAND_Y - 3); g.fillRect(x - 1, STAND_Y + 3, 1, 132 - STAND_Y - 3);
+    for (let y = STAND_Y + 6; y < 131; y += 4) g.fillRect(x - 5, y, 5, 1);
+    g.fillStyle = '#17131a'; g.fillRect(x - 10, STAND_Y, 22, 4);
+    g.fillStyle = '#5a4a36'; g.fillRect(x - 9, STAND_Y + 1, 20, 2); g.fillStyle = '#6e5a42'; g.fillRect(x - 9, STAND_Y + 1, 20, 1);
+    g.fillStyle = '#4a4238'; g.fillRect(x - 9, STAND_Y - 9, 1, 9); g.fillRect(x + 10, STAND_Y - 9, 1, 9); g.fillRect(x - 9, STAND_Y - 9, 20, 1);
+    for (let k = 0; k < 20; k += 2) { g.fillStyle = ['#3e4526', '#57492d', '#2a2e1c'][(k / 2) % 3]; g.fillRect(x - 9 + k, STAND_Y - 6, 2, 5); }
+  }
+  // the trail sign at the start
+  g.fillStyle = '#2a1f18'; g.fillRect(39, 100, 3, 33);
+  const sw = Math.max(36, textW(S.name) + 8);
+  g.fillStyle = '#17110c'; g.fillRect(41 - sw / 2 - 1, 95, sw + 2, 11);
+  g.fillStyle = '#6b4a2a'; g.fillRect(41 - sw / 2, 96, sw, 9); g.fillStyle = '#7d5a34'; g.fillRect(41 - sw / 2, 96, sw, 1);
+  drawText(S.name, 41, 98, '#e8dcc0', 1, 'center', null, g);
+  if (S.boss) drawRangerStation(g);
+  else {                                            // trailhead parking at the end: gravel, a sign, a log barrier past it
+    g.fillStyle = '#4a4540'; g.fillRect(BUS_X - 40, 133, 200, 15);
+    for (let i = 0; i < 240; i++) { g.fillStyle = ['#5a554f', '#3c3833', '#655f58'][ri(0, 2)]; g.fillRect(ri(BUS_X - 40, BUS_X + 158), ri(134, 147), 1, 1); }
+    g.fillStyle = '#2a1f18'; g.fillRect(BUS_X - 34, 104, 2, 29);
+    g.fillStyle = '#17110c'; g.fillRect(BUS_X - 55, 96, 44, 10); g.fillStyle = '#2f5a3a'; g.fillRect(BUS_X - 54, 97, 42, 8);
+    drawText('TRAILHEAD', BUS_X - 33, 99, '#e8dcc0', 1, 'center', null, g);
+    g.fillStyle = '#1a1310'; g.fillRect(BUS_X + 150, 122, 34, 8); g.fillStyle = '#4d3a2c'; g.fillRect(BUS_X + 151, 123, 32, 6); g.fillStyle = '#6e5840'; g.fillRect(BUS_X + 151, 123, 32, 1); g.fillRect(BUS_X + 181, 123, 2, 6);
+  }
+  // lantern posts
+  lamps.forEach(L => { if (!L.lantern) return; g.fillStyle = '#231a14'; g.fillRect(L.x, 108, 2, 25); g.fillRect(L.x, 107, 6, 2); g.fillStyle = '#17110c'; g.fillRect(L.x + 3, 109, 4, 6); });
+}
+function drawRangerStation(g) {
+  // a log cabin behind a gravel clearing, a split-rail fence round the back, the flag still up
+  const x0 = ARENA_L + 20, x1 = ARENA_R + 30, base = 124, top = 74;
+  g.fillStyle = '#4a4540'; g.fillRect(ARENA_L - 6, 133, x1 - ARENA_L + 40, 15);
+  for (let i = 0; i < 700; i++) { g.fillStyle = ['#5a554f', '#3c3833', '#655f58'][i % 3]; g.fillRect(ARENA_L + ((i * 97) % (x1 - ARENA_L + 30)), 134 + (i * 13) % 13, 1, 1); }
+  g.fillStyle = '#17110c'; g.fillRect(x0 - 1, top - 1, x1 - x0 + 2, base - top + 1);
+  for (let y = top; y < base; y += 5) { g.fillStyle = '#5a3b24'; g.fillRect(x0, y, x1 - x0, 4); g.fillStyle = '#6e4a2e'; g.fillRect(x0, y, x1 - x0, 1); g.fillStyle = '#2a1c12'; g.fillRect(x0, y + 4, x1 - x0, 1); }
+  for (let y = top; y < base; y += 5) { g.fillStyle = '#8a6a48'; g.fillRect(x0 - 2, y + 1, 3, 3); g.fillRect(x1 - 1, y + 1, 3, 3); }   // log ends at the corners
+  // green tin roof
+  for (let j = 0; j < 16; j++) { const half = Math.round((x1 - x0) / 2 + 8 - j * .4); g.fillStyle = j % 3 === 2 ? '#1f3526' : '#2f4a33'; g.fillRect(Math.round((x0 + x1) / 2 - half), top - 16 + j, half * 2, 1); }
+  g.fillStyle = '#3d5e41'; g.fillRect(x0 - 8, top - 16, x1 - x0 + 16, 1);
+  g.fillStyle = '#6a3a2a'; for (let k = 0; k < 6; k++) g.fillRect(x0 + 14 + k * 61, top - 10 + (k % 3), 7, 2);        // rust
+  // windows (a couple still lit) and the door
+  const wins = [x0 + 30, x0 + 110, x0 + 200, x0 + 300, x0 + 380];
+  wins.forEach((wx, i) => { g.fillStyle = '#17110c'; g.fillRect(wx - 1, top + 14, 16, 14); const lit = i === 1 || i === 3; g.fillStyle = lit ? '#f2c46a' : '#141126'; g.fillRect(wx, top + 15, 14, 12);
+    if (lit) { g.fillStyle = '#d9973e'; g.fillRect(wx, top + 22, 14, 5); winLights.push({ x: wx + 7, y: top + 21 }); } g.fillStyle = lit ? '#7a4a22' : '#2a2440'; g.fillRect(wx + 7, top + 15, 1, 12); g.fillRect(wx, top + 21, 14, 1); });
+  const dx = x0 + 160; g.fillStyle = '#17110c'; g.fillRect(dx - 1, base - 28, 16, 28); g.fillStyle = '#3b2a1c'; g.fillRect(dx, base - 27, 14, 27); g.fillStyle = '#c9a45a'; g.fillRect(dx + 11, base - 14, 1, 1);
+  // the porch: a deck and its posts
+  g.fillStyle = '#17110c'; g.fillRect(x0 - 4, base - 2, x1 - x0 + 8, 4); g.fillStyle = '#6e4a2e'; g.fillRect(x0 - 3, base - 1, x1 - x0 + 6, 2);
+  for (let px = x0 + 4; px < x1; px += 44) { g.fillStyle = '#4a3222'; g.fillRect(px, top + 4, 3, base - top - 5); }
+  g.fillStyle = '#4a3222'; g.fillRect(x0 - 2, top + 3, x1 - x0 + 4, 2);
+  // the sign over the porch
+  const sx = (x0 + x1) / 2;
+  g.fillStyle = '#17110c'; g.fillRect(sx - 45, top - 32, 90, 14); g.fillStyle = '#2f5a3a'; g.fillRect(sx - 44, top - 31, 88, 12); g.fillStyle = '#c9a45a'; g.fillRect(sx - 44, top - 31, 88, 1); g.fillRect(sx - 44, top - 20, 88, 1);
+  signs.push({ x: sx, y: top - 28, text: 'RANGER STATION', col: '#f0d38a', dim: '#6b5a2a', flick: false, light: 'rgba(255,210,120,.18)' });
+  drawText('RANGER STATION', sx, top - 28, '#6b5a2a', 1, 'center', null, g);
+  // the flagpole
+  const fx = x1 + 18; g.fillStyle = '#6a6f7a'; g.fillRect(fx, 40, 1, 93); g.fillStyle = '#8a8f9a'; g.fillRect(fx - 1, 39, 3, 1);
+  g.fillStyle = '#3d5e41'; g.fillRect(fx + 1, 42, 14, 8); g.fillStyle = '#c9a45a'; g.fillRect(fx + 5, 44, 5, 4); g.fillStyle = '#131c16'; g.fillRect(fx + 12, 47, 3, 3);
+  // split-rail fence round the back of the clearing
+  for (let px = ARENA_L; px < x1 + 30; px += 26) { g.fillStyle = '#17110c'; g.fillRect(px - 1, 109, 4, 24); g.fillStyle = '#4a3222'; g.fillRect(px, 110, 2, 22); }
+  for (const ry of [114, 122]) { g.fillStyle = '#17110c'; g.fillRect(ARENA_L, ry - 1, x1 + 30 - ARENA_L, 4); g.fillStyle = '#5a3b24'; g.fillRect(ARENA_L, ry, x1 + 30 - ARENA_L, 2); g.fillStyle = '#6e4a2e'; g.fillRect(ARENA_L, ry, x1 + 30 - ARENA_L, 1); }
+}
+function drawForestMid() {
+  const W = Math.ceil(WORLD_LEN * MID_F) + 440; midCv.width = W; midCv.height = VH;
+  const g = midCv.getContext('2d'), R = mulberry32(177);
+  const back = { trunk: '#0b0d18', trunkD: '#0b0d18', dark: '#0c1020', mid: '#0e1324', light: '#0e1324' };
+  const front = { trunk: '#0f1424', trunkD: '#0f1424', dark: '#0f1626', mid: '#121a2c', light: '#131c2e' };
+  for (let x = -10; x < W; x += 8 + Math.floor(R() * 12)) drawPine(g, x, 118, 40 + Math.floor(R() * 34), 18 + Math.floor(R() * 12), back, R);
+  for (let x = -6; x < W; x += 14 + Math.floor(R() * 18)) drawPine(g, x, 122, 30 + Math.floor(R() * 28), 16 + Math.floor(R() * 10), front, R);
+  g.fillStyle = '#0f1626'; g.fillRect(0, 120, W, 3);
+}
+function drawForestFar() {
+  const W = Math.ceil(WORLD_LEN * FAR_F) + 440; farCv.width = W; farCv.height = VH;
+  const g = farCv.getContext('2d'), R = mulberry32(41);
+  const ridgeA = x => Math.round(78 + Math.sin(x * .011) * 14 + Math.sin(x * .029 + 2) * 7 + Math.abs(Math.sin(x * .004)) * -8);
+  const ridgeB = x => Math.round(96 + Math.sin(x * .017 + 1) * 8 + Math.sin(x * .05) * 3);
+  g.fillStyle = '#17152e'; for (let x = 0; x < W; x++) g.fillRect(x, ridgeA(x), 1, VH - ridgeA(x));
+  g.fillStyle = '#211d3c'; for (let x = 0; x < W; x += 2) if (R() < .5) g.fillRect(x, ridgeA(x), 1, 1);                   // moonlit snow line
+  g.fillStyle = '#1b1936';
+  for (let x = 0; x < W; x++) g.fillRect(x, ridgeB(x), 1, VH - ridgeB(x));
+  for (let x = 0; x < W; x += 2 + Math.floor(R() * 3)) { const h = 3 + Math.floor(R() * 5), b = ridgeB(x); for (let j = 0; j < h; j++) g.fillRect(x - Math.floor(j / 3), b - h + j, 1 + 2 * Math.floor(j / 3), 1); }
+  // a fire lookout on the high ridge, its light blinking
+  radioX = 210; const lb = ridgeA(radioX);
+  g.fillStyle = '#221d40';
+  for (let y = lb - 26; y < lb; y++) { const half = Math.round((y - (lb - 26)) / 6) + 3; g.fillRect(radioX - half, y, 1, 1); g.fillRect(radioX + half, y, 1, 1); if (y % 5 === 0) g.fillRect(radioX - half, y, half * 2 + 1, 1); }
+  g.fillRect(radioX - 6, lb - 34, 13, 8); g.fillRect(radioX - 8, lb - 36, 17, 2); g.fillStyle = '#4a3a2a'; g.fillRect(radioX - 4, lb - 32, 3, 3); g.fillRect(radioX + 2, lb - 32, 3, 3);
+  radioY = lb - 38;
+}
+// ---- the moving parts of the forest: the piles, whoever's still up in a stand, the traps ----
+function drawForestDynamic(cam) {
+  for (const H of houses) {
+    if (!H.pile) continue;
+    const x = Math.round(H.doorX - cam); if (x < -30 || x > VW + 30) continue;
+    const A = H.art, img = H.searched ? A.flat : A.full;
+    ctx.drawImage(img, x - Math.round(A.W / 2), GROUND - A.base + 1);
+    if (H.lit && !H.searched) for (let k = 0; k < 3; k++) {                  // fireflies over the ones worth digging through
+      const a = G.t * (1.1 + k * .3) + H.doorX * .07 + k * 2.1, on = Math.sin(G.t * 3.3 + k * 1.7 + H.doorX) > .1;
+      if (!on) continue;
+      ctx.fillStyle = k === 1 ? '#e6ff9a' : '#c8f070'; ctx.fillRect(Math.round(x + Math.cos(a) * (8 + k * 3)), Math.round(GROUND - 16 - A.H * .4 + Math.sin(a * 1.3) * 5), 1, 1);
+    }
+  }
+  for (const s of stands) {
+    if (!s.occ || s.used) continue;
+    const x = s.x - cam; if (x < -30 || x > VW + 30) continue;
+    const f = AF[s.look + '_idle']; if (!f) continue;
+    const bob = Math.sin(G.t * 1.5 + s.x) > .7 ? 1 : 0;
+    drawChar(f, null, x, STAND_Y + bob, s.face, 0, 3, ATLAS);           // hunched up on the platform
+    ctx.globalAlpha = .35; drawChar(f, null, x, STAND_Y + bob, s.face, 0, 3, ATLAS_DARK); ctx.globalAlpha = 1;
+    ctx.fillStyle = '#5a4a36'; ctx.fillRect(Math.round(x - 9), STAND_Y + 1, 20, 2);                        // the platform edge in front of his feet
+  }
+  for (const t of traps) { const x = Math.round(t.x - cam); if (x < -12 || x > VW + 12) continue; drawTrap(x, GROUND + 1, t.st ? 1 : 0, t.st === 2); }
+  for (const L of lamps) {
+    if (!L.lantern) continue;
+    const x = Math.round(L.x - cam); if (x < -20 || x > VW + 20) continue;
+    const fl = Math.sin(G.t * 11 + L.x) > .3 ? 1 : 0;
+    ctx.fillStyle = '#ffd88a'; ctx.fillRect(x + 4, 110, 2, 3); ctx.fillStyle = fl ? '#fff3c4' : '#ffb43a'; ctx.fillRect(x + 4, 111, 2, 1);
+  }
+  for (const w of winLights) if (w.shroom) {
+    const x = Math.round(w.x - cam); if (x < -6 || x > VW + 6) continue;
+    const p = .55 + .45 * Math.sin(G.t * 1.7 + w.x);
+    ctx.fillStyle = `rgba(120,240,220,${p.toFixed(2)})`; ctx.fillRect(x, w.y, 2, 1); ctx.fillRect(x + 3, w.y + 1, 1, 1);
+    ctx.fillStyle = '#d8fff4'; ctx.fillRect(x, w.y, 1, 1);
+  }
+}
+// a bear trap: two steel jaws on a plate, open (and waiting) or snapped shut
+function drawTrap(x, y, shut, off) {
+  ctx.fillStyle = '#0b0814'; ctx.fillRect(x - 6, y - 1, 13, 2);
+  ctx.fillStyle = '#56575e'; ctx.fillRect(x - 5, y - 1, 11, 1);
+  ctx.fillStyle = '#3a3a40'; ctx.fillRect(x - 1, y - 2, 3, 1);                          // the pan
+  if (!shut) {
+    for (const s of [-1, 1]) {                                                         // jaws laid open flat, teeth up
+      ctx.fillStyle = '#0b0814'; ctx.fillRect(s < 0 ? x - 8 : x + 3, y - 3, 6, 3);
+      ctx.fillStyle = '#8a8c94'; ctx.fillRect(s < 0 ? x - 7 : x + 4, y - 2, 4, 1);
+      ctx.fillStyle = '#c9ccd6'; for (let k = 0; k < 4; k += 2) ctx.fillRect((s < 0 ? x - 7 : x + 4) + k, y - 3, 1, 1);
+    }
+    if (Math.sin(G.t * 2 + x) > .85) { ctx.fillStyle = '#fff6c8'; ctx.fillRect(x + 5, y - 4, 1, 1); }   // a glint off the steel
+  } else {
+    ctx.fillStyle = '#0b0814'; ctx.fillRect(x - 4, y - 8, 9, 7);                     // jaws clamped upright
+    ctx.fillStyle = off ? '#6e6f76' : '#8a8c94'; ctx.fillRect(x - 3, y - 7, 3, 5); ctx.fillRect(x + 1, y - 7, 3, 5);
+    ctx.fillStyle = '#c9ccd6'; ctx.fillRect(x - 1, y - 7, 1, 1); ctx.fillRect(x + 1, y - 6, 1, 1); ctx.fillRect(x - 1, y - 5, 1, 1);
+    if (!off) { ctx.fillStyle = '#7a1628'; ctx.fillRect(x - 1, y - 3, 3, 1); }
+  }
+  ctx.fillStyle = '#4a4a52'; ctx.fillRect(x + 7, y, 4, 1); ctx.fillRect(x + 10, y - 1, 1, 1);   // a bit of chain
+}
+// ---- how a night ends: the bus (town), the ranger's truck (forest), or out the back of the depot into the woods ----
+const exitKind = (S = world) => S && S.forest ? 'truck' : S && S.boss ? 'trail' : 'bus';
+function drawExit(cam) {
+  const k = exitKind();
+  if (k === 'truck') drawTruck(cam); else if (k === 'trail') drawTrailGate(cam); else drawBus(cam);
+}
+function drawTruck(cam) {
+  const x = Math.round(bus.x - cam), bot = 158;
+  if (x > VW + 10 || x < -100) return;
+  const O = '#0b0814', B = '#2f5a3a', BL = '#45784f', BD = '#1f3d28';
+  // the bed
+  ctx.fillStyle = O; ctx.fillRect(x - 1, 133, 45, 20); ctx.fillStyle = B; ctx.fillRect(x, 134, 43, 17); ctx.fillStyle = BL; ctx.fillRect(x, 134, 43, 1); ctx.fillStyle = BD; ctx.fillRect(x, 147, 43, 4);
+  ctx.fillStyle = '#e8dcc0'; ctx.fillRect(x, 142, 43, 1);
+  ctx.fillStyle = '#c9a45a'; ctx.fillRect(x + 1, 136, 2, 2);                                          // a reflector on the tailgate
+  // the cab
+  ctx.fillStyle = O; ctx.fillRect(x + 43, 121, 24, 32); ctx.fillStyle = B; ctx.fillRect(x + 44, 122, 22, 29); ctx.fillStyle = BL; ctx.fillRect(x + 44, 122, 22, 1);
+  ctx.fillStyle = O; ctx.fillRect(x + 47, 124, 17, 10); ctx.fillStyle = '#5d7890'; ctx.fillRect(x + 48, 125, 15, 8); ctx.fillStyle = '#9ab3cc'; ctx.fillRect(x + 49, 126, 2, 4);
+  const dw = Math.round(12 * bus.door);
+  if (dw > 0) { ctx.fillStyle = '#0c0a14'; ctx.fillRect(x + 47, 124, Math.min(16, dw + 3), 25); ctx.fillStyle = '#f0d38a'; ctx.fillRect(x + 48, 126, 2, 2); }
+  ctx.fillStyle = '#e8dcc0'; ctx.fillRect(x + 44, 142, 22, 1);
+  ctx.fillStyle = '#c9a45a'; ctx.fillRect(x + 54, 136, 3, 4); ctx.fillStyle = BD; ctx.fillRect(x + 55, 137, 1, 2);    // the park service shield on the door
+  // light bar
+  const on = Math.floor(G.t * 4) % 2;
+  ctx.fillStyle = O; ctx.fillRect(x + 48, 119, 14, 3); ctx.fillStyle = on ? '#ffb43a' : '#6a4a1a'; ctx.fillRect(x + 49, 120, 5, 1); ctx.fillStyle = on ? '#6a4a1a' : '#ffb43a'; ctx.fillRect(x + 56, 120, 5, 1);
+  // the hood and front end
+  ctx.fillStyle = O; ctx.fillRect(x + 66, 133, 15, 20); ctx.fillStyle = B; ctx.fillRect(x + 66, 134, 14, 17); ctx.fillStyle = BL; ctx.fillRect(x + 66, 134, 14, 1);
+  ctx.fillStyle = '#e8dcc0'; ctx.fillRect(x + 66, 142, 14, 1);
+  ctx.fillStyle = '#fff3c4'; ctx.fillRect(x + 78, 137, 2, 3); ctx.fillStyle = '#ff4a4a'; ctx.fillRect(x, 137, 1, 3);
+  ctx.fillStyle = '#6a6f7a'; ctx.fillRect(x + 76, 150, 6, 2); ctx.fillRect(x - 2, 150, 4, 2);
+  [x + 14, x + 64].forEach(wx => {
+    ctx.fillStyle = O; ctx.fillRect(wx - 6, bot - 8, 13, 10); ctx.fillRect(wx - 5, bot - 9, 11, 12);
+    ctx.fillStyle = '#26222e'; ctx.fillRect(wx - 5, bot - 7, 11, 8); ctx.fillRect(wx - 4, bot - 8, 9, 10);
+    ctx.fillStyle = '#8a8499'; ctx.fillRect(wx - 1, bot - 4, 3, 3);
+    ctx.fillStyle = '#5a566b'; const a = bus.wheel * .3; ctx.fillRect(wx + Math.round(Math.cos(a) * 3), bot - 3 + Math.round(Math.sin(a) * 3) - 1, 1, 1);
+  });
+}
+function drawTrailGate(cam) {                        // the back gate of the depot lot, onto a trail up into the hills
+  const x = Math.round(bus.x - cam + 4); if (x > VW + 40 || x < -60) return;
+  const k = clamp(bus.door, 0, 1), top = 108, bot = 133, w = 30;
+  ctx.fillStyle = '#07060d'; ctx.fillRect(x, top, w, bot - top);
+  if (k > 0) {                                       // through the gap: pines, and the path going up into them
+    ctx.globalAlpha = k;
+    for (const [dx, h] of [[4, 16], [11, 21], [19, 14], [25, 19]]) { ctx.fillStyle = '#0e1a14'; for (let j = 0; j < h; j++) { const hw = Math.round(j * .35); ctx.fillRect(x + dx - hw, bot - 6 - h + j, hw * 2 + 1, 1); } }
+    ctx.fillStyle = '#2a231d'; ctx.fillRect(x + 8, bot - 5, 14, 5); ctx.fillStyle = '#3a3029'; ctx.fillRect(x + 11, bot - 7, 8, 2);
+    ctx.globalAlpha = 1;
+  }
+  // the gate panel swinging open
+  const pw = Math.round(w * (1 - k));
+  if (pw > 0) { ctx.fillStyle = 'rgba(150,155,170,.55)'; for (let yy = top; yy < bot; yy += 2) for (let xx = 0; xx < pw; xx += 2) ctx.fillRect(x + xx + (yy / 2) % 2, yy, 1, 1); ctx.fillStyle = '#5a5f6a'; ctx.fillRect(x, top, pw, 1); ctx.fillRect(x + pw - 1, top, 1, bot - top); }
+  ctx.fillStyle = '#3a3f4a'; ctx.fillRect(x - 2, top - 2, 2, bot - top + 2); ctx.fillRect(x + w, top - 2, 2, bot - top + 2);
+  // the trail sign, lit once the gate's open
+  ctx.fillStyle = '#2a1f18'; ctx.fillRect(x + w + 10, 108, 2, 25);
+  ctx.fillStyle = '#17110c'; ctx.fillRect(x + w + 2, 100, 26, 10); ctx.fillStyle = '#6b4a2a'; ctx.fillRect(x + w + 3, 101, 24, 8);
+  drawText('TRAIL', x + w + 15, 103, k > 0 && Math.floor(G.t * 2) % 2 ? '#ffd45a' : '#e8dcc0', 1, 'center');
+}
+function goldOf(A) {
+  if (A.gold) return A.gold;
+  const c = document.createElement('canvas'); c.width = A.W; c.height = A.H; const g = c.getContext('2d');
+  g.drawImage(A.full, 0, 0); g.globalCompositeOperation = 'source-in'; g.fillStyle = '#ffd66e'; g.fillRect(0, 0, A.W, A.H);
+  return (A.gold = c);
+}
+// the ranger station's gate: rails dropped across the path behind you, one on top of the other
+function drawLogGate(cam) {
+  const x = Math.round(ARENA_L - cam); if (x < -30 || x > VW + 30) return;
+  const k = G.arena ? smooth(G.gateT) : 0;
+  ctx.fillStyle = '#17110c'; ctx.fillRect(x - 4, 104, 4, 30); ctx.fillRect(x + 7, 104, 4, 30);
+  ctx.fillStyle = '#4a3222'; ctx.fillRect(x - 3, 105, 2, 28); ctx.fillRect(x + 8, 105, 2, 28);
+  const n = Math.round(5 * k);
+  for (let i = 0; i < n; i++) { const y = 128 - i * 5; ctx.fillStyle = '#17110c'; ctx.fillRect(x - 6, y - 1, 19, 5); ctx.fillStyle = '#5a3b24'; ctx.fillRect(x - 5, y, 17, 3); ctx.fillStyle = '#6e4a2e'; ctx.fillRect(x - 5, y, 17, 1); ctx.fillStyle = '#8a6a48'; ctx.fillRect(x + 11, y, 1, 3); }
+}
+
+function buildWorld(S = STREETS[0]) {
+  if (S.forest) { buildForest(S); return; }
+  world = S; stands = []; traps = [];
   const R = mulberry32(S.seed);
   const ri = (a, b) => a + Math.floor(R() * (b - a + 1));
   houses = []; lamps = []; winLights = []; signs = [];
@@ -1141,10 +1815,12 @@ function drawStreet(R, S = STREETS[0]) {
   const sw = Math.max(33, textW(S.name) + 6);
   g.fillStyle = '#2f6b45'; g.fillRect(41 - sw / 2, 96, sw, 8); g.fillStyle = '#e8e2d0'; g.fillRect(41 - sw / 2, 96, sw, 1); g.fillRect(41 - sw / 2, 103, sw, 1);
   drawText(S.name, 41, 98, '#e8e2d0', 1, 'center', null, g);
-  // bus stop sign near the end
-  g.fillStyle = '#4a4f5a'; g.fillRect(BUS_X - 30, 104, 1, 29);
-  g.fillStyle = '#2b4f86'; g.fillRect(BUS_X - 36, 98, 13, 9);
-  drawText('BUS', BUS_X - 29, 100, '#f3ead6', 1, 'center', null, g);
+  // bus stop sign near the end (Main St's night ends out the back of the depot instead)
+  if (!S.boss) {
+    g.fillStyle = '#4a4f5a'; g.fillRect(BUS_X - 30, 104, 1, 29);
+    g.fillStyle = '#2b4f86'; g.fillRect(BUS_X - 36, 98, 13, 9);
+    drawText('BUS', BUS_X - 29, 100, '#f3ead6', 1, 'center', null, g);
+  }
   // barricade beyond the bus stop
   g.fillStyle = '#b05a2a'; g.fillRect(BUS_X + 150, 118, 30, 3); g.fillStyle = '#f3ead6'; for (let k = 0; k < 30; k += 6) g.fillRect(BUS_X + 150 + k, 118, 3, 3);
   g.fillStyle = '#4a4f5a'; g.fillRect(BUS_X + 153, 121, 2, 12); g.fillRect(BUS_X + 175, 121, 2, 12);
@@ -1199,7 +1875,7 @@ function drawFar() {
   for (let j = 0; j < 12; j++) g.fillRect(cs - Math.round(j / 3), cb - 46 + j, Math.round(j / 3) * 2 + 1, 1);
   g.fillRect(cs, cb - 50, 1, 4); g.fillRect(cs - 1, cb - 49, 3, 1);
   // radio tower
-  radioX = 220; const rb = ridge(radioX);
+  radioX = 220; radioY = 43; const rb = ridge(radioX);
   g.fillStyle = '#221b40';
   for (let y = 44; y < rb; y++) { const half = Math.round((y - 44) / 14); g.fillRect(radioX - half, y, 1, 1); g.fillRect(radioX + half, y, 1, 1); if (y % 6 === 0) g.fillRect(radioX - half, y, half * 2 + 1, 1); }
   // grain silos
@@ -1518,18 +2194,28 @@ const RELICS = ['bouncer', 'quickmag', 'kickback', 'vest', 'killfill', 'crowbar'
 const CLIPS = Math.max(1, Math.round(tn('nights.clips', 3)));      // spare clips of your gun you can carry (the revolver never runs out)
 const AMMO_CAP = { shotgun: 0, smg: 0, rifle: 0 };                   // CLIPS x each gun's clip size, worked out in applyGunMods
 // some zombies leave a box of ammo for your gun
-const AMMO_DROP = { chance: clamp(tn('nights.ammoDrop', .07), 0, 1), clips: Math.max(.1, tn('nights.ammoDropClips', 1)), life: Math.max(2, tn('nights.ammoDropLife', 25)) };
+const AMMO_DROP = { chance: clamp(tn('nights.ammoDrop', .035), 0, 1), clips: Math.max(.1, tn('nights.ammoDropClips', 1)), life: Math.max(2, tn('nights.ammoDropLife', 25)) };
 const START_NADES = Math.max(0, Math.round(tn('grenade.start', 3)));
-function freshSave() { return { v: 1, night: 1, cash: 0, owned: { pistol: true, melee: true, shotgun: false, smg: false }, meleeTier: 0, ammo: { shotgun: 0, smg: 0, rifle: 0 }, up: { jacket: 0, shoes: 0 }, gun: {}, attr: {}, mig: 2, best: 1, totalKills: 0, muted: false, escaped: false, grenades: START_NADES, relics: [], relicsNight: [], primary: null, runNew: false }; }
+const NADE_MAX = Math.max(1, Math.round(tn('grenade.max', 5)));                    // the most you can carry
+const addNades = n => { const b = save.grenades || 0; save.grenades = Math.min(NADE_MAX, b + n); return save.grenades - b; };
+function freshSave() { return { v: 1, night: 1, cash: 0, owned: { pistol: true, melee: true, shotgun: false, smg: false }, meleeTier: 0, ammo: { shotgun: 0, smg: 0, rifle: 0 }, up: { jacket: 0, shoes: 0 }, gun: {}, attr: {}, mig: 3, best: 1, totalKills: 0, muted: false, escaped: false, grenades: START_NADES, relics: [], relicsNight: [], primary: null, runNew: false }; }
 function normalizeSave(s) {
   const f = freshSave(); if (!s || typeof s !== 'object') return f;
-  const o = { ...f, ...s, owned: { ...f.owned, ...(s.owned || {}) }, ammo: { ...f.ammo, ...(s.ammo || {}) }, up: { ...f.up, ...(s.up || {}) }, grenades: Number.isFinite(s.grenades) ? s.grenades : START_NADES, v: 1 };
+  const o = { ...f, ...s, owned: { ...f.owned, ...(s.owned || {}) }, ammo: { ...f.ammo, ...(s.ammo || {}) }, up: { ...f.up, ...(s.up || {}) }, grenades: Number.isFinite(s.grenades) ? Math.min(NADE_MAX, s.grenades) : START_NADES, v: 1 };
   const su = s.up || {};
   o.up = { jacket: su.jacket > 0 ? 1 : 0, shoes: su.shoes > 0 ? 1 : 0 };
-  const ng = g => ({ lv: clamp(Math.floor(+(g && g.lv) || 0), 0, 50), att: g && Array.isArray(g.att) ? [...new Set(g.att.filter(a => ATTS.includes(a)))] : [] });
-  o.gun = {}; for (const id of WEAPON_ORDER) if (!SHARED_GUNS.includes(id)) o.gun[id] = ng(s.gun && s.gun[id]);
-  const olds = SHARED_GUNS.map(id => ng(s.gun && s.gun[id]));
-  o.gun.primary = s.gun && s.gun.primary ? ng(s.gun.primary) : { lv: Math.max(0, ...olds.map(g => g.lv)), att: [...new Set(olds.flatMap(g => g.att))] };
+  const ng = g => { const u = {}; for (const a of ATTS) u[a] = clamp(Math.floor(+(g && g.up && g.up[a]) || 0), 0, 50); return { up: u }; };
+  if (!(s.mig >= 3)) {                               // the old Armory (a gun level, and attachments bought once): money back for all of it
+    const old = g => ({ lv: clamp(Math.floor(+(g && g.lv) || 0), 0, 50), att: g && Array.isArray(g.att) ? [...new Set(g.att.filter(a => ATTS.includes(a)))] : [] });
+    const olds = SHARED_GUNS.map(id => old(s.gun && s.gun[id]));
+    const prim = s.gun && s.gun.primary ? old(s.gun.primary) : { lv: Math.max(0, ...olds.map(g => g.lv)), att: [...new Set(olds.flatMap(g => g.att))] };
+    const OLDP = { sight: 220, hot: 260, mag: 200, grip: 180, barrel: 160, trigger: 240 };
+    const paid = g => { let n = 0; for (let i = 0; i < Math.min(5, g.lv); i++) n += round5(150 * Math.pow(2, i)); for (const a of g.att) n += OLDP[a] || 0; return n; };
+    const back = paid(prim) + paid(old(s.gun && s.gun.pistol));
+    if (back) { o.cash = (+o.cash || 0) + back; o.armRefund = back; }
+  }
+  o.gun = {}; for (const id of WEAPON_ORDER) if (!SHARED_GUNS.includes(id)) o.gun[id] = ng(s.mig >= 3 && s.gun && s.gun[id]);
+  o.gun.primary = ng(s.mig >= 3 && s.gun && s.gun.primary);
   o.attr = {}; for (const k of ATTRS) o.attr[k] = clamp(Math.floor(+(s.attr && s.attr[k]) || 0), 0, 50);
   if (!(s.mig >= 2)) {                               // an older save: Hollow Points, Quick Hands, the extra jacket and shoe levels and the nail bat are gone. Money back.
     const sum = (a, n) => a.slice(0, Math.max(0, n)).reduce((x, y) => x + y, 0);
@@ -1537,7 +2223,7 @@ function normalizeSave(s) {
     o.cash = (+o.cash || 0) + back; if (back) o.refundMsg = back;
     o.meleeTier = s.meleeTier >= 2 ? 1 : 0;
   } else o.meleeTier = clamp(+s.meleeTier || 0, 0, 1);
-  o.mig = 2;
+  o.mig = 3;
   for (const id in CAP_BASE) o.ammo[id] = clamp(Math.floor(+o.ammo[id] || 0), 0, capOf(id, o));
   o.relics = Array.isArray(s.relics) ? [...new Set(s.relics.filter(id => RELICS.includes(id)))] : [];
   o.relicsNight = Array.isArray(s.relicsNight) ? s.relicsNight.filter(id => o.relics.includes(id)) : [];    // the ones picked up tonight (lost if you're bitten)
@@ -1558,14 +2244,15 @@ const ELITE = { solo: tn('elites.solo', .03), coop: tn('elites.coop', .09), from
 const SUP = { nadePrice: tn('supply.nades.price', 45), nadeCount: Math.max(1, Math.round(tn('supply.nades.count', 3))), jacketHp: tn('supply.jacket.hp', 25), jacketPrice: tn('supply.jacket.price', 100),
   shoes: tn('supply.shoes.speed', .1), shoesPrice: tn('supply.shoes.price', 90), axePrice: tn('supply.axe.price', 200) };
 const ATTS = ['sight', 'hot', 'mag', 'grip', 'barrel', 'trigger'];
-const ARM = { lvDmg: tn('armory.upgrade.dmg', .1), lvMax: Math.max(0, Math.round(tn('armory.upgrade.max', 5))), lvPrice: tn('armory.upgrade.price', 150), lvGrowth: Math.max(1, tn('armory.upgrade.growth', 2)),
-  sight: tn('armory.sight.crit', .08), sightPrice: tn('armory.sight.price', 220), hot: tn('armory.hot.dmg', .15), hotPrice: tn('armory.hot.price', 260),
-  mag: tn('armory.mag.clip', .5), magPrice: tn('armory.mag.price', 200), grip: Math.min(.9, tn('armory.grip.reload', .25)), gripPrice: tn('armory.grip.price', 180),
-  barrel: tn('armory.barrel.range', .3), barrelPrice: tn('armory.barrel.price', 160), trigger: tn('armory.trigger.rate', .15), triggerPrice: tn('armory.trigger.price', 240) };
+// the Armory: each upgrade has ARM_LV levels; each level adds 'per' (0.05 = 5%) and costs price x growth^level
+const ARM_LV = Math.max(1, Math.round(tn('armory.levels', 10)));
+const ARM = {};
+for (const [k, per, price] of [['sight', .015, 90], ['hot', .05, 100], ['mag', .1, 80], ['grip', .04, 80], ['barrel', .05, 70], ['trigger', .03, 100]])
+  ARM[k] = { per: Math.max(0, tn('armory.' + k + '.per', per)), price: Math.max(0, tn('armory.' + k + '.price', price)), growth: Math.max(1, tn('armory.' + k + '.growth', 1.25)) };
 const ATTRS = ['health', 'agility', 'strength', 'precision'];
 const TRN = {};
-for (const [k, per, price] of [['health', 5, 120], ['agility', .03, 120], ['strength', .1, 120], ['precision', .02, 150]])
-  TRN[k] = { per: tn('training.' + k + '.per', per), max: Math.max(0, Math.round(tn('training.' + k + '.max', 10))), price: tn('training.' + k + '.price', price), growth: Math.max(1, tn('training.' + k + '.growth', 1.35)) };
+for (const [k, per] of [['health', 5], ['agility', .03], ['strength', .1], ['precision', .02]])
+  TRN[k] = { per: tn('training.' + k + '.per', per), max: Math.max(0, Math.round(tn('training.' + k + '.max', 10))), price: tn('training.' + k + '.price', 45), growth: Math.max(1, tn('training.' + k + '.growth', 1.15)) };
 const attrLv = k => clamp((save.attr && save.attr[k]) || 0, 0, TRN[k].max);
 const strMul = () => 1 + TRN.strength.per * attrLv('strength');
 critBonus = () => TRN.precision.per * attrLv('precision');
@@ -1577,21 +2264,21 @@ WEAPON_LIST.forEach(w => { w.base = { dmg: w.dmg, cd: w.cd, mag: w.mag, reload: 
 // your gun's upgrades are one set that goes with whichever gun you pick (shotgun, SMG or rifle); the revolver has its own
 const SHARED_GUNS = ['shotgun', 'smg', 'rifle'];
 const gunKey = id => SHARED_GUNS.includes(id) ? 'primary' : id;
-const gunSave = (id, sv = save) => (sv.gun && sv.gun[gunKey(id)]) || { lv: 0, att: [] };
-const hasAtt = (id, a, sv = save) => gunSave(id, sv).att.includes(a);
-const magOf = (id, sv = save) => Math.max(1, Math.round(WEAP[id].base.mag * (hasAtt(id, 'mag', sv) ? 1 + ARM.mag : 1)));
+const gunSave = (id, sv = save) => (sv.gun && sv.gun[gunKey(id)]) || { up: {} };
+const attLv = (id, a, sv = save) => clamp(((gunSave(id, sv).up || {})[a]) || 0, 0, ARM_LV);
+const magOf = (id, sv = save) => Math.max(1, Math.round(WEAP[id].base.mag * (1 + ARM.mag.per * attLv(id, 'mag', sv))));
 function capOf(id, sv = save) { return CLIPS * magOf(id, sv); }
 for (const id in CAP_BASE) AMMO_CAP[id] = capOf(id);
 function applyGunMods() {
   for (const w of WEAPON_LIST) {
-    const b = w.base, g = gunSave(w.id), has = a => g.att.includes(a), lv = clamp(g.lv || 0, 0, ARM.lvMax);
-    w.dmg = b.dmg * (1 + ARM.lvDmg * lv) * (has('hot') ? 1 + ARM.hot : 1);
-    w.crit = Math.min(1, b.crit + (has('sight') ? ARM.sight : 0));
-    w.mag = Math.max(1, Math.round(b.mag * (has('mag') ? 1 + ARM.mag : 1)));
-    w.reload = b.reload * (has('grip') ? 1 - ARM.grip : 1);
-    w.life = b.life * (has('barrel') ? 1 + ARM.barrel : 1);
-    w.spread = b.spread * (has('barrel') ? Math.max(0, 1 - ARM.barrel) : 1);
-    w.cd = b.cd / (has('trigger') ? 1 + ARM.trigger : 1);
+    const b = w.base, L = a => attLv(w.id, a);
+    w.dmg = b.dmg * (1 + ARM.hot.per * L('hot'));
+    w.crit = Math.min(1, b.crit + ARM.sight.per * L('sight'));
+    w.mag = magOf(w.id);
+    w.reload = b.reload * Math.max(.1, 1 - ARM.grip.per * L('grip'));
+    w.life = b.life * (1 + ARM.barrel.per * L('barrel'));
+    w.spread = b.spread * Math.max(0, 1 - ARM.barrel.per * L('barrel'));
+    w.cd = b.cd / (1 + ARM.trigger.per * L('trigger'));
   }
   for (const id in CAP_BASE) AMMO_CAP[id] = capOf(id);
 }
@@ -1605,7 +2292,7 @@ const reloadMul = () => 1;
 // The loop: each street brings in something new (Maple St walkers, Elm St runners and bats, Oak Ave crawlers and
 // brutes, Birch Ln the hounds), then the Dispatcher at the depot. After that the streets come round again with
 // everything out, harder each time.
-const ROSTER = { walker: 1, runner: 2, flyer: 2, crawler: 3, brute: 3, hound: 4, spitter: 4, trash: 5 };
+const ROSTER = { walker: 1, runner: 2, flyer: 2, crawler: 3, brute: 3, hound: 4, spitter: 6, trash: 5 };     // (spitters: first seen in the forest)
 const unlocked = (t, n) => n > STREETS.length || n >= (ROSTER[t] || 1);
 function nightCfg(n) {
   return { hpMul: 1 + (n - 1 - (zLevel(n) - 1) * STREETS.length) * tn('nights.hpGrowth', .18), spawnMul: Math.max(.45, 1 - (n - 1) * tn('nights.spawnGrowth', .09)), idle: (12 + n * 3) * STREET_X, horde: 5 + n * 2, cap: 11 + n * 2,
@@ -1616,7 +2303,10 @@ function nightCfg(n) {
     hounds: unlocked('hound', n), trash: unlocked('trash', n) ? Math.min(.14, .07 + (n - 5) * .01) : 0,
     spitter: unlocked('spitter', n) ? Math.min(.09, .05 + (n - 4) * .01) : 0 };
 }
-const bossHp = n => Math.max(1, Math.round(tn('boss.hp', 1300) * (1 + tn('boss.growth', .45) * (Math.floor(n / 5) - 1))));
+// each boss comes back every other loop: the Dispatcher on nights 5, 15, 25..., the Alpha on 10, 20, 30... tougher each time
+const bossHp = n => Math.max(1, Math.round(tn('boss.hp', 1300) * (1 + tn('boss.growth', .45) * Math.floor(loopOf(n) / 2))));
+const alphaHp = n => Math.max(1, Math.round(tn('alpha.hp', 1900) * (1 + tn('alpha.growth', .45) * Math.floor(loopOf(n) / 2))));
+const ALPHA_DMG = { drop: tn('alpha.drop', 14), swipe: tn('alpha.swipe', 24), slam: tn('alpha.slam', 28), charge: tn('alpha.charge', 36), can: tn('alpha.log', 22) };
 const BOSS_DMG = { drop: tn('boss.drop', 10), swipe: tn('boss.swipe', 16), slam: tn('boss.slam', 22), charge: tn('boss.charge', 30), can: tn('boss.can', 18) };
 
 /* ============================================================
@@ -1637,6 +2327,10 @@ const ZT = {
   flyer: { hp: 14, spd: [55, 70], dps: 0, half: 7, h: 10, rew: [2, 4], kbRes: .3 },       // a bat: circles overhead, swoops at him
   hound: { hp: 12, spd: [118, 132], dps: 0, half: 8, h: 13, rew: [3, 6], kbRes: .1 },      // the fastest thing on the street: leaps at your face
   trash: { hp: 120, spd: [11, 15], dps: 0, half: 7, h: 30, rew: [5, 9], kbRes: .45 },
+  ranger: { hp: 28, spd: [13, 19], dps: 11, half: 7, h: 30, rew: [1, 3], kbRes: .05 },      // the forest's walkers: park rangers
+  hunter: { hp: 32, spd: [18, 24], dps: 12, half: 7, h: 30, rew: [3, 6], kbRes: .1 },       // dropped out of a tree stand, then walks you down
+  bear: { hp: 170, spd: [10, 14], dps: 30, half: 13, h: 31, rew: [12, 18], kbRes: .7 },    // the forest's brutes: tankier, a savage swipe, no blast when it drops
+  wolf: { hp: 13, spd: [124, 138], dps: 0, half: 8, h: 13, rew: [3, 6], kbRes: .1 },       // the forest's hounds
   spitter: { hp: 30, spd: [62, 70], dps: 0, half: 7, h: 30, rew: [4, 7], kbRes: .1 },      // hangs back at the edge of the screen and spits; quicker than you until it's winded     // a skinny one in a garbage can: soaks up bullets, slams the can into you
   boss: { hp: 1300, spd: [15, 15], dps: 0, half: 17, h: 60, rew: [0, 0], kbRes: .97 },
 };
@@ -1655,7 +2349,7 @@ for (const t in ZT) {                     // the tuning page's numbers for each 
 // ---- enemy levels: the first time round the streets everything is level 1, the second time level 2, from the
 // third on level 3. Level 1 is ZT above; levels 2 and 3 start from ZLV (the tuning page's defaults) and take the
 // page's numbers on top.
-const ZLV = {"walker":{"L2":{"hp":47,"spdMin":14,"spdMax":21,"dps":13,"kbRes":0.1,"cashMin":2,"cashMax":4,"size":1.1},"L3":{"hp":68,"spdMin":16,"spdMax":23,"dps":16,"kbRes":0.2,"cashMin":2,"cashMax":6,"size":1.2}},"runner":{"L2":{"hp":29,"spdMin":48,"spdMax":59,"dps":10,"kbRes":0.1,"cashMin":3,"cashMax":6,"size":1.1},"L3":{"hp":42,"spdMin":53,"spdMax":65,"dps":13,"kbRes":0.2,"cashMin":4,"cashMax":8,"size":1.2}},"flyer":{"L2":{"hp":25,"spdMin":61,"spdMax":77,"swoop":12,"kbRes":0.4,"cashMin":3,"cashMax":6,"size":1.1},"L3":{"hp":36,"spdMin":66,"spdMax":84,"swoop":14,"kbRes":0.5,"cashMin":4,"cashMax":8,"size":1.2}},"crawler":{"L2":{"hp":25,"spdMin":18,"spdMax":24,"dps":10,"kbRes":0.25,"cashMin":3,"cashMax":6,"size":1.1},"L3":{"hp":36,"spdMin":19,"spdMax":26,"dps":13,"kbRes":0.35,"cashMin":4,"cashMax":8,"size":1.2}},"brute":{"L2":{"hp":153,"spdMin":10,"spdMax":13,"dps":21,"boom":16,"boomR":24,"kbRes":0.7,"cashMin":12,"cashMax":18,"size":1.1},"L3":{"hp":221,"spdMin":11,"spdMax":14,"dps":26,"boom":19,"boomR":24,"kbRes":0.8,"cashMin":16,"cashMax":24,"size":1.2}},"hound":{"L2":{"hp":22,"spdMin":130,"spdMax":145,"leap":21,"kbRes":0.2,"cashMin":4,"cashMax":9,"size":1.1},"L3":{"hp":31,"spdMin":142,"spdMax":158,"leap":26,"kbRes":0.3,"cashMin":6,"cashMax":12,"size":1.2}},"spitter":{"L2":{"hp":54,"spdMin":68,"spdMax":77,"spit":13,"spits":3,"tired":4.5,"kbRes":0.2,"cashMin":6,"cashMax":10,"size":1.1},"L3":{"hp":78,"spdMin":74,"spdMax":84,"spit":16,"spits":3,"tired":4.5,"kbRes":0.3,"cashMin":8,"cashMax":14,"size":1.2}},"trash":{"L2":{"hp":216,"spdMin":12,"spdMax":16,"slam":18,"kbRes":0.55,"cashMin":8,"cashMax":14,"size":1.1},"L3":{"hp":312,"spdMin":13,"spdMax":18,"slam":22,"kbRes":0.65,"cashMin":10,"cashMax":18,"size":1.2}}};
+const ZLV = {"walker":{"L2":{"hp":47,"spdMin":14,"spdMax":21,"dps":13,"kbRes":0.1,"cashMin":2,"cashMax":4,"size":1.1},"L3":{"hp":68,"spdMin":16,"spdMax":23,"dps":16,"kbRes":0.2,"cashMin":2,"cashMax":6,"size":1.2}},"runner":{"L2":{"hp":29,"spdMin":48,"spdMax":59,"dps":10,"kbRes":0.1,"cashMin":3,"cashMax":6,"size":1.1},"L3":{"hp":42,"spdMin":53,"spdMax":65,"dps":13,"kbRes":0.2,"cashMin":4,"cashMax":8,"size":1.2}},"flyer":{"L2":{"hp":25,"spdMin":61,"spdMax":77,"swoop":12,"kbRes":0.4,"cashMin":3,"cashMax":6,"size":1.1},"L3":{"hp":36,"spdMin":66,"spdMax":84,"swoop":14,"kbRes":0.5,"cashMin":4,"cashMax":8,"size":1.2}},"crawler":{"L2":{"hp":25,"spdMin":18,"spdMax":24,"dps":10,"kbRes":0.25,"cashMin":3,"cashMax":6,"size":1.1},"L3":{"hp":36,"spdMin":19,"spdMax":26,"dps":13,"kbRes":0.35,"cashMin":4,"cashMax":8,"size":1.2}},"brute":{"L2":{"hp":153,"spdMin":10,"spdMax":13,"dps":21,"boom":16,"boomR":24,"kbRes":0.7,"cashMin":12,"cashMax":18,"size":1.1},"L3":{"hp":221,"spdMin":11,"spdMax":14,"dps":26,"boom":19,"boomR":24,"kbRes":0.8,"cashMin":16,"cashMax":24,"size":1.2}},"hound":{"L2":{"hp":22,"spdMin":130,"spdMax":145,"leap":21,"kbRes":0.2,"cashMin":4,"cashMax":9,"size":1.1},"L3":{"hp":31,"spdMin":142,"spdMax":158,"leap":26,"kbRes":0.3,"cashMin":6,"cashMax":12,"size":1.2}},"spitter":{"L2":{"hp":54,"spdMin":68,"spdMax":77,"spit":13,"spits":3,"tired":4.5,"kbRes":0.2,"cashMin":6,"cashMax":10,"size":1.1},"L3":{"hp":78,"spdMin":74,"spdMax":84,"spit":16,"spits":3,"tired":4.5,"kbRes":0.3,"cashMin":8,"cashMax":14,"size":1.2}},"trash":{"L2":{"hp":216,"spdMin":12,"spdMax":16,"slam":18,"kbRes":0.55,"cashMin":8,"cashMax":14,"size":1.1},"L3":{"hp":312,"spdMin":13,"spdMax":18,"slam":22,"kbRes":0.65,"cashMin":10,"cashMax":18,"size":1.2}},"ranger":{"L2":{"hp":50,"spdMin":14,"spdMax":21,"dps":14,"kbRes":0.15,"cashMin":2,"cashMax":4,"size":1.1},"L3":{"hp":73,"spdMin":16,"spdMax":23,"dps":18,"kbRes":0.25,"cashMin":2,"cashMax":6,"size":1.2}},"hunter":{"L2":{"hp":58,"spdMin":20,"spdMax":26,"dps":16,"land":16,"kbRes":0.2,"cashMin":4,"cashMax":9,"size":1.1},"L3":{"hp":83,"spdMin":22,"spdMax":29,"dps":19,"land":19,"kbRes":0.3,"cashMin":6,"cashMax":12,"size":1.2}},"bear":{"L2":{"hp":306,"spdMin":11,"spdMax":15,"dps":39,"kbRes":0.8,"cashMin":18,"cashMax":27,"size":1.1},"L3":{"hp":442,"spdMin":12,"spdMax":17,"dps":48,"kbRes":0.9,"cashMin":24,"cashMax":36,"size":1.2}},"wolf":{"L2":{"hp":23,"spdMin":136,"spdMax":152,"leap":23,"kbRes":0.2,"cashMin":4,"cashMax":9,"size":1.1},"L3":{"hp":34,"spdMin":149,"spdMax":166,"leap":29,"kbRes":0.3,"cashMin":6,"cashMax":12,"size":1.2}}};
 function zLevel(n = nightNo()) { return Math.min(3, 1 + Math.floor((Math.max(1, n) - 1) / STREETS.length)); }
 const ZSTAT = {};
 function zStats(type, lvl) {
@@ -1663,7 +2357,8 @@ function zStats(type, lvl) {
   const T = ZT[type], num = (v, lo, d) => typeof v === 'number' && Number.isFinite(v) ? Math.max(lo, v) : d;
   const q = TUNING.enemies && TUNING.enemies[type] || {};
   let s;
-  const X1 = { swoop: FLY_DMG, leap: HOUND.dmg, slam: Math.max(0, tn('enemies.trash.slam', 14)), boom: Math.max(0, tn('enemies.brute.boom', 12)), boomR: Math.max(0, tn('enemies.brute.boomR', 24)),
+  const X1 = { swoop: FLY_DMG, leap: type === 'wolf' ? Math.max(0, tn('enemies.wolf.leap', 18)) : HOUND.dmg, slam: Math.max(0, tn('enemies.trash.slam', 14)),
+    boom: type === 'bear' ? 0 : Math.max(0, tn('enemies.brute.boom', 12)), boomR: Math.max(0, tn('enemies.brute.boomR', 24)), land: Math.max(0, tn('enemies.hunter.land', 12)),
     spit: Math.max(0, tn('enemies.spitter.spit', 10)), spits: Math.max(1, Math.round(tn('enemies.spitter.spits', 3))), tired: Math.max(.5, tn('enemies.spitter.tired', 4.5)) };
   if (lvl <= 1 || !ZLV[type]) s = { hp: T.hp, spd: T.spd, dps: T.dps, kbRes: T.kbRes, rew: T.rew, sc: num(q.size, .5, 1), ...X1 };
   else {
@@ -1680,19 +2375,20 @@ function zStats(type, lvl) {
 function zLevelize(z, type, lvl) {            // a zombie's level: its size (and so its hitbox), toughness and bite
   const T = ZT[type], L = zStats(type, lvl);
   z.lvl = lvl; z.sc = L.sc; z.half = T.half * L.sc; z.h = type === 'crawler' ? T.h : T.h * L.sc;   // crawlers stay low enough for bullets to sail over
-  z.kbRes = L.kbRes; z.dps = L.dps; z.swoop = L.swoop; z.leap = L.leap; z.slam = L.slam; z.boom = L.boom; z.boomR = L.boomR; z.spit = L.spit; z.spitN = Math.max(1, Math.round(L.spits)); z.tiredFor = L.tired;
+  z.kbRes = L.kbRes; z.dps = L.dps; z.swoop = L.swoop; z.leap = L.leap; z.slam = L.slam; z.boom = L.boom; z.boomR = L.boomR; z.spit = L.spit; z.spitN = Math.max(1, Math.round(L.spits)); z.tiredFor = L.tired; z.land = L.land;
+  if (type === 'bear') z.boom = 0;
   return L;
 }
 const PLAYER_BASE = { fy: GROUND, face: 1, elev: 0, anim: 0, moving: false, fireCd: 0, flashT: 0, recoil: 0, weapon: 'pistol', searching: null, searchT: 0, deadT: 0, hurtSfxT: 0, inBus: false, pumpT: 0, rumT: 0, reloadT: 0, reloadDur: 1, reloadW: null, calmT: 0, swingT: -1, swingHit: true, swingN: 0, lastGun: 'pistol', aim: 0, aimHoldT: 0, shotT: 9, runPhase: 0, lastRi: -1, meleeCd: 0, kbv: 0, hurtT: 0, porchT: 0, itemT: 0, speedT: 0, flareReady: false, killT: -9, emptyN: 0 };
 function dummyPlayer() { return { ...PLAYER_BASE, x: -9999, hp: 1, dead: true, hidden: true, mag: { pistol: 6, shotgun: 0, smg: 0 } }; }
 
-function spawnZombie(x, type, idle = false) {
-  const T = ZT[type];
+function spawnZombie(x, type, idle = false, look = null) {
+  const v = look || lookFor(type), sk = statKind(type, v), T = ZT[sk] || ZT[type];
   const z = { id: ++zid, x, fy: GROUND + irnd(-3, 3), type, hp: T.hp * cfg.hpMul, spd: rnd(...T.spd), dps: T.dps, half: T.half, h: T.h, kbRes: T.kbRes, rew: T.rew,
     face: player && player.x < x ? -1 : 1, anim: rnd(10), rank: 0, stun: 0, kbv: 0, flash: 0, idle, wake: rnd(120, 190), atk: false, atkT: 0, dead: false, deadT: 0, fallDir: 1,
-    v: pick(ZLOOK[type]), reach: T.half + rnd(7, 10), swayT: 0, swayDir: 1, trail: 0, vaultT: -1, lvl: 1, sc: 1 };
+    v, sk, reach: T.half + rnd(7, 10), swayT: 0, swayDir: 1, trail: 0, vaultT: -1, lvl: 1, sc: 1 };
   if (type !== 'boss') {                      // the boss has his own numbers
-    const L = zLevelize(z, type, zLevel());
+    const L = zLevelize(z, sk, zLevel());
     z.hp = L.hp * cfg.hpMul * coopMul('hp'); z.spd = rnd(...L.spd); z.rew = L.rew; z.reach = z.half + rnd(7, 10);
     if (nightNo() >= ELITE.from && Math.random() < (NET.role === 'host' ? ELITE.coop : ELITE.solo)) makeElite(z);
   }
@@ -1707,7 +2403,8 @@ function makeElite(z) {
   z.rew = [Math.round(z.rew[0] * ELITE.cash), Math.round(z.rew[1] * ELITE.cash)];
 }
 function rollType(p) {
-  const r = Math.random(), b = cfg.brute > 0 ? clamp(cfg.brute + p * .07, 0, .3) : 0, ru = cfg.runner > 0 ? Math.min(.42, cfg.runner + p * .1) : 0, cr = cfg.crawler ? cfg.crawler + p * .05 : 0, tc = cfg.trash || 0;
+  const woods = !!(world && world.forest);
+  const r = Math.random(), b = cfg.brute > 0 ? clamp(cfg.brute + p * .07, 0, .3) * (woods ? .5 : 1) : 0, ru = cfg.runner > 0 ? Math.min(.42, cfg.runner + p * .1) : 0, cr = cfg.crawler ? cfg.crawler + p * .05 : 0, tc = woods ? 0 : cfg.trash || 0;
   const sp = cfg.spitter && zombies.filter(z => z.type === 'spitter' && !z.dead).length < (NET.role === 'host' ? 3 : 2) ? cfg.spitter : 0;
   return r < b ? 'brute' : r < b + ru ? 'runner' : r < b + ru + cr ? 'crawler' : r < b + ru + cr + tc ? 'trash' : r < b + ru + cr + tc + sp ? 'spitter' : 'walker';
 }
@@ -1730,7 +2427,7 @@ function offscreenX(side, ax = null, pad = 0) {
 function spawnEdge(side, type, ax = null) {
   if (G.arena) {                                     // over the depot fence, dropping into the lot
     const z = spawnZombie(side > 0 ? ARENA_R - 22 : ARENA_L + 12, type === 'crawler' ? 'walker' : type, false);
-    z.vaultT = 0; z.vaultDir = -side; z.face = -side; return z;
+    z.vaultT = type === 'hound' ? -1 : 0; z.vaultDir = -side; z.face = -side; return z;          // (wolves just run in)
   }
   const x = offscreenX(side, ax);
   return x == null ? null : spawnZombie(x, type, false);
@@ -1741,7 +2438,10 @@ function resetLevel(bossNight = false) {
   drops = []; fires = []; nums = []; ammoBoxes = []; relicTook = new Set(); G.relicPop = null; G.onDrop = null;
   zombies = []; bullets = []; parts = []; decals = []; spits = []; buddies = []; airShots = []; airT.me = airT.ally = 0; coins = []; floaters = []; casings = []; spawnQ = []; props = []; debris = []; nades = []; NADE.on = false; G.boom = null;
   // on the depot night the bus isn't there yet: it pulls in once the boss is down
-  bus = { x: bossNight ? BUS_X + 420 : BUS_X - 8, vx: 0, door: bossNight ? 0 : 1, leaving: false, arriving: false, t: 0, wheel: 0 };
+  const trail = bossNight && exitKind() === 'trail';           // Main St: out the back gate of the depot, into the woods
+  bus = { x: bossNight && !trail ? BUS_X + 420 : BUS_X - 8, vx: 0, door: bossNight ? 0 : 1, leaving: false, arriving: false, t: 0, wheel: 0 };
+  for (const q of stands) { q.used = false; q.t = 0; }
+  for (const q of traps) { q.st = 0; q.t = 0; }
   boss = null; G.arena = false; G.bossDone = false; G.gateT = 0; G.tips = {};
 }
 function useStreet(S) { if (world !== S) buildWorld(S); setWeather(S.weather); }
@@ -1765,7 +2465,7 @@ function startNight() {
   useStreet(S);
   resetLevel(!!S.boss);
   pickRelicHouses();
-  save.grenades = Math.max(save.grenades || 0, START_NADES);      // (for now: every night starts with at least a few)
+  save.grenades = Math.min(NADE_MAX, Math.max(save.grenades || 0, START_NADES));      // every night starts with at least a few (and never more than the most you can carry)
   player = { ...PLAYER_BASE, x: 36, hp: maxHp(), dead: false, hidden: false, mag: {} };
   WEAPON_LIST.forEach(w => { player.mag[w.id] = w.id === 'pistol' ? w.mag : Math.min(w.mag, save.ammo[w.id]); });
   if (usable(save.primary)) player.weapon = save.primary;
@@ -1783,8 +2483,8 @@ function startNight() {
   G.camX = clamp(player.x - VW * .42, 0, CAM_MAX_RIGHT - VW); G.state = 'play'; G.hurtFlash = 0;
   syncControlText();
   showScreen(null);
-  if (atDepot) setBanner(tr('depot'), tr('depotSub'), 2.5);
-  else setBanner(tr('night', { n: save.night }), save.night > STREETS.length && !S.boss ? tr('again', { street: tr('sh_' + S.name) }) : tr('tip_' + S.name), 3.2);
+  if (atDepot) setBanner(tr(S.forest ? 'station' : 'depot'), tr(S.forest ? 'stationSub' : 'depotSub'), 2.5);
+  else setBanner(tr('night', { n: save.night }), loopOf(save.night) >= 2 && !S.boss ? tr('again', { street: tr('sh_' + S.name) }) : tr('tip_' + S.name), 3.2);
   requestWake();
 }
 function toTitle() {
@@ -2001,7 +2701,7 @@ function finishSearch() {
   const fx = H.doorX, fy = GROUND - 44;
   if (res === 'cash') { const a = H.type === 'house' ? irnd(8, 26) : irnd(22, 40); addCash(a); floater(fx, fy, '+$' + a, '#ffb43a'); sfx('loot'); }
   else if (res === 'ammo') { const w = pick(ammoGuns); const n = addAmmo(w.id, w.id === 'smg' ? irnd(18, 30) : irnd(3, 5)); floater(fx, fy, tr(w.id === 'shotgun' ? 'fShells' : 'fRounds', { n }), '#e2bf62'); sfx('loot'); }
-  else if (res === 'nade') { const n = irnd(1, 2); save.grenades = (save.grenades || 0) + n; floater(fx, fy, tr('fNades', { n }), '#a8c46a'); sfx('loot'); }
+  else if (res === 'nade') { const n = addNades(irnd(1, 2)); floater(fx, fy, n ? tr('fNades', { n }) : tr('fNadesFull'), '#a8c46a'); sfx('loot'); }
   else if (res === 'med') { const a = PT.med; player.hp = Math.min(maxHp(), player.hp + a); floater(fx, fy, tr('fHealth', { n: a }), '#7fd08a'); sfx('med'); }
   else if (res === 'weapon') {
     const w = unowned[0]; save.owned[w.id] = true; addAmmo(w.id, AMMO_CAP[w.id]);
@@ -2074,7 +2774,8 @@ function playerPose() {
   } else if (p.aim > 0) T = survF('lower', Math.round((1 - p.aim) * (SURV_N.lower - 1)));
   else if (p.reloadT > 0 && !p.moving) T = survF('lower', 3);          // reloading: gun brought up in front of him
   else T = legsF || survF('idle', Math.floor(G.t * 6));
-  if (p.searching && p.porchT > .9) sq = Math.floor(G.t * 7) % 2 ? 2 : 0;   // rummaging through the house
+  if (p.searching && p.searching.pile) sq = Math.floor(G.t * 7) % 2 ? 5 : 3;   // down on his knees, digging
+  else if (p.searching && p.porchT > .9) sq = Math.floor(G.t * 7) % 2 ? 2 : 0;   // rummaging through the house
   if (p.hurtT > 0 && CUSTOM && AF.cx_hurt && !p.moving && p.aim <= 0 && p.weapon === 'pistol') T = AF.cx_hurt;
   else if (p.hurtT > 0) { const k = p.hurtT / .26; rot = -p.face * .1 * k; x -= p.face * .8 * k; }   // flinch back from a bite
   return { L: T === AF.cx_hurt ? T : legsF || T, T, x: x - p.face * p.recoil, y, rot, sq, lsc: 1, arm };
@@ -2188,7 +2889,37 @@ function quickSwing() {
   player.aim = 0; player.aimHoldT = 0; player.fireCd = Math.max(player.fireCd, SWING);
   sfx('whoosh');
 }
-function meleeHit() { meleeHitFrom(player, melee()); }
+// ---- BEAR TRAPS: steel jaws set on the forest trails. Step in one and it bites and holds you for a couple of
+//      seconds (a swing of the bat pries it open sooner). Swing the bat at one on the path and it snaps shut on
+//      nothing. Only people set them off. ----
+function updTraps(dt) {
+  if (!traps.length || !player || G.state !== 'play') return;
+  const p = player;
+  if (p.trapT > 0) { p.trapT -= dt; if (p.trapT <= 0 || p.dead || p.inBus) p.trapT = 0; }
+  if (p.dead || p.hidden || p.inBus || p.trapT > 0 || p.porchT > .2) return;
+  for (let i = 0; i < traps.length; i++) {
+    const t = traps[i]; if (t.st || Math.abs(p.x - t.x) > 3.5) continue;
+    t.st = 1; p.trapT = TRAP.hold; p.x = t.x; p.kbv = 0;
+    dmgPlayer(TRAP.dmg); sfx('clang'); addShake(3); blood(p.x, p.fy - 3, 1, 5); blood(p.x, p.fy - 3, -1, 5);
+    setBanner(tr('trapped'), tr('trappedSub'), 1.6, true);
+    netEv('trap', i, 1);
+    break;
+  }
+}
+function batTraps() {                                // the bat: pry open the one you're in, or set off the ones in front of you
+  if (!traps.length) return;
+  const p = player, M = melee();
+  if (p.trapT > 0) { p.trapT = 0; sfx('clang'); floater(p.x, p.fy - 40, tr('trapFreeF'), '#ffb43a', .8); return; }
+  for (let i = 0; i < traps.length; i++) {
+    const t = traps[i]; if (t.st) continue;
+    const ahead = (t.x - p.x) * p.face; if (ahead < -5 || ahead > M.reach + 5) continue;
+    t.st = 2; sfx('clang'); addShake(1.4); sparks(t.x, GROUND - 3, p.face); sparks(t.x, GROUND - 3, -p.face);
+    floater(t.x, GROUND - 16, tr('trapOffF'), '#c9ccd6', .8);
+    netEv('trap', i, 2);
+  }
+}
+function trapNews(i, st) { const t = traps[+i]; if (t && !t.st && (st === 1 || st === 2)) t.st = st; }
+function meleeHit() { meleeHitFrom(player, melee()); batTraps(); }
 function meleeHitFrom(src, M) {
   const targets = [];
   for (const z of zombies) {
@@ -2250,6 +2981,11 @@ function mist(x, y, n, spread = 10) { for (let i = 0; i < n; i++) parts.push({ k
 function deathFx(z, dir, crit) {
   if (!z || z.fxDone) return; z.fxDone = true;
   const hx = z.x + dir * 2, hy = z.type === 'flyer' ? z.y : z.type === 'crawler' ? z.fy - z.h + 2 : z.fy - z.h + 5;
+  if (z.v === 'bear') {
+    blood(z.x, z.fy - 14, dir, 16); addShake(2.5); sfx('thump');
+    if (crit) { mist(z.x + dir * 10, z.fy - 16, 6, 12); sfx('splat'); for (let i = 0; i < 10; i++) parts.push({ k: 'b', x: z.x + dir * rnd(4, 14), y: z.fy - 16, vx: dir * rnd(10, 60), vy: rnd(-80, -20), life: 3, t: 0, gy: z.fy + irnd(-1, 4), c: pick(GUTS), sz: 2, dh: 2, dw: irnd(2, 4) }); }
+    return;
+  }
   if (z.type === 'brute') {
     const cy = z.fy - z.h * .45;
     for (let i = 0; i < 26; i++) { const a = rnd(0, Math.PI * 2), v = rnd(40, 130); parts.push({ k: 'b', x: z.x, y: cy, vx: Math.cos(a) * v, vy: Math.sin(a) * v * .7 - 50, life: 2, t: 0, gy: GROUND + irnd(-3, 6), c: Math.random() < .6 ? '#8e1f33' : '#5c1022', sz: Math.random() < .35 ? 2 : 1 }); }
@@ -2284,7 +3020,7 @@ function hurtZombie(z, b, m = 1, cr = false) {           // my bullet (m: One-Tw
   if (z.hp <= 0) { z.critKill = cr; ownKill(z, b.face); }
 }
 function hatOff(z, dir) {                        // a level 2 or 3 zombie's helmet pops off as it goes down
-  if (!(z.lvl > 1) || z.type === 'boss') return;
+  if (!(z.lvl > 1) || z.type === 'boss' || WOODS_V(z.v)) return;
   const f = z.type === 'hound' ? (HOUND_ART && HOUND_ART.f.run0) : z.type === 'flyer' ? (BAT && BAT.f.mid) : z.type === 'trash' ? null : zf(z, 'idle');
   if (z.type === 'trash' && !TRASH_ART) TRASH_ART = buildTrashFrames();
   const hd = z.type === 'trash' ? TRASH_ART.hd : headOf(f, z.type === 'crawler' ? 8 : z.type === 'hound' ? 7 : 13); if (!hd) return;
@@ -2303,7 +3039,8 @@ function killZombie(z, dir) {
     blood(z.x, z.fy - 30, dir, 40); addShake(7); sfx('roar'); sfx('slam');
     for (let i = 0; i < 16; i++) coins.push({ x: z.x + rnd(-10, 10), y: z.fy - 30, vx: rnd(-80, 80), vy: rnd(-150, -80), v: irnd(8, 14), t: 0, fy: z.fy + irnd(-3, 3) });
     G.bossDone = true; G.busT = 1.6;
-    setBanner(tr('bossDown'), tr('bossDownSub'), 3); netEv('bn', 'bossDown', 'bossDownSub', 3, 0, 'roar');
+    const bk = world && world.forest ? ['alphaDown', 'alphaDownSub'] : ['bossDown', 'bossDownTrail'];
+    setBanner(tr(bk[0]), tr(bk[1]), 3); netEv('bn', bk[0], bk[1], 3, 0, 'roar');
     // with him gone, the ones he called in drop where they stand
     for (const q of zombies) if (q !== z && !q.dead && q.x > ARENA_L) killZombie(q, Math.sign(q.x - z.x) || 1);
     return;
@@ -2351,7 +3088,7 @@ function enterBus() {
   if (NET.role === 'guest') { if (!ally || !ally.inBus) setBanner(tr('coopBusWait'), '', 2.5); return; }
   if (!coopAlly() || everyoneAboard()) busGo(); else setBanner(tr('coopBusWait'), '', 2.5);
 }
-function busGo() { bus.leaving = true; bus.t = 0; sfx('horn'); }
+function busGo() { bus.leaving = true; bus.t = 0; if (exitKind() !== 'trail') sfx('horn'); }
 
 /* ============================================================
    UPDATE
@@ -2411,7 +3148,7 @@ function updPlayer(dt) {
   // if he walks away from where he's shooting. Mid-swing the arrows only turn him around.
   const runGun = input.stick && player.swingT < 0;
   const planted = (input.fire && !runGun) || player.swingT >= 0;
-  if (dir && !planted && player.porchT < .5) {
+  if (dir && !planted && player.porchT < .5 && !(player.trapT > 0)) {
     const blocked = zombies.some(z => !z.dead && z.vaultT < 0 && z.type !== 'boss' && z.type !== 'flyer' && z.type !== 'hound' && Math.sign(z.x - player.x) === dir && Math.abs(z.x - player.x) < z.half + 9);   // you can duck past the boss's legs
     if (runGun) spd *= dir === player.face ? .7 : .55;
     if (!blocked) { player.x += dir * spd * dt; moving = true; }
@@ -2450,13 +3187,16 @@ function updPlayer(dt) {
     player.x += (H.doorX - player.x) * Math.min(1, dt * 9);
     player.searchT += dt * searchRate(); player.rumT -= dt; player.itemT -= dt;
     if (player.rumT <= 0) { sfx('rummage'); player.rumT = .28; }
-    if (player.itemT <= 0 && player.porchT > .8) {
+    if (player.itemT <= 0 && H.pile) {
+      player.itemT = rnd(.12, .22);
+      parts.push({ k: 'i', x: H.doorX + rnd(-6, 6), y: GROUND - 6 - rnd(0, 6), vx: rnd(-55, 55), vy: rnd(-85, -40), life: 1.1, t: 0, gy: GROUND + irnd(-2, 4), c: pick(['#5e4129', '#6f4e30', '#3a281b', '#6b3a1c', '#7d4a22', '#8a5a2a']), sz: 1 });
+    } else if (player.itemT <= 0 && player.porchT > .8) {
       player.itemT = rnd(.16, .3);
       parts.push({ k: 'i', x: H.doorX + rnd(-4, 4), y: 110 + rnd(0, 6), vx: rnd(-45, 45), vy: rnd(-70, -35), life: 1.1, t: 0, gy: 126 + irnd(0, 5), c: pick(['#c9b98a', '#8a9ab8', '#b8403a', '#e2bf62', '#7fb08a', '#f3ead6']), sz: Math.random() < .5 ? 2 : 1 });
     }
     if (player.searchT >= 1) finishSearch();
   }
-  player.porchT = player.searching ? Math.min(1, player.porchT + dt / .22) : Math.max(0, player.porchT - dt / .16);
+  player.porchT = player.searching && !player.searching.pile ? Math.min(1, player.porchT + dt / .22) : Math.max(0, player.porchT - dt / .16);
   stats.far = Math.max(stats.far, clamp(player.x / (BUS_X + 2), 0, 1));
   if (player.x >= bus.x + 10 && bus.door >= 1 && !bus.leaving) enterBus();
   if (NET.role !== 'guest' && streetOf(nightNo()).boss && !G.arena && !G.bossDone && player.x > ARENA_L + 34) startBoss(player.x);
@@ -2464,6 +3204,7 @@ function updPlayer(dt) {
 function updZombie(z, dt) {
   if (z.type === 'boss') { updBoss(z, dt); return; }
   if (z.type === 'flyer') { updFlyer(z, dt); return; }
+  if (z.falling && !z.dead) { fallZombie(z, dt); return; }
   if (z.heldUntil > G.t && !z.dead) { z.flash = Math.max(0, z.flash - dt); z.x += z.kbv * dt * .3; z.kbv *= Math.exp(-9 * dt); z.atk = false; z.anim += dt * 3; if (z.stun > 0) z.stun -= dt; return; }
   if (z.type === 'hound') { updHound(z, dt); return; }
   if (z.type === 'spitter' && !z.dead && z.vaultT < 0 && !z.idle && !(G.arena && z.x < ARENA_L)) { updSpitter(z, dt); return; }
@@ -2634,11 +3375,18 @@ function tickBuddy(d, P, dt) {
         if (z.hp <= 0) { killZombie(z, -d.side); d.tgt = null; d.st = 'follow'; d.cd = .5; }
       }
     }
-  } else {                                             // at your heel (and it catches up if you get far ahead)
-    const hx = P.x - (P.face || 1) * 16, dx = hx - d.x, sp = Math.abs(dx) > 60 ? 160 : 85;
-    if (Math.abs(dx) > 300) d.x = hx - Math.sign(dx) * 40;
-    if (Math.abs(dx) > 6) { d.st = 'follow'; d.face = Math.sign(dx); d.x += clamp(dx, -sp * dt, sp * dt); d.anim += dt * (sp > 100 ? 14 : 10); }
-    else { d.st = 'sit'; d.face = P.face || 1; }
+  } else {                                             // at your heel: trots along behind you while you walk, sits when you stop
+    const mv = !!P.moving;
+    if (mv) d.heel = P.backing ? (P.face || 1) : -(P.face || 1);        // behind you, the way you're going
+    if (!d.heel) d.heel = -(P.face || 1);
+    const hx = P.x + d.heel * 16, dx = hx - d.x, adx = Math.abs(dx);
+    if (adx > 300) d.x = hx - Math.sign(dx) * 40;
+    if (!mv && (adx < 5 || (d.st === 'sit' && adx < 14))) { if (d.st !== 'sit') { d.st = 'sit'; d.face = P.face || 1; } }
+    else {
+      const v = clamp(dx * 5, -(adx > 60 ? 160 : 110), adx > 60 ? 160 : 110);
+      d.st = 'follow'; d.x += v * dt; if (Math.abs(v) > 4) d.face = Math.sign(v);
+      d.anim += dt * clamp(Math.abs(v) * .16, 5, 16);
+    }
   }
   d.x = clamp(d.x, 4, WORLD_LEN - 4);
 }
@@ -2687,12 +3435,12 @@ function buildBuddyFrames() {                      // golden fur, white chest, f
     return c;
   };
   const f = {
-    sit0: make({ legs: [0, 0, 1.2, -1.4], lift: 9, tilt: -.42, head: .38, pant: true, sit: true, tail: -2 }),
-    sit1: make({ legs: [0, 0, 1.2, -1.4], lift: 9, tilt: -.42, head: .38, pant: true, sit: true, tail: 3 }),
-    run0: make({ legs: [1.0, .4, -1.0, -.4], lift: 11, pant: true, tail: -2 }),
-    run1: make({ legs: [.1, -.5, .5, .1], lift: 12, pant: true, tail: 2 }),
-    run2: make({ legs: [.5, -.1, -.4, .3], lift: 12, pant: true, tail: -1 }),
-    run3: make({ legs: [-.2, .2, -.7, -.2], lift: 11, pant: true, tail: 3 }),
+    sit0: make({ legs: [.4, .4, 1.3, -1.5], lift: 10, tilt: -.4, head: .36, pant: true, sit: true, tail: -1 }),
+    sit1: make({ legs: [.4, .4, 1.3, -1.5], lift: 10, tilt: -.4, head: .36, pant: true, sit: true, tail: 1 }),
+    run0: make({ legs: [.7, .2, -.6, -.2], lift: 11, pant: true, tail: 0 }),                // a steady trot: front and back legs swing opposite
+    run1: make({ legs: [.2, -.3, .3, .15], lift: 11.4, pant: true, tail: 1 }),
+    run2: make({ legs: [-.4, .1, .7, .2], lift: 11, pant: true, tail: 0 }),
+    run3: make({ legs: [.1, .3, -.2, -.3], lift: 11.4, pant: true, tail: -1 }),
     tug0: make({ legs: [.3, .6, .5, -.3], lift: 12, tilt: -.62, head: .5, bite: true, tail: -3 }),     // up on its back legs, hanging off an arm
     tug1: make({ legs: [.1, .4, .6, -.2], lift: 12, tilt: -.5, head: .2, bite: true, tail: 3 }),
   };
@@ -2787,15 +3535,19 @@ function startBoss(px = player.x) {
   G.arena = true; G.gateT = 0; spawnQ = [];
   const x = clamp(px + Math.min(210, VW - 70), ARENA_L + 130, ARENA_R - 40);   // lands where you can see him, even on narrow screens
   boss = spawnZombie(x, 'boss', false);
-  boss.v = 'X'; boss.hp = boss.maxHp = bossHp(nightNo()); boss.fy = GROUND + 1; boss.face = -1;
+  const alpha = !!(world && world.forest);
+  boss.v = alpha ? 'BEAR' : 'X'; boss.hp = boss.maxHp = alpha ? alphaHp(nightNo()) : bossHp(nightNo()); boss.fy = GROUND + 1; boss.face = -1;
+  if (alpha) boss.spd = Math.max(1, tn('alpha.speed', 18));
   boss.st = 'drop'; boss.stT = 0; boss.dropY = -150; boss.hit = false; boss.run = false;
   boss.cd = { atk: 1.2, slam: 2.5, charge: 3.5, throw: 2, summon: 12 };
   boss.summons = [.68, .36];
   sfx('clang');
-  setBanner(tr('boss'), tr('bossSub'), 4); netEv('bn', 'boss', 'bossSub', 4, 0, 'clang');
+  const bk = alpha ? ['alphaB', 'alphaBSub'] : ['boss', 'bossSub'];
+  setBanner(tr(bk[0]), tr(bk[1]), 4); netEv('bn', bk[0], bk[1], 4, 0, alpha ? 'roar' : 'clang');
 }
 function bossPhase2(z) { return z.hp < z.maxHp * .5; }
 function updBoss(z, dt) {
+  const BD = z.v === 'BEAR' ? ALPHA_DMG : BOSS_DMG;
   if (z.dead) { z.deadT += dt; return; }
   z.flash = Math.max(0, z.flash - dt); z.stT += dt;
   for (const k in z.cd) z.cd[k] -= dt;
@@ -2809,7 +3561,7 @@ function updBoss(z, dt) {
       if (z.dropY >= 0) {
         addShake(7); sfx('slam');
         for (let i = 0; i < 16; i++) parts.push({ k: 'd', x: z.x + rnd(-24, 24), y: z.fy - 1, vx: rnd(-60, 60), vy: rnd(-25, -5), life: rnd(.4, .8), t: 0 });
-        areaHit(z.x, 40, BOSS_DMG.drop, 160);
+        areaHit(z.x, 40, BD.drop, 160);
         go('roar');
       }
       break;
@@ -2840,7 +3592,7 @@ function updBoss(z, dt) {
       const tell = .6 * f2;
       if (z.stT >= tell && !z.hit) {
         z.hit = true; sfx('whoosh');
-        areaHit(z.x, 42, BOSS_DMG.swipe, 190, z.face, z.face, 's');
+        areaHit(z.x, 42, BD.swipe, 190, z.face, z.face, 's');
         if (livePlayers().some(q => upright(q) && !q.hidden && inArea(q.x, z.x, 42, z.face))) z.landed = true;
       }
       // after a backhand lands he gloats for a moment: time to slip past him or back off
@@ -2852,7 +3604,7 @@ function updBoss(z, dt) {
       if (z.stT >= tell && !z.hit) {
         z.hit = true; addShake(6); sfx('slam');
         for (let i = 0; i < 24; i++) { const d = i % 2 ? 1 : -1; parts.push({ k: 'd', x: z.x + d * rnd(4, 60), y: z.fy - 1, vx: d * rnd(40, 110), vy: rnd(-30, -6), life: rnd(.3, .6), t: 0 }); }
-        areaHit(z.x, SLAM_R, BOSS_DMG.slam, 200);
+        areaHit(z.x, SLAM_R, BD.slam, 200);
         for (const q of zombies) if (q !== z && !q.dead && Math.abs(q.x - z.x) < SLAM_R) { q.kbv += Math.sign(q.x - z.x || 1) * 140; q.stun = Math.max(q.stun, .5); q.hp -= 20; q.flash = .07; if (q.hp <= 0) killZombie(q, Math.sign(q.x - z.x || 1)); }
       }
       if (z.stT >= tell + .8) { z.cd.slam = rnd(4.5, 6.5) * f2; z.cd.atk = .7; go('walk'); }
@@ -2877,7 +3629,7 @@ function updBoss(z, dt) {
           if (has('onetwo')) z.primed = G.t;
           go('stagger'); break;
         }
-        if (P === player) { dmgPlayer(BOSS_DMG.charge, z.dir * 260); barbHit(z, 15); } else if (coopAlly()) netEv('atk', r1(z.x), z.half + 10, BOSS_DMG.charge, 260, 0, z.dir, 'c');   // their screen decides (and whether they parried)
+        if (P === player) { dmgPlayer(BD.charge, z.dir * 260); barbHit(z, 15); } else if (coopAlly()) netEv('atk', r1(z.x), z.half + 10, BD.charge, 260, 0, z.dir, 'c');   // their screen decides (and whether they parried)
         addShake(5);
         go('recover'); break;
       }
@@ -2896,7 +3648,7 @@ function updBoss(z, dt) {
       if (z.stT >= tell && !z.hit) {
         z.hit = true; sfx('whoosh');
         const tx = clamp(P.x, ARENA_L + 10, ARENA_R - 10);
-        debris.push({ x0: z.x + z.face * 10, y0: z.fy - 58, tx, t: 0, T: 1.05, a: 0 });
+        debris.push({ x0: z.x + z.face * 10, y0: z.fy - 58, tx, t: 0, T: 1.05, a: 0, log: z.v === 'BEAR' });
       }
       if (z.stT >= tell + .5) { z.cd.throw = rnd(3.5, 5) * f2; z.cd.atk = .5; go('walk'); }
       break;
@@ -2921,7 +3673,7 @@ function updDebris(dt) {
     if (d.t >= d.T) {
       d.done = true; sfx('crash'); addShake(2.5);
       for (let i = 0; i < 10; i++) parts.push({ k: 'i', x: d.tx, y: GROUND - 4, vx: rnd(-70, 70), vy: rnd(-80, -30), life: 1, t: 0, gy: GROUND + irnd(-2, 4), c: pick(['#6a6f7a', '#8a8f9a', '#4a4f5a', '#c9b98a']), sz: 1 });
-      areaHit(d.tx, 17, BOSS_DMG.can, 150);
+      areaHit(d.tx, 17, (d.log || (world && world.forest) ? ALPHA_DMG : BOSS_DMG).can, 150);
       for (const q of zombies) if (q.type !== 'boss' && !q.dead && Math.abs(q.x - d.tx) < 17) { q.hp -= 25; q.flash = .07; q.kbv += Math.sign(q.x - d.tx || 1) * 90; if (q.hp <= 0) killZombie(q, 1); }
     }
   }
@@ -2931,10 +3683,11 @@ function debrisPos(d) {
   const k = d.t / d.T;
   return { x: lerp(d.x0, d.tx, k), y: lerp(d.y0, GROUND - 4, k) - Math.sin(Math.PI * k) * 70 };
 }
-const capNow = () => Math.round(cfg.cap * coopMul('cap'));
+const SIDES = Math.max(.1, tn('nights.sides', 1.2));                          // zombies walking in from the sides: 1.2 = 20% more
+const capNow = () => Math.round(cfg.cap * coopMul('cap') * SIDES);
 function updSpawns(dt) {
   if (G.arena) {                                            // in the depot the boss calls his own help
-    for (const q of spawnQ) { q.t -= dt; if (q.t <= 0 && !q.done) { q.done = true; spawnEdge(q.side, Math.random() < .3 ? 'runner' : 'walker'); } }
+    for (const q of spawnQ) { q.t -= dt; if (q.t <= 0 && !q.done) { q.done = true; spawnEdge(q.side, world && world.forest ? (Math.random() < .45 ? 'hound' : 'walker') : Math.random() < .3 ? 'runner' : 'walker'); } }
     spawnQ = spawnQ.filter(q => !q.done);
     return;
   }
@@ -2945,7 +3698,7 @@ function updSpawns(dt) {
   const alive = zombies.reduce((n, z) => n + (!z.dead && (!z.idle || near(z.x)) ? 1 : 0), 0);
   spawnT -= dt;
   if (spawnT <= 0) {
-    spawnT = Math.max(.5, (2.0 - p * .9) * cfg.spawnMul) * rnd(.7, 1.3) / coopMul('spawn');
+    spawnT = Math.max(.42, (2.0 - p * .9) * cfg.spawnMul) * rnd(.7, 1.3) / coopMul('spawn') / SIDES;
     if (alive < capNow()) spawnEdge(Math.random() < .55 ? 1 : -1, rollType(p));
   }
   G.hordeCd = Math.max(0, (G.hordeCd || 0) - dt);
@@ -2992,7 +3745,8 @@ const HOUND = { leapR: 56, near: 30, crouchT: .3, leapT: .5, peak: .68, face: 14
 function houndWave() {
   G.houndDone = true;
   const n = Math.min(7, Math.round(Math.min(5, 2 + Math.floor((nightNo() - 1) / 2)) * coopMul('horde')));
-  setBanner(tr('hounds'), tr('houndsSub'), 3, true); sfx('howl'); netEv('bn', 'hounds', 'houndsSub', 3, 1, 'howl');
+  const hk = world && world.forest ? 'wolves' : 'hounds';
+  setBanner(tr(hk), tr(hk + 'Sub'), 3, true); sfx('howl'); netEv('bn', hk, hk + 'Sub', 3, 1, 'howl');
   for (let i = 0; i < n; i++) spawnQ.push({ t: 2.2 + i * .55, side: i % 3 === 2 ? -1 : 1, type: 'hound' });
 }
 function updHound(z, dt) {
@@ -3373,7 +4127,11 @@ function updMisc(dt) {
   updDebris(dt);
   if (G.arena) G.gateT = Math.min(1, G.gateT + dt / .45);
   if (G.bossDone && !bus.arriving && bus.door < 1 && !bus.leaving) {
-    G.busT -= dt; if (G.busT <= 0) { bus.arriving = true; sfx('horn'); }
+    G.busT -= dt;
+    if (G.busT <= 0) {
+      if (exitKind() === 'trail') { if (bus.door <= 0) sfx('clang'); bus.door = Math.min(1, bus.door + dt / .6); }   // the back gate swings open
+      else { bus.arriving = true; sfx('horn'); }
+    }
   }
   if (bus.arriving) {                              // the last bus pulls into the depot
     const stop = BUS_X - 8, sp = Math.max(24, (bus.x - stop) * 1.6);
@@ -3382,7 +4140,7 @@ function updMisc(dt) {
   }
   if (bus.leaving) {
     bus.t += dt; bus.door = Math.max(0, 1 - bus.t / .3);
-    if (bus.t > .6) { bus.vx = Math.min(160, bus.vx + 70 * dt); bus.x += bus.vx * dt; bus.wheel += bus.vx * dt; }
+    if (bus.t > .6 && exitKind() !== 'trail') { bus.vx = Math.min(160, bus.vx + 70 * dt); bus.x += bus.vx * dt; bus.wheel += bus.vx * dt; }
     if (bus.t > 2.6 && G.state === 'play') endNight(true);
   }
 }
@@ -3392,7 +4150,7 @@ function updMisc(dt) {
    Searching one throws the items out onto the sidewalk (one each in co-op); stand on one for five seconds
    to take it. From then on it's yours; get bitten on the night you found it and it's gone, but items from earlier nights stay.
    ============================================================ */
-const RELIC_T = Math.max(.5, tn('items.collect', 4)), RELIC_R = 7, BARB_DPS = tn('items.barbed', 10), FIRE_R = 20, FIRE_LIFE = Math.max(.5, tn('items.flareLife', 3)), FIRE_TICK = tn('items.flareDmg', 6);
+const RELIC_T = Math.max(.5, tn('items.collect', 2)), RELIC_R = 7, BARB_DPS = tn('items.barbed', 10), FIRE_R = 20, FIRE_LIFE = Math.max(.5, tn('items.flareLife', 3)), FIRE_TICK = tn('items.flareDmg', 6);
 const has = id => !!(save && save.relics && save.relics.includes(id));
 let drops = [], fires = [], nums = [], relicTook = new Set(), dropUid = 0, dropGroup = 0, shotSeq = 0, ammoBoxes = [];
 function rollAmmoDrop(z) {                           // once per zombie; the box is for your gun (in co-op each of you rolls your own)
@@ -3651,6 +4409,10 @@ function drawRelicHouses(cam) {                      // under the night: a warm 
     if (!H.relic || H.searched || !H.wins) continue;
     if (H.x - cam > VW + 10 || H.x + H.w - cam < -10) continue;
     const pulse = .5 + .5 * Math.sin(G.t * 3 + H.x * .1);
+    if (H.pile) {                                    // a pile with something good under it: a gold shimmer through the sticks
+      const A = H.art; ctx.globalAlpha = .25 + .35 * pulse; ctx.drawImage(goldOf(A), Math.round(H.doorX - cam) - Math.round(A.W / 2), GROUND - A.base + 1); ctx.globalAlpha = 1;
+      continue;
+    }
     H.wins.forEach((w, i) => {
       const x = Math.round(w.x - cam), y = w.y;
       ctx.fillStyle = `rgba(255,214,110,${(.4 + .3 * pulse).toFixed(3)})`; ctx.fillRect(x, y, w.w, w.h);
@@ -3756,7 +4518,7 @@ function drawRelicPop() {                            // just picked up: the item
    On claude.ai the page's `room` carries the snapshots; on the game's own website PeerJS does (a free
    public server introduces the two browsers, then they talk directly).
    ============================================================ */
-const GAME_BUILD = 50;                              // shown on the co-op screen, so two players can check they have the same game
+const GAME_BUILD = 51;                              // shown on the co-op screen, so two players can check they have the same game
 // on the game's own website: browsers may keep an old copy of the page for up to 10 minutes after an update,
 // so check for a newer upload when the game opens and load it straight away if there is one
 (function checkForUpdate() {
@@ -3768,7 +4530,7 @@ const GAME_BUILD = 50;                              // shown on the co-op screen
     location.replace(location.pathname + '?v=' + n);
   }).catch(() => {});
 })();
-const NET_V = 8, ZTYPES = ['walker', 'runner', 'brute', 'crawler', 'flyer', 'hound', 'trash', 'spitter'], FLY_ST = ['cruise', 'wind', 'dive', 'leave'];
+const NET_V = 9, ZTYPES = ['walker', 'runner', 'brute', 'crawler', 'flyer', 'hound', 'trash', 'spitter'], FLY_ST = ['cruise', 'wind', 'dive', 'leave'];
 const NET = { role: 'solo', room: null, code: '', t: 0, push: 0, rate: 20, seq: 0, out: [], seen: 0, run: 0, night: 1, hostRun: 0,
   partner: null, lastP: null, lastSeen: 0, hadPartner: false, mateId: null, rtt: 0, lead: 0, theirTs: 0, theirAt: 0, pend: [], gone: new Set() };
 let ally = null;                                  // the other survivor on this screen, a puppet built from their messages
@@ -3902,7 +4664,7 @@ function testRoom(name) {
 
 // ---- a survivor as a short list of numbers, and back ----
 function pState(p) {
-  const fl = (p.moving ? 1 : 0) | (p.dead ? 2 : 0) | (p.inBus ? 4 : 0) | (p.hidden ? 8 : 0) | (p.backing ? 16 : 0) | (p.searching ? 32 : 0) | (p.flashT > 0 ? 64 : 0) | (p.dead && !p.reviveUsed ? 128 : 0);
+  const fl = (p.moving ? 1 : 0) | (p.dead ? 2 : 0) | (p.inBus ? 4 : 0) | (p.hidden ? 8 : 0) | (p.backing ? 16 : 0) | (p.searching ? 32 : 0) | (p.flashT > 0 ? 64 : 0) | (p.trapT > 0 ? 256 : 0) | (p.dead && !p.reviveUsed ? 128 : 0);
   return [r1(p.x), r1(p.fy), p.face, fl, Math.round(p.aim * 100), Math.round((p.elev || 0) * 100), Math.max(0, WEAPON_ORDER.indexOf(p.weapon)),
     Math.round(Math.min(9, p.shotT) * 100), r1(p.runPhase || 0), Math.round(Math.max(0, p.reloadT) * 100), Math.round((p.reloadDur || 1) * 100),
     Math.round(p.swingT * 100), Math.round(Math.max(0, p.hurtT) * 100), r1(Math.min(9, p.deadT || 0)), r1(p.recoil || 0), Math.round(p.porchT * 100),
@@ -3920,7 +4682,7 @@ function applyPState(q, a) {
   if (q.tx === null || Math.abs(a[0] - q.x) > 80) q.x = a[0];
   q.tx = a[0]; q.fy = a[1]; q.face = a[2] < 0 ? -1 : 1;
   q.revivable = !!(f & 128);
-  q.moving = !!(f & 1); q.inBus = !!(f & 4); q.hidden = !!(f & 8); q.backing = !!(f & 16); q.searching = (f & 32) ? true : null;
+  q.moving = !!(f & 1); q.inBus = !!(f & 4); q.hidden = !!(f & 8); q.backing = !!(f & 16); q.searching = (f & 32) ? true : null; q.trapped = !!(f & 256);
   if (f & 64) q.flashT = .05;
   q.aim = a[4] / 100; q.elev = a[5] / 100; q.weapon = WEAPON_ORDER[a[6]] || 'pistol'; q.shotT = a[7] / 100;
   if (Math.abs(a[8] - q.runPhase) > 2) q.runPhase = a[8];
@@ -3962,11 +4724,11 @@ function hostSnap() {
   for (const z of zombies) {
     if (z.type === 'boss' || dist(z.x) > 420 || (z.dead && z.deadT > .6)) continue;
     const t = ZTYPES.indexOf(z.type); if (t < 0) continue;
-    const air = z.type === 'flyer';
+    const air = z.type === 'flyer', fall = !!z.falling && !z.dead;
     if (z._st !== undefined && now - z._st > .01) { const el = now - z._st; z._vx = (z.x - z._sx) / el; z._vy = air ? (z.y - z._sy) / el : 0; }
     if (z._st === undefined || now - z._st > .01) { z._sx = z.x; z._sy = z.y; z._st = now; }
-    const fl = (z.dead ? 1 : 0) | (z.atk ? 2 : 0) | (z.idle ? 4 : 0) | (z.flash > 0 && !(G.t - (z.allyFlashT ?? -9) < .1) ? 8 : 0) | (z.stun > 0 ? 16 : 0) | (z.vaultT >= 0 ? 32 : 0) | (z.fallDir < 0 ? 64 : 0) | (z.landed ? 128 : 0) | (a && z.tgt === a ? 256 : 0) | (z.critKill ? 512 : 0) | (z.elite ? 1024 : 0) | (z.heldUntil > G.t ? 2048 : 0);
-    zs.push([z.id, t, Math.round(z.x), Math.round(air ? z.y : z.fy), z.face > 0 ? 1 : 0, fl, Math.max(0, (ZLOOK[z.type] || []).indexOf(z.v)), air ? Math.max(0, FLY_ST.indexOf(z.st)) : z.type === 'hound' ? Math.max(0, HOUND_ST.indexOf(z.st)) : z.type === 'spitter' ? Math.max(0, SPIT_ST.indexOf(z.st || 'keep')) : (z.vaultDir || 0),
+    const fl = (z.dead ? 1 : 0) | (z.atk ? 2 : 0) | (z.idle ? 4 : 0) | (z.flash > 0 && !(G.t - (z.allyFlashT ?? -9) < .1) ? 8 : 0) | (z.stun > 0 ? 16 : 0) | (z.vaultT >= 0 ? 32 : 0) | (z.fallDir < 0 ? 64 : 0) | (z.landed ? 128 : 0) | (a && z.tgt === a ? 256 : 0) | (z.critKill ? 512 : 0) | (z.elite ? 1024 : 0) | (z.heldUntil > G.t ? 2048 : 0) | (fall ? 4096 : 0);
+    zs.push([z.id, t, Math.round(z.x), Math.round(air || fall ? z.y : z.fy), z.face > 0 ? 1 : 0, fl, Math.max(0, (ZLOOK[z.type] || []).indexOf(z.v)), air ? Math.max(0, FLY_ST.indexOf(z.st)) : z.type === 'hound' ? Math.max(0, HOUND_ST.indexOf(z.st)) : z.type === 'spitter' ? Math.max(0, SPIT_ST.indexOf(z.st || 'keep')) : (z.vaultDir || 0),
       Math.max(0, Math.round(z.hp)), z.dead ? 0 : Math.round(clamp(z._vx || 0, -250, 250)), z.type === 'hound' ? Math.round(z.jy || 0) : z.dead || !air ? 0 : Math.round(clamp(z._vy || 0, -300, 300)), z.elite ? Math.round(z.maxHp || 0) : 0]);
   }
   zs.sort((p, q) => dist(p[2]) - dist(q[2]));
@@ -3982,6 +4744,8 @@ function hostSnap() {
     a: [G.arena ? 1 : 0, r2(G.gateT || 0), G.bossDone ? 1 : 0],
     lit: houseMask(h => h.lit),
     rh: houseMask(h => h.relic),
+    hs: stands.length ? stands.map(q => q.used ? 1 : 0).join('') : 0,
+    tp: traps.length ? traps.map(q => q.st || 0).join('') : 0,
     dg: live ? buddies.map(d => [Math.round(d.x), Math.max(0, DOG_ST.indexOf(d.st)), d.face > 0 ? 1 : 0, d.own === 'me' ? 0 : 1]) : [],
     it: live ? drops.map(d => [d.uid, RELICS.indexOf(d.rid), Math.round(d.x), Math.round(d.y), d.g, d.land ? 1 : 0]) : [],
     nd: live ? nades.filter(n => !n.cos).map(n => [Math.round(n.x), Math.round(n.y), r1(n.a), r2(n.t)]) : [],
@@ -4022,6 +4786,7 @@ function hostIn(P) {
     else if (type === 'parry') allyParry();
     else if (type === 'loot') allyLoot(a[0]);
     else if (type === 'grab') drops = drops.filter(d => d.uid !== +a[0]);        // they took an item off the sidewalk
+    else if (type === 'trap') trapNews(a[0], +a[1]);
     else if (type === 'rv') getRevived();
     else if (type === 'fire') ignite(+a[0], false);
   }
@@ -4139,6 +4904,8 @@ function guestIn(P) {
     if (Array.isArray(P.bu)) { bus.x = P.bu[0]; bus.door = P.bu[1]; bus.leaving = !!P.bu[2]; bus.wheel = P.bu[3]; bus.t = P.bu[4]; }
     if (Array.isArray(P.a)) { G.arena = !!P.a[0]; G.gateT = P.a[1]; G.bossDone = !!P.a[2]; }
     houses.forEach((h, i) => { const lit = inMask(P.lit, i); if (!lit) { if (h.lit) h.searched = true; h.lit = false; } else h.lit = !h.searched; h.relic = inMask(P.rh, i); });
+    if (typeof P.hs === 'string') stands.forEach((q, i) => { q.used = P.hs[i] === '1'; });
+    if (typeof P.tp === 'string') traps.forEach((q, i) => { const v = +P.tp[i] || 0; if (v && !q.st) q.st = v; });
     if (Array.isArray(P.dg)) buddies = P.dg.filter(Array.isArray).map((e, i) => { const o = buddies[i] || { anim: 0 }; return { x: o.x === undefined ? +e[0] : o.x + (+e[0] - o.x) * .5, st: DOG_ST[e[1]] || 'follow', face: e[2] ? 1 : -1, own: e[3] ? 'me' : 'ally', anim: o.anim }; });
     if (Array.isArray(P.it)) {                      // the items on the sidewalk (the ones I haven't just picked up)
       const byU = new Map(drops.map(d => [d.uid, d]));
@@ -4161,6 +4928,7 @@ function guestIn(P) {
     else if (type === 'hs') hostShotFx(a);
     else if (type === 'boom') { explodeFx(+a[0], +a[1]); blastSelf(+a[0]); }
     else if (type === 'atk') guestAttacked(a);
+    else if (type === 'trap') trapNews(a[0], +a[1]);
     else if (type === 'air') for (let i = 0; i + 3 < a.length; i += 4) airShots.push({ x0: +a[i], y0: -10, x1: +a[i + 1], y1: +a[i + 2], t: -(+a[i + 3] || 0), T: .1, z: null });
     else if (type === 'spit' && a.length >= 6) spits.push({ x0: +a[0], y0: +a[1], tx: +a[2], ty: +a[3], T: clamp(+a[4] || .8, .2, 2), arc: +a[5] || 30, t: 0, x: +a[0], y: +a[1], cos: true });
     else if (type === 'rv') getRevived();
@@ -4194,7 +4962,7 @@ function guestLoot(a) {
     if (G.state === 'play' && !player.dead) { player.weapon = w.id; player.reloadT = 0; player.mag[w.id] = Math.min(w.mag, save.ammo[w.id]); }
     setBanner(tr('newGun'), tr('w_' + w.id).toUpperCase(), 2); sfx('gun');
   }
-  else if (kind === 'nade') { save.grenades = (save.grenades || 0) + k; floater(fx, fy, tr('fNades', { n: k }), '#a8c46a'); sfx('loot'); }
+  else if (kind === 'nade') { const n = addNades(k); floater(fx, fy, n ? tr('fNades', { n }) : tr('fNadesFull'), '#a8c46a'); sfx('loot'); }
   else if (kind === 'med') { if (!player.dead) player.hp = Math.min(maxHp(), player.hp + k); floater(fx, fy, tr('fHealth', { n: k }), '#7fd08a'); sfx('med'); }
   else { floater(fx, fy, tr('fEmpty'), '#a99fbd'); sfx('empty'); }
   persist();
@@ -4207,10 +4975,10 @@ function applyZombies(list, B) {
     if (!type) continue;
     let z = byId.get(id);
     if (!z || z.type !== type) {
-      const T = ZT[type];
-      z = { id, type, x, tx: x, fy: type === 'flyer' ? GROUND : y, y, ty: y, v: (ZLOOK[type] || [])[look] || ZLOOK[type][0], h: T.h, half: T.half, kbRes: T.kbRes, anim: rnd(10), atkT: 0,
+      const vv = (ZLOOK[type] || [])[look] || ZLOOK[type][0], sk = statKind(type, vv), T = ZT[sk] || ZT[type];
+      z = { id, type, x, tx: x, fy: type === 'flyer' || (fl & 4096) ? GROUND : y, y, ty: y, v: vv, sk, h: T.h, half: T.half, kbRes: T.kbRes, anim: rnd(10), atkT: 0,
         deadT: 0, fallDir: 1, flash: 0, stun: 0, idle: false, atk: false, vaultT: -1, vaultDir: 1, trail: 0, rank: 0, face: 1, spin: 0, landed: false, st: 'cruise', t: 0, kbv: 0, vx: 0, vy: 0, hp: 1, rxAt: now };
-      zLevelize(z, type, zLevel());
+      zLevelize(z, sk, zLevel());
     }
     if (z.predDead) {                                // I killed it here; the host hasn't caught up yet
       if (fl & 1) z.predDead = 0;
@@ -4218,7 +4986,9 @@ function applyZombies(list, B) {
       else { z.dead = false; z.predDead = 0; z.deadT = 0; }                  // the host says it's still up
     }
     z.tx = x; z.rxAt = now; z.vx = +vx || 0;
-    if (type === 'flyer') { z.ty = y; z.vy = +vy || 0; } else z.fy = y;
+    if (type === 'flyer') { z.ty = y; z.vy = +vy || 0; }
+    else if (fl & 4096) { z.falling = true; z.y = y; }                         // a hunter on his way down out of a tree
+    else { if (z.falling) { z.falling = false; addShake(1.2); sfx('thump'); } z.fy = y; }
     if (type === 'hound') z.tjy = +vy || 0;
     z.hp = Math.max(0, (Number.isFinite(hp) ? hp : z.hp) - pendingOn(id));
     z.face = face ? 1 : -1;
@@ -4243,7 +5013,7 @@ function applyZombies(list, B) {
   }
   for (const z of zombies) if (!next.includes(z) && z.type !== 'boss' && z.dead && z.deadT < 5) next.push(z);   // let the fallen finish falling
   if (B) {
-    if (!boss) boss = { id: -1, type: 'boss', v: 'X', h: 60, half: 17, kbRes: .97, anim: 0, flash: 0, dead: false, deadT: 0, x: B[0], tx: B[0], fy: B[1], face: -1, st: 'drop', stT: 0, dir: -1, cd: {}, hp: 1, maxHp: 1, rxAt: now };
+    if (!boss) boss = { id: -1, type: 'boss', v: world && world.forest ? 'BEAR' : 'X', h: 60, half: 17, kbRes: .97, anim: 0, flash: 0, dead: false, deadT: 0, x: B[0], tx: B[0], fy: B[1], face: -1, st: 'drop', stT: 0, dir: -1, cd: {}, hp: 1, maxHp: 1, rxAt: now };
     boss.tx = B[0]; boss.rxAt = now; boss.vx = +B[14] || 0; boss.fy = B[1]; boss.face = B[2] < 0 ? -1 : 1; boss.st = String(B[3]); boss.stT = B[4]; boss.dir = B[5]; boss.run = !!B[6]; boss.dropY = B[7];
     if (B[8] && !boss.dead) { boss.dead = true; boss.deadT = B[9]; blood(boss.x, boss.fy - 30, -boss.face, 30); }
     if (B[10]) boss.flash = .07;
@@ -4294,7 +5064,7 @@ function guestStart(n, run, hx) {
   NET.night = n; cfg = nightCfg(n);
   useStreet(S); resetLevel(!!S.boss); hordeMarks = []; hostNades = []; NET.pend = []; NET.gone = new Set(); wearSkin('guest');
   ensureLoadout();
-  save.grenades = Math.max(save.grenades || 0, START_NADES);
+  save.grenades = Math.min(NADE_MAX, Math.max(save.grenades || 0, START_NADES));
   player = { ...PLAYER_BASE, x: clamp((+hx || 36) - 16, 12, BUS_X - 20), hp: maxHp(), dead: false, hidden: false, mag: {} };
   WEAPON_LIST.forEach(w => { player.mag[w.id] = w.id === 'pistol' ? w.mag : Math.min(w.mag, save.ammo[w.id]); });
   if (usable(save.primary)) player.weapon = save.primary;
@@ -4318,7 +5088,7 @@ function guestEnd(won) {
   const list = [[stats.kills, tr('sKills')], cashLost ? ['-$' + cashLost, tr('cashLost')] : ['$' + stats.cash, tr('sCash')], [fmtTime(stats.t), tr('sTime')]];
   if (lost) list.push([lost, tr('itemsLost')]);
   if (won) {
-    $('winSub').textContent = tr('winSub', { n: NET.night }); $('winHead').textContent = tr('winHead'); $('winLede').hidden = true;
+    $('winSub').textContent = tr('winSub', { n: NET.night }); $('winHead').textContent = tr(world && world.forest ? 'winHeadTruck' : 'winHead'); $('winLede').hidden = true;
     $('winStats').innerHTML = statHTML(list); showScreen('sWin');
   } else {
     renderGunPick($('pickDead'), false); $('deadSub').textContent = tr('night', { n: NET.night }); $('deadStats').innerHTML = statHTML(list); showScreen('sDead');
@@ -4600,10 +5370,11 @@ function update(dt) {
   const guestView = NET.role === 'guest' && G.state !== 'title';
   if (G.state === 'play') { updPlayer(dt); if (!guestView) updSpawns(dt); updBullets(dt); updNades(dt); stats.t += dt; }
   else updBullets(dt);
-  if (guestView) tickGuestWorld(dt);
+  if (guestView) { tickGuestWorld(dt); updTraps(dt); }
   else {
     rankZombies();
-    if (G.state === 'play') { updBuddies(dt); updAir(dt); }
+    if (G.state === 'play') { updBuddies(dt); updAir(dt); updStands(dt); }
+    updTraps(dt);
     zombies.forEach(z => updZombie(z, dt));
     zombies = zombies.filter(z => !(z.dead && z.deadT > 5));
   }
@@ -5070,18 +5841,18 @@ function drawTrash(z, x) {
 }
 let HOUND_ART = null;
 function drawHound(z, x) {
-  if (!HOUND_ART) HOUND_ART = buildHoundFrames();
+  const HA = z.v === 'wolf' ? (WOLF_ART || (WOLF_ART = buildWolfFrames())) : (HOUND_ART || (HOUND_ART = buildHoundFrames()));
   if (x < -40 || x > VW + 40) return;
   if (z.dead && z.deadT > 4 && Math.floor(z.deadT * 12) % 2) return;
   const k = z.dead ? 'dead' : z.st === 'crouch' ? 'crouch' : z.st === 'leap' ? 'leap' : z.stun > 0 || z.st === 'recover' ? 'run1' : 'run' + (Math.floor(z.anim * 1.1) % 4);
-  const E = z.elite ? eliteArt(HOUND_ART.f[k]) : null, img = z.flash > 0 ? HOUND_ART.white[k] : E ? E.t : HOUND_ART.f[k], jy = z.jy || 0, u = ZSC / A;
+  const E = z.elite ? eliteArt(HA.f[k]) : null, img = z.flash > 0 ? HA.white[k] : E ? E.t : HA.f[k], jy = z.jy || 0, u = ZSC / A;
   if (jy > 1) { ctx.globalAlpha = .35; ctx.fillStyle = '#0b0814'; ctx.fillRect(Math.round(x - 6), z.fy + 1, 12, 1); ctx.globalAlpha = 1; }
   ctx.save(); ctx.translate(snap(x - (z.crouchShake || 0)), snap(z.fy - jy));
   if (z.face < 0) ctx.scale(-1, 1);
   if (z.st === 'leap' && !z.dead) ctx.rotate((z.t || 0) / HOUND.leapT < HOUND.peak ? -.32 : .22);    // nose up for your face, then down
-  if (E && !z.dead && z.flash <= 0) drawGlow(E.g, -HOUND_ART.cx * u, -HOUND_ART.gy * u, HOUND_ART.W * u, HOUND_ART.H * u, 1 / A);
-  ctx.drawImage(img, -HOUND_ART.cx * u, -HOUND_ART.gy * u, HOUND_ART.W * u, HOUND_ART.H * u);
-  if (!z.dead) drawHat(HOUND_ART.f[k], -HOUND_ART.cx * u, -HOUND_ART.gy * u, u);
+  if (E && !z.dead && z.flash <= 0) drawGlow(E.g, -HA.cx * u, -HA.gy * u, HA.W * u, HA.H * u, 1 / A);
+  ctx.drawImage(img, -HA.cx * u, -HA.gy * u, HA.W * u, HA.H * u);
+  if (!z.dead) drawHat(HA.f[k], -HA.cx * u, -HA.gy * u, u);
   ctx.restore();
   if (z.stun > 0 && !z.dead) {
     const hy = Math.round(z.fy - jy - 17 * ZSC);
@@ -5116,14 +5887,60 @@ function drawFlyer(z, cam) {
   if (z.elite && !z.dead) drawEliteBar(z, x, z.y - 16 * (z.sc || 1));
 }
 function drawZombie(z, cam) {
-  if (z.type === 'boss' || !(z.lvl > 1 || (z.sc || 1) !== 1 || z.headless || z.gutted || z.elite || z.type === 'spitter')) { drawZombieAt(z, cam); return; }
-  ZSC = z.sc || 1; ZHAT = z.dead || !(z.lvl > 1) ? 0 : z.lvl; ZHW = z.type === 'crawler' ? 8 : z.type === 'hound' ? 7 : 13;
+  if (z.type === 'boss' || !(z.lvl > 1 || (z.sc || 1) !== 1 || z.headless || z.gutted || z.elite || z.type === 'spitter' || WOODS_V(z.v))) { drawZombieAt(z, cam); return; }
+  ZSC = z.sc || 1; ZHAT = z.dead || !(z.lvl > 1) || WOODS_V(z.v) ? 0 : z.lvl; ZHW = z.type === 'crawler' ? 8 : z.type === 'hound' ? 7 : 13;
   ZCUT = z.dead ? (z.headless ? 1 : 0) | (z.gutted ? 2 : 0) : 0;
   ZIMG = z.elite ? zArt('elite') : z.type === 'spitter' ? zArt('spit') : null;
   ZGLOW = z.elite && !z.dead ? zArt('glow') : null;
   ZPOST = z.type === 'spitter' && !z.dead ? (f, tx, ty, u) => drawSac(z, f, tx, ty, u) : null;
   try { drawZombieAt(z, cam); } finally { ZSC = 1; ZHAT = 0; ZHW = 13; ZCUT = 0; ZIMG = null; ZGLOW = null; ZPOST = null; }
   if (z.elite && !z.dead) drawEliteBar(z, z.x - cam, z.fy - z.h - 7);
+}
+// ---- a zombie bear: lumbers on all fours; up close it rears up and rakes you ----
+function drawBear(z, x) {
+  if (!BEAR_ART) BEAR_ART = buildBearFrames(false);
+  if (x < -70 || x > VW + 70) return;
+  if (z.dead && z.deadT > 4 && Math.floor(z.deadT * 12) % 2) return;
+  const T = BEAR_ART, u = ZSC * 1.25 / A;                // a big animal: drawn a size up from the art
+  let k, hop = 0;
+  if (z.dead) k = 'dead';
+  else if (z.vaultT >= 0) { k = 'rear'; const q = z.vaultT / .5; hop = -Math.sin(Math.PI * q) * 20 - (1 - q) * 4; }
+  else if (z.atk) k = Math.floor((z.atkT || 0) * 3) % 2 ? 'swipe' : 'rear';
+  else if (z.stun > 0) k = 'roar';
+  else if (z.idle) k = Math.sin(G.t * 1.3 + z.anim) > .8 ? 'roar' : 'walk1';
+  else k = 'walk' + (Math.floor(z.anim * 1.1) % 4);
+  const E = z.elite && z.flash <= 0 ? eliteArt(T.f[k]) : null, img = z.flash > 0 ? T.white[k] : E ? E.t : T.f[k];
+  ctx.save(); ctx.translate(snap(x - (z.stun > 0 && !z.dead ? z.face : 0)), snap(z.fy + hop));
+  if (z.dead) { const q = Math.min(1, z.deadT / .35); ctx.translate(0, (1 - q) * -3); }
+  if (z.face < 0) ctx.scale(-1, 1);
+  if (E && !z.dead) drawGlow(E.g, -T.cx * u, -T.gy * u, T.W * u, T.H * u, 1 / A);
+  ctx.drawImage(img, -T.cx * u, -T.gy * u, T.W * u, T.H * u);
+  ctx.restore();
+  if (z.stun > 0 && !z.dead) {
+    const hy = Math.round(z.fy - 30 * ZSC);
+    for (let q = 0; q < 2; q++) { const a = G.t * 11 + q * Math.PI; ctx.fillStyle = q ? '#fff3c4' : '#ffb43a'; ctx.fillRect(Math.round(x + z.face * 12 + Math.cos(a) * 5), hy + Math.round(Math.sin(a) * 1.5), 1, 1); }
+  }
+}
+// ---- HUNTERS: still up in their tree stands. Walk under one and he comes down on you ----
+function updStands(dt) {
+  if (!stands.length || NET.role === 'guest' || G.arena || G.state !== 'play') return;
+  const ps = livePlayers().filter(q => upright(q) && !q.hidden);
+  for (const s of stands) {
+    if (!s.occ || s.used) continue;
+    const P = ps.find(q => Math.abs(q.x - s.x) < STAND.near); if (!P) continue;
+    s.used = true;
+    const z = spawnZombie(s.x + s.face * 3, 'walker', false, s.look);
+    z.falling = true; z.y = STAND_Y; z.vy = -45; z.face = Math.sign(P.x - z.x) || s.face; z.idle = false;
+    sfx('whoosh'); for (let i = 0; i < 8; i++) parts.push({ k: 'i', x: s.x + rnd(-8, 8), y: STAND_Y - rnd(0, 10), vx: rnd(-30, 30), vy: rnd(-40, 0), life: 1.2, t: 0, gy: GROUND + irnd(-2, 4), c: pick(['#1a2d22', '#27402d', '#4a3222']), sz: 1 });
+  }
+}
+function fallZombie(z, dt) {
+  z.flash = Math.max(0, z.flash - dt);
+  z.vy += 430 * dt; z.y += z.vy * dt; z.x += z.face * 12 * dt;
+  if (z.y < z.fy) return;
+  z.falling = false; z.y = z.fy; z.stun = .45; addShake(1.6); sfx('thump');
+  for (let i = 0; i < 10; i++) parts.push({ k: 'd', x: z.x + rnd(-10, 10), y: z.fy - 1, vx: rnd(-50, 50), vy: rnd(-25, -5), life: rnd(.3, .6), t: 0 });
+  if ((z.land ?? 12) > 0) areaHit(z.x, 10, z.land ?? 12, 120);                    // landed on you
 }
 function drawEliteBar(z, x, y) {                   // an elite's health, over its head
   if (x < -20 || x > VW + 20) return;
@@ -5150,6 +5967,7 @@ function drawZombieAt(z, cam) {
   if (z.type === 'boss') { drawBoss(z, x); return; }
   if (x < -40 || x > VW + 40) return;
   if (z.type === 'hound') { drawHound(z, x); return; }
+  if (z.v === 'bear') { drawBear(z, x); return; }
   if (z.type === 'trash') { drawTrash(z, x); return; }
   if (z.type === 'crawler') { drawCrawler(z, x); return; }
   if (z.vaultT >= 0) {                              // mid-hop over the fence
@@ -5158,6 +5976,12 @@ function drawZombieAt(z, cam) {
     return;
   }
   const idle = zf(z, 'idle');
+  if (z.falling && !z.dead) {                     // out of the tree stand, arms up, coming down on you
+    const img0 = z.flash > 0 ? ATLAS_WHITE : ZIMG || ATLAS;
+    ctx.globalAlpha = .35; ctx.fillStyle = '#0b0814'; ctx.fillRect(Math.round(x - 5), z.fy + 1, 10, 1); ctx.globalAlpha = 1;
+    drawChar(zf(z, 'attack_windup'), null, x, z.y, z.face, 0, 0, img0, z.face * .18);
+    return;
+  }
   if (z.dead) {
     if (z.deadT > 4 && Math.floor(z.deadT * 12) % 2) return;
     drawFallen(idle, x, z.fy, z.face, z.fallDir, Math.min(1, z.deadT / .22)); return;
@@ -5202,8 +6026,64 @@ function bossFrame(z) {
     default: return AF.X_idle;
   }
 }
+// ---- the Alpha: the same fight as the Dispatcher's (drop in, charge, rake, slam, throw, call for help), a bear's body ----
+function alphaKey(z) {
+  const t = z.stT, f2 = bossPhase2(z) ? .75 : 1, walk = () => 'walk' + (Math.floor(z.anim) % 4);
+  switch (z.st) {
+    case 'drop': return 'rear';
+    case 'roar': case 'summon': return 'roar';
+    case 'swipe': return t < .6 * f2 ? 'rear' : 'swipe';
+    case 'slam': return t < .9 * f2 ? 'slam' : 'walk0';
+    case 'charge': return z.run ? walk() : 'walk0';
+    case 'throw': return t < .8 * f2 ? 'throw' : 'swipe';
+    case 'stagger': return 'roar';
+    case 'walk': return Math.abs(player.x - z.x) > 30 && !player.dead ? walk() : 'walk1';
+    default: return 'walk1';
+  }
+}
+const RED_FR = new Map();
+function redOf(c) { let r = RED_FR.get(c); if (!r) { r = document.createElement('canvas'); r.width = c.width; r.height = c.height; const g = r.getContext('2d'); g.drawImage(c, 0, 0); g.globalCompositeOperation = 'source-in'; g.fillStyle = '#ff3048'; g.fillRect(0, 0, r.width, r.height); RED_FR.set(c, r); } return r; }
+function drawAlpha(z, x) {
+  if (!ALPHA_ART) ALPHA_ART = buildBearFrames(true);
+  const T = ALPHA_ART, u = 1 / A;
+  const put = (img, xx, yy, rot = 0, sq = 0) => {
+    ctx.save(); ctx.translate(snap(xx), snap(yy)); if (rot) ctx.rotate(rot); if (z.face < 0) ctx.scale(-1, 1);
+    ctx.drawImage(img, -T.cx * u, -T.gy * u + sq, T.W * u, T.H * u - sq); ctx.restore();
+  };
+  if (z.dead) {
+    if (z.deadT > 4 && Math.floor(z.deadT * 12) % 2) return;
+    put(T.f.dead, x, z.fy); return;
+  }
+  const k = alphaKey(z), f2 = bossPhase2(z) ? .75 : 1;
+  let rot = 0, sq = 0, dx = 0;
+  const y = z.fy + (z.dropY || 0);
+  if (z.st === 'roar' || z.st === 'summon') dx = (Math.floor(G.t * 30) % 2 ? 1 : -1) * .5;
+  if (z.st === 'charge' && !z.run) { sq = Math.floor(z.stT * 10) % 2 ? 3 : 0; dx = (Math.floor(G.t * 24) % 2 ? .5 : -.5); }
+  if (z.st === 'charge' && z.run) rot = z.dir * .06;
+  if (z.st === 'slam' && z.stT >= .9 * f2 && z.stT < .9 * f2 + .25) sq = 6;
+  if (z.st === 'stagger') rot = Math.sin(G.t * 5) * .08;
+  const tell = a => .35 + .35 * Math.sin(G.t * 22) * (a || 1);
+  if (z.st === 'slam' && z.stT < .9 * f2) {
+    const grow = Math.min(1, z.stT / (.5 * f2)), r = Math.round(SLAM_R * grow);
+    ctx.fillStyle = `rgba(255,50,60,${(tell() * .45).toFixed(2)})`; ctx.fillRect(Math.round(x - r), z.fy - 1, r * 2, 4);
+    ctx.fillStyle = `rgba(255,70,80,${Math.min(1, tell() + .3).toFixed(2)})`;
+    ctx.fillRect(Math.round(x - r), z.fy - 3, 2, 7); ctx.fillRect(Math.round(x + r) - 1, z.fy - 3, 2, 7);
+  }
+  if (z.st === 'charge' && !z.run) {
+    ctx.fillStyle = `rgba(255,60,70,${tell().toFixed(2)})`;
+    const end = clamp(z.x + z.dir * 210, ARENA_L + 16, ARENA_R - 16) - (z.x - x);
+    for (let q = x; z.dir > 0 ? q < end : q > end; q += z.dir * 5) ctx.fillRect(Math.round(q), z.fy, 3, 2);
+    ctx.fillRect(Math.round(end) - 1, z.fy - 3, 2, 7);
+    drawText('!', x, y - 74 - (Math.floor(G.t * 8) % 2), '#ff5a6a', 2, 'center');
+  }
+  const img = z.flash > 0 ? T.white[k] : T.f[k];
+  put(img, x + dx, y, rot, sq);
+  if (bossPhase2(z) && z.flash <= 0) { ctx.globalAlpha = .12 + .1 * Math.sin(G.t * 8); put(redOf(T.f[k]), x + dx, y, rot, sq); ctx.globalAlpha = 1; }
+  if (z.st === 'stagger') for (let q = 0; q < 3; q++) { const a = G.t * 9 + q * 2.1; ctx.fillStyle = q % 2 ? '#fff3c4' : '#ffb43a'; ctx.fillRect(Math.round(x + z.face * 26 + Math.cos(a) * 12), Math.round(y - 62 + Math.sin(a) * 2), 2, 2); }
+}
 function drawBoss(z, x) {
   if (x < -90 || x > VW + 90) return;
+  if (z.v === 'BEAR') { drawAlpha(z, x); return; }
   if (z.dead) {
     if (z.deadT > 4 && Math.floor(z.deadT * 12) % 2) return;
     const k = Math.min(1, z.deadT / .6);
@@ -5244,6 +6124,13 @@ function drawBoss(z, x) {
   if (z.st === 'stagger') {
     for (let k = 0; k < 3; k++) { const a = G.t * 9 + k * 2.1; ctx.fillStyle = k % 2 ? '#fff3c4' : '#ffb43a'; ctx.fillRect(Math.round(x + Math.cos(a) * 12), Math.round(y - 66 + Math.sin(a) * 2), 2, 2); }
   }
+}
+function drawLog(x, y, a) {                         // a length of pine, end over end
+  ctx.save(); ctx.translate(Math.round(x), Math.round(y)); ctx.rotate(a);
+  ctx.fillStyle = '#0b0814'; ctx.fillRect(-9, -3, 18, 6);
+  ctx.fillStyle = '#54391f'; ctx.fillRect(-8, -2, 16, 4); ctx.fillStyle = '#6e4a2e'; ctx.fillRect(-8, -2, 16, 1);
+  ctx.fillStyle = '#a07a50'; ctx.fillRect(7, -2, 1, 4); ctx.fillStyle = '#2f5a3a'; ctx.fillRect(-3, -3, 3, 1);
+  ctx.restore();
 }
 function drawCan(x, y, a) {
   ctx.save(); ctx.translate(Math.round(x), Math.round(y)); ctx.rotate(a);
@@ -5336,6 +6223,7 @@ function drawBus(cam) {
 function drawWorldDynamic(cam) {
   // porch bulbs + opened doors
   for (const H of houses) {
+    if (H.pile) continue;
     const x = H.doorX - cam; if (x < -20 || x > VW + 20) continue;
     ctx.fillStyle = H.lit ? '#fff0b8' : '#4a4458'; ctx.fillRect(Math.round(H.lampX - cam), H.lampY, 2, 2);
     if (H.searched || (player && player.searching === H)) {
@@ -5345,6 +6233,7 @@ function drawWorldDynamic(cam) {
     }
   }
   for (const L of lamps) {
+    if (L.lantern) continue;
     const x = L.x - cam; if (x < -30 || x > VW + 30) continue;
     ctx.fillStyle = lampOn(L) ? '#fff0c0' : '#4a4458'; ctx.fillRect(Math.round(x + 4), 91, 5, 1);
   }
@@ -5354,11 +6243,13 @@ function drawWorldDynamic(cam) {
     drawText(S.text, x, S.y, on ? S.col : S.dim, 1, 'center', null);
   }
   const rx = Math.round(radioX - cam * FAR_F);
-  if (Math.floor(G.t * 1.5) % 2) { ctx.fillStyle = '#ff4a4a'; ctx.fillRect(rx, 43, 1, 1); }
+  if (Math.floor(G.t * 1.5) % 2) { ctx.fillStyle = '#ff4a4a'; ctx.fillRect(rx, radioY, 1, 1); }
+  if (world && world.forest) drawForestDynamic(cam);
 }
 // the depot gate: slides shut behind you when the boss fight starts
 function drawGate(cam) {
   if (!world || !world.boss) return;
+  if (world.forest) { drawLogGate(cam); return; }
   const x = Math.round(ARENA_L - cam); if (x < -30 || x > VW + 30) return;
   const k = G.arena ? smooth(G.gateT) : 0, top = 102, bot = 149, w = 5;
   ctx.fillStyle = '#3a3f4a'; ctx.fillRect(x - 3, top - 2, 2, bot - top + 2); ctx.fillRect(x + w + 1, top - 2, 2, bot - top + 2);
@@ -5396,17 +6287,23 @@ function drawLighting(cam, sx, sy) {
   };
   const fogK = WX.kind === 'fog' ? 1.3 : 1;             // fog blooms every light into a wide halo
   if (!wet()) L(Math.round(VW * .74 - cam * .02), 35, 46, .55, WX.kind === 'blood' ? 'rgba(200,60,50,.16)' : 'rgba(120,110,160,.12)', true);
-  for (const H of houses) if (H.lit) L(H.lampX + 1, H.lampY + 1, 38 * fogK, .95, 'rgba(255,165,60,.26)');
+  for (const H of houses) if (H.lit) { if (H.pile) L(H.doorX, GROUND - 12, 22 * fogK, .5, 'rgba(190,255,120,.1)'); else L(H.lampX + 1, H.lampY + 1, 38 * fogK, .95, 'rgba(255,165,60,.26)'); }
   for (const w of winLights) L(w.x, w.y, 16, .5, null);
   for (const H of houses) if (H.relic && !H.searched && H.wins) for (const w of H.wins) L(w.x + w.w / 2, w.y + w.h / 2, 30, .8, 'rgba(255,205,90,.34)');
   for (const d of drops) L(d.x, d.y - 8, 30, .85, 'rgba(255,215,100,.3)');
   for (const f of fires) L(f.x, GROUND - 6, 46 + Math.sin(G.t * 17) * 4, .95, 'rgba(255,120,40,.32)');
   for (const Lm of lamps) if (lampOn(Lm)) {
     if (Lm.flood) { L(Lm.x + 6, 92, 30, .95, 'rgba(200,230,255,.16)'); L(Lm.x + 6, 138, 76, .85, 'rgba(200,230,255,.08)'); continue; }
+    if (Lm.lantern) { L(Lm.x + 5, 111, 34 * fogK, .9, 'rgba(255,190,90,.22)'); L(Lm.x + 5, 136, 56 * fogK, .75, 'rgba(255,190,90,.07)'); continue; }
     L(Lm.x + 6, 92, 24 * fogK, .9, 'rgba(255,225,160,.14)'); L(Lm.x + 6, 136, 52 * fogK, .78, 'rgba(255,225,160,.07)');
   }
   for (const S of signs) if (!S.flick || signOn(S)) L(S.x, S.y + 2, 46, .6, S.light);
-  if (bus) { L(bus.x + 40, 130, 50, .75, 'rgba(255,210,130,.12)'); L(bus.x + 96, 150, 44, .85, 'rgba(255,240,200,.15)'); }
+  if (bus) {
+    const ek = exitKind();
+    if (ek === 'truck') { L(bus.x + 40, 132, 44, .7, 'rgba(255,210,130,.1)'); L(bus.x + 104, 146, 56, .9, 'rgba(255,240,200,.18)'); if (Math.floor(G.t * 4) % 2) L(bus.x + 55, 118, 24, .6, 'rgba(255,170,60,.22)'); }
+    else if (ek === 'trail') { if (bus.door > 0) L(bus.x + 38, 110, 34, .8 * bus.door, 'rgba(255,214,110,.2)'); }
+    else { L(bus.x + 40, 130, 50, .75, 'rgba(255,210,130,.12)'); L(bus.x + 96, 150, 44, .85, 'rgba(255,240,200,.15)'); }
+  }
   if (player && !player.hidden) {
     L(player.x, player.fy - 17, 42, .5, null);
     for (const z of zombies) if (z.type === 'flyer' && !z.dead) L(z.x, z.y - 2, z.st === 'wind' ? 22 : 15, .32, 'rgba(255,60,80,.14)');
@@ -5460,7 +6357,7 @@ function drawWeaponHUD() {                 // your gun, the revolver under it; t
 }
 function drawBossBar() {
   const bw = Math.min(150, VW - 150), x0 = Math.round(VW / 2 - bw / 2), y = 13;
-  drawText(tr('boss'), VW / 2, 3, '#ffb43a', 1, 'center');
+  drawText(tr(boss.v === 'BEAR' ? 'alphaB' : 'boss'), VW / 2, 3, '#ffb43a', 1, 'center');
   const f = clamp(boss.hp / boss.maxHp, 0, 1);
   ctx.fillStyle = '#0b0814'; ctx.fillRect(x0 - 1, y - 1, bw + 2, 6);
   ctx.fillStyle = '#3a1420'; ctx.fillRect(x0, y, bw, 4);
@@ -5536,13 +6433,15 @@ function draw() {
   }
   if (!pDrawn) { drawMate(cam); drawPlayer(cam); }
   drawAmmoBoxes(cam);                                // on top of the body it came from
+  if (player && player.trapT > 0 && !player.hidden) drawTrap(Math.round(player.x - cam), player.fy + 1, 1, false);
+  { const m = mate(); if (m && m.trapped && !m.hidden && !m.dead) drawTrap(Math.round(m.x - cam), m.fy + 1, 1, false); }
   drawBuddies(cam);
   for (const z of zombies) if (z.type === 'flyer') drawFlyer(z, cam);
   drawAir(cam);
-  drawBus(cam);
+  drawExit(cam);
   drawGate(cam);
   drawFires(cam);
-  for (const dbr of debris) { const p = debrisPos(dbr); drawCan(p.x - cam, p.y, dbr.a); }
+  for (const dbr of debris) { const p = debrisPos(dbr); if (world && world.forest) drawLog(p.x - cam, p.y, dbr.a); else drawCan(p.x - cam, p.y, dbr.a); }
   for (const n of nades) drawNade(n, cam);
   for (const n of hostNades) drawNade(n, cam);
   drawBoom(cam);
@@ -5623,17 +6522,19 @@ function draw() {
 /* ---- enemy intros: the first time each kind shows up in a run, a card says what it is and how to deal with it.
    Solo: the street holds still until you tap. Co-op: a strip across the top for a few seconds (the night can't stop).
    Settings can turn them off. ---- */
-const INTRO_SC = { walker: 2, runner: 2, brute: 2, crawler: 3, flyer: 3, hound: 3, trash: 2, spitter: 2, elite: 2, boss: 1.5 };
+const INTRO_SC = { walker: 2, runner: 2, brute: 2, crawler: 3, flyer: 3, hound: 3, trash: 2, spitter: 2, elite: 2, boss: 1.5, ranger: 2, hunter: 2, bear: 1.5, wolf: 3, alpha: .9, trap: 3 };
+const INTRO_AS = { ranger: ['walker', 'rg0'], hunter: ['walker', 'hu0'], bear: ['brute', 'bear'], wolf: ['hound', 'wolf'], alpha: ['boss', 'BEAR'] };
 function checkIntros() {
   if (save.introsOff || G.intro || G.state !== 'play' || !player || !stats || stats.t < 1.2) return;
   if (online() && G.banner) return;                    // co-op: the strip waits for the banner to clear
   const seen = save.seen || (save.seen = []);
   for (const z of zombies) {
-    const t = z.elite && !seen.includes('elite') ? 'elite' : z.type;
+    const t = z.elite && !seen.includes('elite') ? 'elite' : zKind(z);
     if (z.dead || !INTRO_SC[t] || seen.includes(t)) continue;
-    if (t !== 'boss' && Math.abs(z.x - (G.camX + VW / 2)) > VW * 1.1) continue;     // just before it comes into view
+    if (t !== 'boss' && t !== 'alpha' && Math.abs(z.x - (G.camX + VW / 2)) > VW * 1.1) continue;     // just before it comes into view
     openIntro(t); return;
   }
+  if (!seen.includes('trap') && traps.some(q => !q.st && Math.abs(q.x - (G.camX + VW / 2)) < VW * .45)) { openIntro('trap'); return; }
 }
 function openIntro(t) {
   (save.seen || (save.seen = [])).push(t); persist();
@@ -5653,9 +6554,11 @@ function wrapAny(s, maxW) {                            // Chinese: split every f
   return out;
 }
 function drawIntroEnemy(type, cx, fy, sc, t) {        // the enemy itself, drawn by the game's own code, bigger
+  if (type === 'trap') { ctx.save(); ctx.translate(Math.round(cx), Math.round(fy)); ctx.scale(sc, sc); drawTrap(0, 0, Math.floor(t * 1.2) % 2, false); ctx.restore(); return; }
+  const as = INTRO_AS[type]; let look = null; if (as) { look = as[1]; type = as[0]; }
   const elite = type === 'elite'; if (elite) type = 'walker';
   const z = { type, elite, sc: elite ? ELITE.size : 1, st: type === 'spitter' ? 'aim' : undefined, stT: type === 'spitter' ? (t * .8) % 1 : 0, moving: true, x: 0, fy: 0, y: -16, face: 1, anim: t * (type === 'runner' ? 9 : type === 'hound' ? 10 : 5), flash: 0, stun: 0, dead: false, deadT: 0, vaultT: -1, idle: false, atk: false, atkT: 0,
-    v: (ZLOOK[type] || ['zw0'])[0], h: ZT[type].h, half: ZT[type].half, t: 0, jy: 0, landed: false, dropY: 0, hp: 1, maxHp: 1, dir: -1, run: false, cd: {} };
+    v: look || (ZLOOK[type] || ['zw0'])[0], h: ZT[type].h, half: ZT[type].half, t: 0, jy: 0, landed: false, dropY: 0, hp: 1, maxHp: 1, dir: -1, run: false, cd: {} };
   if (!z.st) z.st = type === 'flyer' ? 'cruise' : type === 'boss' ? 'idle' : 'run';
   ctx.save(); ctx.translate(Math.round(cx), Math.round(fy)); ctx.scale(sc, sc);
   if (type === 'flyer') drawFlyer(z, 0); else if (type === 'boss') drawBoss(z, 0); else drawZombie(z, 0);
@@ -5788,27 +6691,30 @@ function endNight(won) {
   if (won) { save.night++; save.best = Math.max(save.best, save.night); if (escaped) save.escaped = true; delete save.checkpoint; }
   else if (G.arena) save.checkpoint = n;              // reached the boss: next try starts at the depot
   persist();
-  const list = [[stats.kills, tr('sKills')], [stats.searched + '/' + stats.lit, tr('sPorch')], cashLost ? ['-$' + cashLost, tr('cashLost')] : ['$' + stats.cash, tr('sCash')], [fmtTime(stats.t), tr('sTime')]];
+  const list = [[stats.kills, tr('sKills')], [stats.searched + '/' + stats.lit, tr(S.forest ? 'sPile' : 'sPorch')], cashLost ? ['-$' + cashLost, tr('cashLost')] : ['$' + stats.cash, tr('sCash')], [fmtTime(stats.t), tr('sTime')]];
   if (lost) list.push([lost, tr('itemsLost')]);
   if (won) {
-    $('winSub').textContent = tr(escaped ? 'winSubBoss' : 'winSub', { n });
-    $('winHead').textContent = tr(escaped ? 'winHeadBoss' : 'winHead');
+    const fo = !!S.forest;
+    $('winSub').textContent = tr(escaped ? (fo ? 'winSubAlpha' : 'winSubBoss') : 'winSub', { n });
+    $('winHead').textContent = tr(escaped ? (fo ? 'winHeadAlpha' : 'winHeadWoods') : fo ? 'winHeadTruck' : 'winHead');
     $('winLede').hidden = !escaped;
-    $('winLede').textContent = tr('winLede');
+    $('winLede').textContent = tr(fo ? 'winLedeAlpha' : 'winLedeWoods');
     $('winShop').textContent = tr(escaped ? 'toShopBoss' : 'toShop');
     $('winStats').innerHTML = statHTML(list); showScreen('sWin');
   }
-  else { renderGunPick($('pickDead'), false); $('retryBtn').textContent = tr(G.arena ? 'retryDepot' : 'retry'); $('deadSub').textContent = G.arena ? tr('deadSubBoss', { n, p: Math.round(100 - clamp(boss ? boss.hp / boss.maxHp : 1, 0, 1) * 100) }) : tr('deadSub', { n, p: Math.round(stats.far * 100), street: streetName(S) }); $('deadStats').innerHTML = statHTML(list); showScreen('sDead'); }
+  else { renderGunPick($('pickDead'), false); $('retryBtn').textContent = tr(G.arena ? (S.forest ? 'retryStation' : 'retryDepot') : 'retry'); $('deadSub').textContent = G.arena ? tr(S.forest ? 'deadSubAlpha' : 'deadSubBoss', { n, p: Math.round(100 - clamp(boss ? boss.hp / boss.maxHp : 1, 0, 1) * 100) }) : tr('deadSub', { n, p: Math.round(stats.far * 100), street: streetName(S) }); $('deadStats').innerHTML = statHTML(list); showScreen('sDead'); }
 }
 
 // topping up your spare clips: priced by what's missing
 function fillPrice(id) { const miss = (AMMO_CAP[id] || 0) - save.ammo[id]; return miss <= 0 ? null : Math.max(5, Math.ceil(miss * ({ shotgun: 3, smg: .45, rifle: 3.5 }[id] || 1))); }
-const gunRec = id => { if (!save.gun) save.gun = {}; const k = gunKey(id); return save.gun[k] || (save.gun[k] = { lv: 0, att: [] }); };
+const gunRec = id => { if (!save.gun) save.gun = {}; const k = gunKey(id); const r = save.gun[k] || (save.gun[k] = { up: {} }); if (!r.up) r.up = {}; return r; };
+const pct = v => { const r = Math.round(v * 10) / 10; return String(r); };
 const attName = (a, id) => tr(STR.en['att_' + a + '_' + id] ? 'att_' + a + '_' + id : 'att_' + a);
 function shopItems(tab = null) {                      // tab: 'supply', 'armory' or 'training' (all of them if none)
   const out = [], all = !tab;
   if (all || tab === 'supply') {
-    out.push({ key: 'nades', icon: SPR.nadeURL, name: tr('nadeName'), desc: tr('nadeDesc', { n: SUP.nadeCount }), have: tr('inPocket', { n: save.grenades || 0 }), price: round5(SUP.nadePrice) });
+    const nfull = (save.grenades || 0) >= NADE_MAX;
+    out.push({ key: 'nades', icon: SPR.nadeURL, name: tr('nadeName'), desc: tr('nadeDesc', { n: SUP.nadeCount }), have: nfull ? tr('nadesFull', { n: NADE_MAX }) : tr('inPocket', { n: save.grenades || 0 }), price: nfull ? null : round5(SUP.nadePrice), full: nfull });
     out.push({ key: 'up_jacket', icon: SPR.iconURL.jacket, name: tr('u_jacket'), desc: tr('ud_jacket', { n: Math.round(SUP.jacketHp) }), lv: save.up.jacket ? 1 : 0, max: 1, owned: !!save.up.jacket, price: save.up.jacket ? null : round5(SUP.jacketPrice) });
     out.push({ key: 'up_shoes', icon: SPR.iconURL.shoes, name: tr('u_shoes'), desc: tr('ud_shoes', { n: Math.round(SUP.shoes * 100) }), lv: save.up.shoes ? 1 : 0, max: 1, owned: !!save.up.shoes, price: save.up.shoes ? null : round5(SUP.shoesPrice) });
     const mt = clamp(save.meleeTier || 0, 0, 1);
@@ -5818,16 +6724,14 @@ function shopItems(tab = null) {                      // tab: 'supply', 'armory'
     const pg = PRIMARIES.includes(save.primary) ? save.primary : null;
     for (const id of [pg, 'pistol']) {
       if (!id) continue;
-      const g = gunSave(id);
       out.push({ head: tr('w_' + id) });
       if (id !== 'pistol') out.push({ note: tr('gunCarry') });
       if (id !== 'pistol' && save.owned[id]) out.push({ key: 'ammo_' + id, icon: SPR.gunURL[id], name: tr({ shotgun: 'shells', smg: 'smgAmmo', rifle: 'rifleAmmo' }[id]), desc: tr({ shotgun: 'shellsFill', smg: 'roundsFill', rifle: 'rifleFill' }[id], { n: AMMO_CAP[id] }),
         have: tr('inPocketOf', { n: save.ammo[id], c: AMMO_CAP[id] }), price: fillPrice(id), full: ammoFull(id) });
-      const lv = clamp(g.lv || 0, 0, ARM.lvMax);
-      out.push({ key: 'glv_' + id, icon: SPR.gunURL[id], name: tr('glv'), desc: tr('glvDesc', { n: Math.round(ARM.lvDmg * 100) }), lv, max: ARM.lvMax, price: lv < ARM.lvMax ? round5(ARM.lvPrice * Math.pow(ARM.lvGrowth, lv)) : null });
       for (const at of ATTS) {
-        const on = g.att.includes(at), amt = Math.round(ARM[at] * 100);
-        out.push({ key: 'att_' + id + '_' + at, icon: SPR.iconURL['att_' + at], name: attName(at, id), desc: tr('ad_' + at, { n: amt }), fitted: on, price: on ? null : round5(ARM[at + 'Price']) });
+        const A = ARM[at], lv = attLv(id, at), per = A.per * 100;
+        out.push({ key: 'att_' + id + '_' + at, icon: SPR.iconURL['att_' + at], name: attName(at, id), desc: tr('adl_' + at, { n: pct(per) }) + (lv ? ' · ' + tr('adNow', { n: pct(per * lv) }) : ''), lv, max: ARM_LV,
+          price: lv < ARM_LV ? round5(A.price * Math.pow(A.growth, lv)) : null });
       }
     }
   }
@@ -5852,10 +6756,12 @@ function renderShop() {
   let html = '';
   if (save.refundMsg) { G.refund = save.refundMsg; save.refundMsg = 0; persist(); }
   if (G.refund && tab === 'supply') html += `<div class="snote">${tr('refund', { n: G.refund })}</div>`;
+  if (save.armRefund) { G.armRefund = save.armRefund; save.armRefund = 0; persist(); }
+  if (G.armRefund && tab === 'armory') html += `<div class="snote">${tr('armRefund', { n: G.armRefund })}</div>`;
   html += shopItems(tab).map(it => {
     if (it.head) return `<div class="ihead">${it.head}</div>`;
     if (it.note) return `<div class="snote">${it.note}</div>`;
-    const pips = it.max ? `<div class="pips" aria-label="Level ${it.lv} of ${it.max}">${Array.from({ length: it.max }, (_, i) => `<span class="pip${i < it.lv ? ' on' : ''}"></span>`).join('')}</div>` : it.fitted !== undefined ? '<span class="own"></span>' : `<span class="own">${it.have}</span>`;
+    const pips = it.max ? `<div class="pips${it.max > 6 ? ' ten' : ''}" aria-label="Level ${it.lv} of ${it.max}">${Array.from({ length: it.max }, (_, i) => `<span class="pip${i < it.lv ? ' on' : ''}"></span>`).join('')}</div>` : it.fitted !== undefined ? '<span class="own"></span>' : `<span class="own">${it.have}</span>`;
     const btn = it.price === null ? `<button class="btn buy" disabled>${tr(it.fitted ? 'fitted' : it.owned ? 'owned' : it.full ? 'fullBtn' : 'maxed')}</button>` : `<button class="btn buy" data-buy="${it.key}" ${save.cash < it.price ? 'disabled' : ''}>$${it.price}</button>`;
     return `<div class="item"><img src="${it.icon}" alt=""><div class="nm">${it.name}</div><div class="ds">${it.desc}</div><div class="bot">${pips}${btn}</div></div>`;
   }).join('');
@@ -5867,9 +6773,8 @@ function buy(key) {
   if (key.startsWith('ammo_')) addAmmo(key.slice(5), AMMO_CAP[key.slice(5)] || 0);
   else if (key === 'up_jacket' || key === 'up_shoes') { save.up[key.slice(3)] = 1; if (key === 'up_jacket' && player && G.state === 'play') player.hp += SUP.jacketHp; }
   else if (key === 'melee_up') save.meleeTier = 1;
-  else if (key === 'nades') save.grenades = (save.grenades || 0) + SUP.nadeCount;
-  else if (key.startsWith('glv_')) gunRec(key.slice(4)).lv++;
-  else if (key.startsWith('att_')) { const [, id, at] = key.split('_'); gunRec(id).att.push(at); }
+  else if (key === 'nades') addNades(SUP.nadeCount);
+  else if (key.startsWith('att_')) { const [, id, at] = key.split('_'); const r = gunRec(id); r.up[at] = (r.up[at] || 0) + 1; }
   else if (key.startsWith('attr_')) { const k = key.slice(5); save.attr[k] = (save.attr[k] || 0) + 1; }
   applyGunMods(); persist(); sfx('buy'); renderShop();
 }
@@ -6492,7 +7397,7 @@ try { if (hot && typeof hot.snapshot === 'function') hot.snapshot(() => ({ save 
 try {
   if (hot && typeof hot.ready === 'function') hot.ready(start); else start((hot && hot.data) || {});
 } catch (e) { console.error(e); start({}); }
-window.__porch = { get ammoBoxes() { return ammoBoxes; }, rollAmmoDrop, AMMO_DROP, CLIPS, magOf, gunSave, pauseCoopUI, views, offscreenX, spawnEdge, enterCoopSave, leaveCoopSave, coopStored, capNow, noiseHorde, get buddies() { return buddies; }, updBuddies, airVolley, get airShots() { return airShots; }, makeElite, COOP, ELITE, updSpitter, get spits() { return spits; }, spitAt, zArt, applyGunMods, SUP, ARM, TRN, capOf, strMul, get critBonus() { return critBonus(); }, renderShop, deathFx, CRIT_MUL, critChance, hurtZombie, get decals() { return decals; }, trashSlam, buildTrashFrames, get TRASH_ART() { return TRASH_ART; }, zLevel, zStats, headOf, hatFor, ZLV, get parts() { return parts; }, TUNING, MELEE, ZT, PT, BOSS_DMG, get RIFLE_FALL() { return RIFLE_FALL; }, bossHp, get NADE_R() { return NADE_R; }, get FLY_DMG() { return FLY_DMG; }, nadeDmg, nadeChargeStart, nadeChargeEnd, nadeMaxD, openIntro, closeIntro, checkIntros, nightCfg, unlocked, ROSTER, openSettings, cancelReload, roundsIn, getRevived, updRevive, get SOLO_SAVE() { return SOLO_SAVE; }, nadePlan, openShop, PRIMARIES, pickGun, openPick, ensureLoadout, gunFor, sticks, pollTouch, input, WEAP, fire, startReload, moveSpeed, normalizeSave, addAmmo, get fires() { return fires; }, RELICS, AMMO_CAP, has, grabRelic, dropRelics, pickRelicHouses, ignite, renderRelics, relicArt, get drops() { return drops; }, get nums() { return nums; }, shopItems, buy, fillPrice, houndWave, HOUND, buildHoundFrames, batHound, get bullets() { return bullets; }, skinOf, get WORN() { return WORN; }, get AF() { return AF; }, NET, get ally() { return ally; }, hostSnap, areaHit, get hostNades() { return hostNades; }, meleeHit, quickSwing, coopAlly, get stats() { return stats; }, get coins() { return coins; }, get K() { return K; }, noiseHorde, get spawnQ() { return spawnQ; }, spawnFlyer, NADE, get nades() { return nades; }, nadeCalc, throwNade, explode, TRACKS, G, get player() { return player; }, get zombies() { return zombies; }, get save() { return save; }, get boss() { return boss; }, get bus() { return bus; }, get props() { return props; }, get debris() { return debris; }, WX, startNight, startBoss, setWeather, houses: () => houses, dmgPlayer, spawnZombie, CE, makeTemplate, importSheet, get CUSTOM() { return CUSTOM; } };
+window.__porch = { buildBuddyFrames, buildBearFrames, buildWolfFrames, get stands() { return stands; }, get traps() { return traps; }, updTraps, trapNews, statKind, zKind, exitKind, loopOf, streetOf, NADE_MAX, addNades, SIDES, ALPHA_DMG, alphaHp, bossHp, TRAP, STAND, get world() { return world; }, updStands, tickBuddy, get ammoBoxes() { return ammoBoxes; }, rollAmmoDrop, AMMO_DROP, CLIPS, magOf, gunSave, pauseCoopUI, views, offscreenX, spawnEdge, enterCoopSave, leaveCoopSave, coopStored, capNow, noiseHorde, get buddies() { return buddies; }, updBuddies, airVolley, get airShots() { return airShots; }, makeElite, COOP, ELITE, updSpitter, get spits() { return spits; }, spitAt, zArt, applyGunMods, SUP, ARM, TRN, capOf, strMul, get critBonus() { return critBonus(); }, renderShop, deathFx, CRIT_MUL, critChance, hurtZombie, get decals() { return decals; }, trashSlam, buildTrashFrames, get TRASH_ART() { return TRASH_ART; }, zLevel, zStats, headOf, hatFor, ZLV, get parts() { return parts; }, TUNING, MELEE, ZT, PT, BOSS_DMG, get RIFLE_FALL() { return RIFLE_FALL; }, bossHp, get NADE_R() { return NADE_R; }, get FLY_DMG() { return FLY_DMG; }, nadeDmg, nadeChargeStart, nadeChargeEnd, nadeMaxD, openIntro, closeIntro, checkIntros, nightCfg, unlocked, ROSTER, openSettings, cancelReload, roundsIn, getRevived, updRevive, get SOLO_SAVE() { return SOLO_SAVE; }, nadePlan, openShop, PRIMARIES, pickGun, openPick, ensureLoadout, gunFor, sticks, pollTouch, input, WEAP, fire, startReload, moveSpeed, normalizeSave, addAmmo, get fires() { return fires; }, RELICS, AMMO_CAP, has, grabRelic, dropRelics, pickRelicHouses, ignite, renderRelics, relicArt, get drops() { return drops; }, get nums() { return nums; }, shopItems, buy, fillPrice, houndWave, HOUND, buildHoundFrames, batHound, get bullets() { return bullets; }, skinOf, get WORN() { return WORN; }, get AF() { return AF; }, NET, get ally() { return ally; }, hostSnap, areaHit, get hostNades() { return hostNades; }, meleeHit, quickSwing, coopAlly, get stats() { return stats; }, get coins() { return coins; }, get K() { return K; }, noiseHorde, get spawnQ() { return spawnQ; }, spawnFlyer, NADE, get nades() { return nades; }, nadeCalc, throwNade, explode, TRACKS, G, get player() { return player; }, get zombies() { return zombies; }, get save() { return save; }, get boss() { return boss; }, get bus() { return bus; }, get props() { return props; }, get debris() { return debris; }, WX, startNight, startBoss, setWeather, houses: () => houses, dmgPlayer, spawnZombie, CE, makeTemplate, importSheet, get CUSTOM() { return CUSTOM; } };
 })();
 </script>
 </body></html>
