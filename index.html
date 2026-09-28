@@ -399,7 +399,7 @@ window.PORCH_MUSIC_GAME="data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2
 /* ============================================================
    CONSTANTS
    ============================================================ */
-const STREET_X = 3;                        // how many times the original street length each night is
+const STREET_X = 2.7;                      // how many times the original street length each night is (10% shorter than the 3 it was)
 const VH = 180, GROUND = 141, BUS_X = 2520 * STREET_X, WORLD_LEN = BUS_X + 220;
 const CAM_MAX_RIGHT = BUS_X + 112;         // right edge the camera may show
 const MID_F = .45, FAR_F = .15;
@@ -2196,6 +2196,7 @@ const AMMO_CAP = { shotgun: 0, smg: 0, rifle: 0 };                   // CLIPS x 
 // some zombies leave a box of ammo for your gun
 const AMMO_DROP = { chance: clamp(tn('nights.ammoDrop', .035), 0, 1), clips: Math.max(.1, tn('nights.ammoDropClips', 1)), life: Math.max(2, tn('nights.ammoDropLife', 25)) };
 const START_NADES = Math.max(0, Math.round(tn('grenade.start', 3)));
+const DEATH_LOSS = clamp(tn('nights.deathLoss', .8), 0, 1);                           // bitten: this much of the night's cash is lost (0.8 = 80%)
 const NADE_MAX = Math.max(1, Math.round(tn('grenade.max', 5)));                    // the most you can carry
 const addNades = n => { const b = save.grenades || 0; save.grenades = Math.min(NADE_MAX, b + n); return save.grenades - b; };
 function freshSave() { return { v: 1, night: 1, cash: 0, owned: { pistol: true, melee: true, shotgun: false, smg: false }, meleeTier: 0, ammo: { shotgun: 0, smg: 0, rifle: 0 }, up: { jacket: 0, shoes: 0 }, gun: {}, attr: {}, mig: 3, best: 1, totalKills: 0, muted: false, escaped: false, grenades: START_NADES, relics: [], relicsNight: [], primary: null, runNew: false }; }
@@ -2236,7 +2237,7 @@ function loadSave() { try { const s = JSON.parse(localStorage.getItem(SAVE_KEY))
 function persist() { if (SOLO_SAVE) { persistCoop(); return; } try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} }   // a co-op session isn't saved
 
 // co-op: two players get more of everything (the host spawns it all)
-const COOP = { spawn: Math.max(.2, tn('coop.spawn', 1.5)), cap: Math.max(.2, tn('coop.cap', 1.5)), hp: Math.max(.1, tn('coop.hp', 1.3)), idle: Math.max(0, tn('coop.idle', 1.4)), horde: Math.max(0, tn('coop.horde', 2)) };
+const COOP = { spawn: Math.max(.2, tn('coop.spawn', 1.5)), cap: Math.max(.2, tn('coop.cap', 1.5)), hp: Math.max(.1, tn('coop.hp', 1.3)), idle: Math.max(0, tn('coop.idle', 1.4)), horde: Math.max(0, tn('coop.horde', 2)), ammo: Math.max(0, tn('coop.ammo', 1.08)) };      // ammo: boxes drop 8% more often with two of you
 const coopMul = k => NET.role === 'host' ? COOP[k] : 1;
 // elites: any kind of zombie can turn up as one. Violet, glowing, a health bar, very hard to put down.
 const ELITE = { solo: tn('elites.solo', .03), coop: tn('elites.coop', .09), from: tn('elites.from', 3), hp: Math.max(1, tn('elites.hp', 6)), dmg: Math.max(0, tn('elites.dmg', 1.5)),
@@ -3460,7 +3461,7 @@ function drawBuddies(cam) {
 
 // ---- AIR SUPPORT: every half a minute or so, a burst of gunfire comes down out of the sky onto a few of the zombies
 //      near you (and some stray rounds chew up the street). The host decides who's hit; everyone sees the tracers. ----
-const AIR = { every: Math.max(5, tn('items.airEvery', 30)), targets: Math.max(1, Math.round(tn('items.airTargets', 3))), shots: Math.max(1, Math.round(tn('items.airShots', 2))), dmg: Math.max(0, tn('items.airDmg', 12)) };
+const AIR = { every: Math.max(5, tn('items.airEvery', 20)), targets: Math.max(1, Math.round(tn('items.airTargets', 3))), shots: Math.max(1, Math.round(tn('items.airShots', 2))), dmg: Math.max(0, tn('items.airDmg', 12)) };
 let airShots = [];
 const airT = { me: 0, ally: 0 };
 function updAir(dt) {
@@ -4159,7 +4160,7 @@ let drops = [], fires = [], nums = [], relicTook = new Set(), dropUid = 0, dropG
 function rollAmmoDrop(z) {                           // once per zombie; the box is for your gun (in co-op each of you rolls your own)
   if (!z || z.ammoRolled || z.type === 'boss') return;
   z.ammoRolled = true;
-  if (!(Math.random() < AMMO_DROP.chance) || !PRIMARIES.includes(save.primary) || !save.owned[save.primary]) return;
+  if (!(Math.random() < AMMO_DROP.chance * (online() ? COOP.ammo : 1)) || !PRIMARIES.includes(save.primary) || !save.owned[save.primary]) return;
   const air = z.type === 'flyer';
   ammoBoxes.push({ x: z.x, y: air ? z.y : z.fy - 14, vx: rnd(-22, 22), vy: air ? rnd(-30, -10) : rnd(-85, -60), fy: z.fy, t: 0, land: false, near: false });
 }
@@ -4521,7 +4522,7 @@ function drawRelicPop() {                            // just picked up: the item
    On claude.ai the page's `room` carries the snapshots; on the game's own website PeerJS does (a free
    public server introduces the two browsers, then they talk directly).
    ============================================================ */
-const GAME_BUILD = 52;                              // shown on the co-op screen, so two players can check they have the same game
+const GAME_BUILD = 54;                              // shown on the co-op screen, so two players can check they have the same game
 // on the game's own website: browsers may keep an old copy of the page for up to 10 minutes after an update,
 // so check for a newer upload when the game opens and load it straight away if there is one
 (function checkForUpdate() {
@@ -4533,7 +4534,7 @@ const GAME_BUILD = 52;                              // shown on the co-op screen
     location.replace(location.pathname + '?v=' + n);
   }).catch(() => {});
 })();
-const NET_V = 9, ZTYPES = ['walker', 'runner', 'brute', 'crawler', 'flyer', 'hound', 'trash', 'spitter'], FLY_ST = ['cruise', 'wind', 'dive', 'leave'];
+const NET_V = 10, ZTYPES = ['walker', 'runner', 'brute', 'crawler', 'flyer', 'hound', 'trash', 'spitter'], FLY_ST = ['cruise', 'wind', 'dive', 'leave'];
 const NET = { role: 'solo', room: null, code: '', t: 0, push: 0, rate: 20, seq: 0, out: [], seen: 0, run: 0, night: 1, hostRun: 0,
   partner: null, lastP: null, lastSeen: 0, hadPartner: false, mateId: null, rtt: 0, lead: 0, theirTs: 0, theirAt: 0, pend: [], gone: new Set() };
 let ally = null;                                  // the other survivor on this screen, a puppet built from their messages
@@ -5094,7 +5095,7 @@ function guestEnd(won) {
   if (lost) save.relics = save.relics.filter(id => !gone.includes(id));
   if (!won) save.relicsNight = [];
   if (!won) save.runNew = true;
-  const cashLost = !won ? Math.min(save.cash, stats.cash) : 0;
+  const cashLost = !won ? Math.min(save.cash, Math.round(stats.cash * DEATH_LOSS)) : 0;
   save.cash -= cashLost;
   persist();
   const list = [[stats.kills, tr('sKills')], cashLost ? ['-$' + cashLost, tr('cashLost')] : ['$' + stats.cash, tr('sCash')], [fmtTime(stats.t), tr('sTime')]];
@@ -6699,7 +6700,7 @@ function endNight(won) {
   const gone = !won ? (save.relicsNight || []).filter(id => (save.relics || []).includes(id)) : [], lost = gone.length;
   if (lost) save.relics = save.relics.filter(id => !gone.includes(id));   // bitten: tonight's items go with you (the ones from earlier nights stay)
   if (!won) save.relicsNight = [];
-  const cashLost = !won && online() ? Math.min(save.cash, stats.cash) : 0;      // co-op: the night's cash only counts if you make the bus
+  const cashLost = !won ? Math.min(save.cash, Math.round(stats.cash * DEATH_LOSS)) : 0;      // bitten: most of the night's cash goes with you (solo and co-op)
   save.cash -= cashLost;
   if (!won) { save.runNew = true; save.up = { jacket: 0, shoes: 0 }; save.meleeTier = 0; }   // ...and the next night starts a new run (pick a gun on the way); the run's supplies are gone (the enemy cards you've seen stay seen)
   if (won) { save.night++; save.best = Math.max(save.best, save.night); if (escaped) save.escaped = true; delete save.checkpoint; }
@@ -7411,7 +7412,7 @@ try { if (hot && typeof hot.snapshot === 'function') hot.snapshot(() => ({ save 
 try {
   if (hot && typeof hot.ready === 'function') hot.ready(start); else start((hot && hot.data) || {});
 } catch (e) { console.error(e); start({}); }
-window.__porch = { buildBuddyFrames, buildBearFrames, buildWolfFrames, get stands() { return stands; }, get traps() { return traps; }, updTraps, trapNews, statKind, zKind, exitKind, loopOf, streetOf, NADE_MAX, addNades, SIDES, ALPHA_DMG, alphaHp, bossHp, TRAP, STAND, get world() { return world; }, updStands, tickBuddy, get ammoBoxes() { return ammoBoxes; }, rollAmmoDrop, AMMO_DROP, CLIPS, magOf, gunSave, pauseCoopUI, views, offscreenX, spawnEdge, enterCoopSave, leaveCoopSave, coopStored, capNow, noiseHorde, get buddies() { return buddies; }, updBuddies, airVolley, get airShots() { return airShots; }, makeElite, COOP, ELITE, updSpitter, get spits() { return spits; }, spitAt, zArt, applyGunMods, SUP, ARM, TRN, capOf, strMul, get critBonus() { return critBonus(); }, renderShop, deathFx, CRIT_MUL, critChance, hurtZombie, get decals() { return decals; }, trashSlam, buildTrashFrames, get TRASH_ART() { return TRASH_ART; }, zLevel, zStats, headOf, hatFor, ZLV, get parts() { return parts; }, TUNING, MELEE, ZT, PT, BOSS_DMG, get RIFLE_FALL() { return RIFLE_FALL; }, bossHp, get NADE_R() { return NADE_R; }, get FLY_DMG() { return FLY_DMG; }, nadeDmg, nadeChargeStart, nadeChargeEnd, nadeMaxD, openIntro, closeIntro, checkIntros, nightCfg, unlocked, ROSTER, openSettings, cancelReload, roundsIn, getRevived, updRevive, get SOLO_SAVE() { return SOLO_SAVE; }, nadePlan, openShop, PRIMARIES, pickGun, openPick, ensureLoadout, gunFor, sticks, pollTouch, input, WEAP, fire, startReload, moveSpeed, normalizeSave, addAmmo, get fires() { return fires; }, RELICS, AMMO_CAP, has, grabRelic, dropRelics, pickRelicHouses, ignite, renderRelics, relicArt, get drops() { return drops; }, get nums() { return nums; }, shopItems, buy, fillPrice, houndWave, HOUND, buildHoundFrames, batHound, get bullets() { return bullets; }, skinOf, get WORN() { return WORN; }, get AF() { return AF; }, NET, get ally() { return ally; }, hostSnap, areaHit, get hostNades() { return hostNades; }, meleeHit, quickSwing, coopAlly, get stats() { return stats; }, get coins() { return coins; }, get K() { return K; }, noiseHorde, get spawnQ() { return spawnQ; }, spawnFlyer, NADE, get nades() { return nades; }, nadeCalc, throwNade, explode, TRACKS, G, get player() { return player; }, get zombies() { return zombies; }, get save() { return save; }, get boss() { return boss; }, get bus() { return bus; }, get props() { return props; }, get debris() { return debris; }, WX, startNight, startBoss, setWeather, houses: () => houses, dmgPlayer, spawnZombie, CE, makeTemplate, importSheet, get CUSTOM() { return CUSTOM; } };
+window.__porch = { addCash, get DEATH_LOSS() { return DEATH_LOSS; }, buildBuddyFrames, buildBearFrames, buildWolfFrames, get stands() { return stands; }, get traps() { return traps; }, updTraps, trapNews, statKind, zKind, exitKind, loopOf, streetOf, NADE_MAX, addNades, SIDES, ALPHA_DMG, alphaHp, bossHp, TRAP, STAND, get world() { return world; }, updStands, tickBuddy, get ammoBoxes() { return ammoBoxes; }, rollAmmoDrop, AMMO_DROP, CLIPS, magOf, gunSave, pauseCoopUI, views, offscreenX, spawnEdge, enterCoopSave, leaveCoopSave, coopStored, capNow, noiseHorde, get buddies() { return buddies; }, updBuddies, airVolley, get airShots() { return airShots; }, makeElite, COOP, ELITE, updSpitter, get spits() { return spits; }, spitAt, zArt, applyGunMods, SUP, ARM, TRN, capOf, strMul, get critBonus() { return critBonus(); }, renderShop, deathFx, CRIT_MUL, critChance, hurtZombie, get decals() { return decals; }, trashSlam, buildTrashFrames, get TRASH_ART() { return TRASH_ART; }, zLevel, zStats, headOf, hatFor, ZLV, get parts() { return parts; }, TUNING, MELEE, ZT, PT, BOSS_DMG, get RIFLE_FALL() { return RIFLE_FALL; }, bossHp, get NADE_R() { return NADE_R; }, get FLY_DMG() { return FLY_DMG; }, nadeDmg, nadeChargeStart, nadeChargeEnd, nadeMaxD, openIntro, closeIntro, checkIntros, nightCfg, unlocked, ROSTER, openSettings, cancelReload, roundsIn, getRevived, updRevive, get SOLO_SAVE() { return SOLO_SAVE; }, nadePlan, openShop, PRIMARIES, pickGun, openPick, ensureLoadout, gunFor, sticks, pollTouch, input, WEAP, fire, startReload, moveSpeed, normalizeSave, addAmmo, get fires() { return fires; }, RELICS, AMMO_CAP, has, grabRelic, dropRelics, pickRelicHouses, ignite, renderRelics, relicArt, get drops() { return drops; }, get nums() { return nums; }, shopItems, buy, fillPrice, houndWave, HOUND, buildHoundFrames, batHound, get bullets() { return bullets; }, skinOf, get WORN() { return WORN; }, get AF() { return AF; }, NET, get ally() { return ally; }, hostSnap, areaHit, get hostNades() { return hostNades; }, meleeHit, quickSwing, coopAlly, get stats() { return stats; }, get coins() { return coins; }, get K() { return K; }, noiseHorde, get spawnQ() { return spawnQ; }, spawnFlyer, NADE, get nades() { return nades; }, nadeCalc, throwNade, explode, TRACKS, G, get player() { return player; }, get zombies() { return zombies; }, get save() { return save; }, get boss() { return boss; }, get bus() { return bus; }, get props() { return props; }, get debris() { return debris; }, WX, startNight, startBoss, setWeather, houses: () => houses, dmgPlayer, spawnZombie, CE, makeTemplate, importSheet, get CUSTOM() { return CUSTOM; } };
 })();
 </script>
 </body></html>
