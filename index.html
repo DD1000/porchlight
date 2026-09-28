@@ -78,6 +78,8 @@ body{margin:0;background:var(--night);color:var(--ink);font-family:var(--body);o
 .relic-box{display:flex;flex-direction:column;align-items:center;gap:calc(var(--px)*2.5);width:100%;max-width:calc(var(--px)*230)}
 .relics{display:flex;flex-wrap:wrap;justify-content:center;gap:calc(var(--px)*2)}
 .relics[hidden]{display:none}
+.relics.many{max-height:calc(var(--px)*62);overflow-y:auto;gap:calc(var(--px)*1.5);padding:2px}
+.relics.many .relic{width:calc(var(--px)*12);height:calc(var(--px)*12);min-width:30px;min-height:30px}
 .relic{-webkit-appearance:none;appearance:none;display:grid;place-items:center;width:calc(var(--px)*16);height:calc(var(--px)*16);min-width:34px;min-height:34px;padding:0;background:var(--panel);border:max(2px,calc(var(--px)*.8)) solid var(--line);cursor:pointer}
 .relic img{width:72%;height:72%;image-rendering:pixelated;pointer-events:none}
 .relic.on{border-color:var(--amber);background:var(--panel-2);box-shadow:0 0 calc(var(--px)*4) rgba(255,180,58,.35)}
@@ -516,8 +518,39 @@ const STR = {
     r_getaway: 'Getaway Shoes', rd_getaway: 'Emptying your magazine grants a burst of movement speed.',
     r_barbed: 'Barbed Jacket', rd_barbed: 'Contact attackers take damage.',
     r_collar: 'Dog Collar', rd_collar: "A friendly stray tags along. It grabs one zombie at a time by the arm and won't let go, so that one can't move or bite. Its bite barely hurts them. Nothing can hurt the dog.",
-    r_air: 'Air Support', rd_air: 'Every half a minute or so, a burst of gunfire rains down on a few zombies near you. Nobody says where from.',
+    r_air: 'Air Support', rd_air: 'Every 20 seconds or so, SMG fire rains down on a few zombies near you. Nobody says where from.',
     r_flare: 'Emergency Road Flare', rd_flare: 'Taking damage makes your next attack ignite a small area around its target.',
+    r_rabbit: 'Lucky Rabbit\'s Foot', rd_rabbit: 'Once a night, a hit that would put you down leaves you with 1 health instead.',
+    r_wind2: 'Second Wind', rd_wind2: 'Once a night, dropping under a quarter of your health heals you fast for 3 seconds.',
+    r_adren: 'Adrenaline Shot', rd_adren: 'Getting hurt makes you run 50% faster for 2 seconds.',
+    r_medic: 'Medic Pouch', rd_medic: 'Health you find heals 50% more.',
+    r_leech: 'Leech Charm', rd_leech: 'Every kill heals you 1 health.',
+    r_deadman: 'Dead Man\'s Switch', rd_deadman: 'When you go down, you drop a live grenade.',
+    r_lastround: 'Last Round', rd_lastround: 'The last round in your magazine does triple damage.',
+    r_tracer: 'Tracer Rounds', rd_tracer: 'Every 5th shot sets fire where it hits (every 15th with the SMG).',
+    r_ricochet: 'Ricochet Rounds', rd_ricochet: 'A shot that misses bounces toward the nearest zombie, at 60% damage.',
+    r_buckshot: 'Buckshot Belt', rd_buckshot: 'Shotgun blasts fire 2 more pellets.',
+    r_silencer: 'Oil-Filter Silencer', rd_silencer: 'Your gunshots are half as likely to bring a horde.',
+    r_bandolier: 'Bandolier', rd_bandolier: 'Carry one more spare clip for your gun.',
+    r_sticky: 'Sticky Tape', rd_sticky: 'Your grenades stick to the first zombie they hit.',
+    r_cluster: 'Cluster Pins', rd_cluster: 'Your grenades throw out 3 small blasts after they go off.',
+    r_gloves: 'Blast Gloves', rd_gloves: 'Your grenades blast 25% wider, and grenades hurt you half as much.',
+    r_griptape: 'Grip Tape', rd_griptape: 'You can swing the bat again 25% sooner.',
+    r_knuckles: 'Spiked Knuckles', rd_knuckles: 'Bat hits make zombies bleed for 3 seconds.',
+    r_scavenger: 'Scavenger\'s Bag', rd_scavenger: 'Search 40% faster, and find ammo more often.',
+    r_magnet: 'Magnet', rd_magnet: 'Coins fly to you from twice as far away, and ammo boxes slide over to you.',
+    r_tipjar: 'Tip Jar', rd_tipjar: 'Coins are worth 25% more.',
+    r_cologne: 'Rotten Cologne', rd_cologne: 'Sleeping zombies have to be a lot closer to notice you.',
+    r_headlamp: 'Headlamp', rd_headlamp: 'Lights up the street ahead. Your hits on zombies close in front of you do 15% more damage.',
+    r_binocs: 'Binoculars', rd_binocs: 'Arrows at the edge of the screen show zombies on their way from off screen.',
+    r_flashbang: 'Flashbang Pin', rd_flashbang: 'The first time you get hurt each night, a flash stuns every zombie close to you.',
+    r_bearspray: 'Bear Spray', rd_bearspray: 'Once a night, the first bear or wolf that attacks you gets sprayed: you take no damage, and it is stunned for 3 seconds. Found in the forest.',
+    r_trapkit: 'Trap Kit', rd_trapkit: 'A bear trap you set off with the bat opens again, for zombies: the next one to step in gets caught and hurt. Found in the forest.',
+    r_snowshoes: 'Snowshoes', rd_snowshoes: 'Bear traps hurt you half as much and let go twice as fast. Found in the forest.',
+    r_buddy: 'Buddy System', rd_buddy: 'While you and your partner stay close, you both do 10% more damage. Found in co-op.',
+    r_canteen: 'Shared Canteen', rd_canteen: 'Health you find also heals your partner, by half as much. Found in co-op.',
+    r_walkie: 'Walkie-Talkie', rd_walkie: 'Always shows how far away your partner is, and you run 20% faster toward them while they are down. Found in co-op.',
+    luckF: 'LUCKY!', windF: 'SECOND WIND', deadmanF: 'LIVE GRENADE!', sprayF: 'SPRAYED!', flashF: 'FLASH!', trapArmF: 'TRAP SET', 
     coopBadCode: 'The code is 4 letters or numbers.', hounds: 'HOUNDS!', houndsSub: 'BAT THEM AS THEY JUMP', caughtF: 'CAUGHT!', coopOld: 'Your friend has a different version of the game. Both of you reload the page, then try again.', coopVer: 'Game version {n}', coopNet: 'Couldn’t reach the connection service. Check your internet and try again.', coopUnavailable: 'Co-op can’t connect here. Open the game from its website to play with a friend.',
     coopDenied: 'Co-op isn’t available on this link. Open the game from its website to play with a friend.', coopHostLeft: 'The host left the game.', coopWait: 'Waiting for the host to start the next night.',
     coopLeft: 'YOUR PARTNER LEFT', coopDown: 'PARTNER DOWN', coopYouDown: 'YOU ARE DOWN', coopYouDownSub: 'YOUR PARTNER CAN STILL MAKE THE BUS', coopTogether: 'THE TWO OF YOU', coopBusWait: 'WAITING FOR YOUR PARTNER',
@@ -551,7 +584,7 @@ const STR = {
     bats: 'BATS', batsSub: 'THEY SWOOP DOWN. AIM THE RIGHT STICK UP', batsSubKey: 'THEY SWOOP DOWN. HOLD W WHILE FIRING',
     boss: 'THE DISPATCHER', bossSub: 'SWING THE BAT AS HE CHARGES TO STOP HIM', bossDown: 'DISPATCHER DOWN', bossDownSub: 'THE LAST BUS IS PULLING IN',
     staggered: 'STAGGERED', staggeredF: 'STAGGERED!', dazed: 'DAZED', reload: 'RELOAD', search: 'SEARCH', searchKey: 'E  SEARCH', searching: 'SEARCHING',
-    fShells: '+{n} SHELLS', fRounds: '+{n} ROUNDS', adl_sight: '+{n}% crit chance a level', adl_hot: '+{n}% damage a level', adl_mag: '+{n}% clip size and ammo carried a level', adl_grip: 'Reloads {n}% faster a level', adl_barrel: '+{n}% range and a tighter spread a level', adl_trigger: 'Fires {n}% faster a level', adNow: 'now {n}%', armRefund: 'The Armory changed: every upgrade now has ten levels. You got ${n} back for what you had bought, to spend again.', fNadesFull: 'GRENADES FULL', nadesFull: 'Full ({n} max)', trapped: 'TRAPPED!', trappedSub: 'SWING THE BAT TO PRY IT OPEN', trapFreeF: 'FREE!', trapOffF: 'SNAP!', alphaB: 'THE ALPHA', alphaBSub: 'SWING THE BAT AS IT CHARGES TO STOP IT',
+    fShells: '+{n} SHELLS', fRounds: '+{n} ROUNDS', meters: '{n}M', adl_sight: '+{n}% crit chance a level', adl_hot: '+{n}% damage a level', adl_mag: '+{n}% clip size and ammo carried a level', adl_grip: 'Reloads {n}% faster a level', adl_barrel: '+{n}% range and a tighter spread a level', adl_trigger: 'Fires {n}% faster a level', adNow: 'now {n}%', armRefund: 'The Armory changed: every upgrade now has ten levels. You got ${n} back for what you had bought, to spend again.', fNadesFull: 'GRENADES FULL', nadesFull: 'Full ({n} max)', trapped: 'TRAPPED!', trappedSub: 'SWING THE BAT TO PRY IT OPEN', trapFreeF: 'FREE!', trapOffF: 'SNAP!', alphaB: 'THE ALPHA', alphaBSub: 'SWING THE BAT AS IT CHARGES TO STOP IT',
     iz_ranger: 'RANGERS', id_ranger: 'The park service never left. Slow and stubborn, and there are a lot of them out here.', ih_ranger: 'Same as the walkers: keep your distance and keep shooting.',
     iz_hunter: 'HUNTERS', id_hunter: 'Still up in their tree stands, waiting. When you walk under one he drops down on you.', ih_hunter: 'Watch the stands up in the trees. Step back as one drops, then shoot.',
     iz_bear: 'ZOMBIE BEARS', id_bear: 'Rotting grizzlies. Hard to put down, and a swipe takes a big piece of your health.', ih_bear: 'Never let one reach you. Grenades and steady fire from range. They do not burst when they drop.',
@@ -637,8 +670,39 @@ const STR = {
     r_getaway: '跑路鞋', rd_getaway: '打空弹匣时获得一阵加速。',
     r_barbed: '倒刺夹克', rd_barbed: '贴身攻击你的敌人会受伤。',
     r_collar: '狗项圈', rd_collar: '一只友好的流浪狗跟着你。它一次咬住一只僵尸的胳膊不放，让它动不了也咬不了人。它咬得不疼。狗不会受伤。',
-    r_air: '空中支援', rd_air: '大约每半分钟，一阵枪弹从天而降，打向你附近的几只僵尸。没人说是从哪来的。',
+    r_air: '空中支援', rd_air: '大约每 20 秒，一阵冲锋枪子弹从天而降，打向你附近的几只僵尸。没人说是从哪来的。',
     r_flare: '应急路边信号弹', rd_flare: '受伤后，你的下一次攻击会点燃目标周围的一小片区域。',
+    r_rabbit: '幸运兔脚', rd_rabbit: '每晚一次，本该让你倒下的一击会让你剩下 1 点生命。',
+    r_wind2: '第二口气', rd_wind2: '每晚一次，生命掉到四分之一以下时，3 秒内快速回血。',
+    r_adren: '肾上腺素针', rd_adren: '受伤后 2 秒内跑速提高 50%。',
+    r_medic: '医疗包', rd_medic: '找到的生命多恢复 50%。',
+    r_leech: '水蛭护符', rd_leech: '每次击杀恢复 1 点生命。',
+    r_deadman: '死人开关', rd_deadman: '你倒下时会掉出一颗拉了环的手雷。',
+    r_lastround: '最后一发', rd_lastround: '弹匣里的最后一发子弹造成三倍伤害。',
+    r_tracer: '曳光弹', rd_tracer: '每第 5 枪会在命中的地方点火（冲锋枪是每第 15 枪）。',
+    r_ricochet: '跳弹', rd_ricochet: '没打中的子弹会弹向最近的僵尸，伤害为 60%。',
+    r_buckshot: '鹿弹腰带', rd_buckshot: '霰弹枪每发多打出 2 颗弹丸。',
+    r_silencer: '机油滤清器消音器', rd_silencer: '你的枪声引来尸潮的几率减半。',
+    r_bandolier: '子弹带', rd_bandolier: '你的枪可以多带一个备用弹匣。',
+    r_sticky: '强力胶带', rd_sticky: '你的手雷会粘在碰到的第一只僵尸身上。',
+    r_cluster: '集束引信', rd_cluster: '你的手雷爆炸后会再炸出 3 个小爆炸。',
+    r_gloves: '防爆手套', rd_gloves: '你的手雷爆炸范围大 25%，手雷对你的伤害减半。',
+    r_griptape: '防滑胶布', rd_griptape: '球棒挥完后能早 25% 再挥。',
+    r_knuckles: '尖刺指虎', rd_knuckles: '球棒打中的僵尸会流血 3 秒。',
+    r_scavenger: '拾荒者背包', rd_scavenger: '搜索快 40%，也更常找到弹药。',
+    r_magnet: '磁铁', rd_magnet: '硬币从两倍远的地方飞向你，弹药箱也会滑到你脚边。',
+    r_tipjar: '小费罐', rd_tipjar: '硬币价值多 25%。',
+    r_cologne: '腐臭古龙水', rd_cologne: '睡着的僵尸要离你近得多才会发现你。',
+    r_headlamp: '头灯', rd_headlamp: '照亮前方的街道。你对面前近处僵尸的伤害提高 15%。',
+    r_binocs: '望远镜', rd_binocs: '屏幕边缘的箭头提示正从屏幕外过来的僵尸。',
+    r_flashbang: '震撼弹拉环', rd_flashbang: '每晚第一次受伤时，一道闪光震晕你身边的所有僵尸。',
+    r_bearspray: '防熊喷雾', rd_bearspray: '每晚一次，第一只攻击你的熊或狼会被喷一脸：你不受伤，它被震晕 3 秒。在森林里找到。',
+    r_trapkit: '陷阱工具包', rd_trapkit: '你用球棒触发的捕熊夹会重新张开，专夹僵尸：下一只踩上去的会被夹住受伤。在森林里找到。',
+    r_snowshoes: '雪鞋', rd_snowshoes: '捕熊夹对你的伤害减半，松开也快一倍。在森林里找到。',
+    r_buddy: '结伴而行', rd_buddy: '你和队友靠得近时，两人的伤害都提高 10%。在合作模式里找到。',
+    r_canteen: '共享水壶', rd_canteen: '你找到的生命，队友也能恢复一半。在合作模式里找到。',
+    r_walkie: '对讲机', rd_walkie: '一直显示队友离你多远；队友倒下时，你朝他跑快 20%。在合作模式里找到。',
+    luckF: '好运！', windF: '第二口气', deadmanF: '手雷掉了！', sprayF: '喷！', flashF: '闪光！', trapArmF: '陷阱已布置', 
     coopBadCode: '代码是 4 位字母或数字。', hounds: '猎犬来袭！', houndsSub: '它们扑过来时用球棒打', caughtF: '打中了！', coopOld: '你的朋友的游戏版本不同。请两人都重新加载页面后再试。', coopVer: '游戏版本 {n}', coopNet: '无法连接联机服务，请检查网络后重试。', coopUnavailable: '这里无法连接合作模式。请从游戏网站打开，和朋友一起玩。',
     coopDenied: '这个链接无法使用合作模式。请从游戏网站打开，和朋友一起玩。', coopHostLeft: '房主离开了游戏。', coopWait: '等待房主开始下一夜。',
     coopLeft: '队友离开了', coopDown: '队友倒下了', coopYouDown: '你倒下了', coopYouDownSub: '队友还能赶上巴士', coopTogether: '今晚两人同行', coopBusWait: '等待队友上车',
@@ -670,7 +734,7 @@ const STR = {
     bats: '蝙蝠', batsSub: '它们会俯冲下来。右摇杆往上推射击', batsSubKey: '它们会俯冲下来。射击时按住 W',
     boss: '调度员', bossSub: '它冲锋时挥棒，就能拦住它', bossDown: '调度员倒下了', bossDownSub: '最后一班巴士进站了',
     staggered: '踉跄', staggeredF: '踉跄！', dazed: '撞晕了', reload: '换弹', search: '搜索', searchKey: 'E 搜索', searching: '搜索中',
-    fShells: '+{n} 霰弹', fRounds: '+{n} 子弹', adl_sight: '每级暴击率 +{n}%', adl_hot: '每级伤害 +{n}%', adl_mag: '每级弹匣和携弹量 +{n}%', adl_grip: '每级换弹快 {n}%', adl_barrel: '每级射程 +{n}%，散布更紧', adl_trigger: '每级射速快 {n}%', adNow: '现在 {n}%', armRefund: '军械库改了：每项升级现在有十级。之前买的东西退还你 ${n}，可以重新花。', fNadesFull: '手雷满了', nadesFull: '已满（最多 {n} 个）', trapped: '被夹住了！', trappedSub: '挥棒撬开它', trapFreeF: '挣脱了！', trapOffF: '咔嚓！', alphaB: '头熊', alphaBSub: '它冲过来时挥棒拦住它',
+    fShells: '+{n} 霰弹', fRounds: '+{n} 子弹', meters: '{n}米', adl_sight: '每级暴击率 +{n}%', adl_hot: '每级伤害 +{n}%', adl_mag: '每级弹匣和携弹量 +{n}%', adl_grip: '每级换弹快 {n}%', adl_barrel: '每级射程 +{n}%，散布更紧', adl_trigger: '每级射速快 {n}%', adNow: '现在 {n}%', armRefund: '军械库改了：每项升级现在有十级。之前买的东西退还你 ${n}，可以重新花。', fNadesFull: '手雷满了', nadesFull: '已满（最多 {n} 个）', trapped: '被夹住了！', trappedSub: '挥棒撬开它', trapFreeF: '挣脱了！', trapOffF: '咔嚓！', alphaB: '头熊', alphaBSub: '它冲过来时挥棒拦住它',
     iz_ranger: '护林员', id_ranger: '护林员一直没离开。又慢又固执，这里到处都是。', ih_ranger: '跟行尸一样：保持距离，一直开枪。',
     iz_hunter: '猎人', id_hunter: '还守在树上的狩猎台里。你从下面经过，他就跳下来扑你。', ih_hunter: '留意树上的狩猎台。他跳下来时后退，再开枪。',
     iz_bear: '僵尸熊', id_bear: '腐烂的灰熊。很难打倒，一爪就能拍掉你一大截血。', ih_bear: '千万别让它靠近。远处用手雷和持续火力。它们倒下时不会爆开。',
@@ -1480,7 +1544,7 @@ function drawForestDynamic(cam) {
     ctx.globalAlpha = .35; drawChar(f, null, x, STAND_Y + bob, s.face, 0, 3, ATLAS_DARK); ctx.globalAlpha = 1;
     ctx.fillStyle = '#5a4a36'; ctx.fillRect(Math.round(x - 9), STAND_Y + 1, 20, 2);                        // the platform edge in front of his feet
   }
-  for (const t of traps) { const x = Math.round(t.x - cam); if (x < -12 || x > VW + 12) continue; drawTrap(x, GROUND + 1, t.st ? 1 : 0, t.st === 2); }
+  for (const t of traps) { const x = Math.round(t.x - cam); if (x < -12 || x > VW + 12) continue; drawTrap(x, GROUND + 1, t.st && t.st !== 3 ? 1 : 0, t.st === 2); if (t.st === 3) kitFlag(x); }
   for (const L of lamps) {
     if (!L.lantern) continue;
     const x = Math.round(L.x - cam); if (x < -20 || x > VW + 20) continue;
@@ -2168,6 +2232,9 @@ const SFX = {
   snarl() { noise(.32, { f: 380, q: 1.5, g: .35 }); tone(.3, { type: 'sawtooth', f: 95, f2: 120, g: .14, lp: 500 }); },
   relic() { [523, 659, 784, 1047, 1319, 1568].forEach((f, i) => tone(.18, { type: 'triangle', f, g: .13, delay: i * .07 })); tone(.7, { type: 'sine', f: 2093, f2: 2637, g: .05, delay: .42 }); noise(.5, { f: 6000, q: 2, g: .06, delay: .4 }); },
   relicDrop() { [784, 988, 1175, 1568].forEach((f, i) => tone(.26, { type: 'sine', f, g: .12, delay: i * .09 })); noise(.45, { f: 5200, q: 2, g: .07, delay: .1 }); },
+  luck() { [1047, 1319, 1568, 2093].forEach((f, i) => tone(.14, { type: 'triangle', f, g: .1, delay: i * .05 })); noise(.3, { f: 6000, q: 2, g: .05, delay: .15 }); },
+  flashbang() { noise(.5, { f: 5200, f2: 1600, q: .6, g: .5 }); tone(.9, { type: 'sine', f: 3900, f2: 3600, g: .05 }); },
+  spray() { noise(.55, { f: 4200, f2: 2400, q: .8, g: .32 }); },
   collect() { tone(.05, { type: 'triangle', f: rnd(1350, 1500), g: .045 }); },
   shove() { tone(.16, { type: 'sine', f: 120, f2: 38, g: .45 }); noise(.18, { type: 'lowpass', f: 1000, f2: 200, g: .42 }); },
   ignite() { noise(.55, { type: 'lowpass', f: 380, f2: 2600, q: .7, g: .5 }); tone(.28, { type: 'sawtooth', f: 90, f2: 190, g: .1, lp: 800 }); },
@@ -2190,7 +2257,8 @@ function sfx(n, gap = 0) {
    ============================================================ */
 const SAVE_KEY = 'porchlight.save.v1';
 // the items found in the glimmering houses (see ITEMS below), and how much each gun's ammo you can carry
-const RELICS = ['bouncer', 'quickmag', 'kickback', 'vest', 'killfill', 'crowbar', 'onetwo', 'getaway', 'barbed', 'flare', 'collar', 'air'];
+const RELICS = ['bouncer', 'quickmag', 'kickback', 'vest', 'killfill', 'crowbar', 'onetwo', 'getaway', 'barbed', 'flare', 'collar', 'air',
+  'rabbit', 'wind2', 'adren', 'medic', 'leech', 'deadman', 'lastround', 'tracer', 'ricochet', 'buckshot', 'silencer', 'bandolier', 'sticky', 'cluster', 'gloves', 'griptape', 'knuckles', 'scavenger', 'magnet', 'tipjar', 'cologne', 'headlamp', 'binocs', 'flashbang', 'bearspray', 'trapkit', 'snowshoes', 'buddy', 'canteen', 'walkie'];
 const CLIPS = Math.max(1, Math.round(tn('nights.clips', 3)));      // spare clips of your gun you can carry (the revolver never runs out)
 const AMMO_CAP = { shotgun: 0, smg: 0, rifle: 0 };                   // CLIPS x each gun's clip size, worked out in applyGunMods
 // some zombies leave a box of ammo for your gun
@@ -2237,7 +2305,7 @@ function loadSave() { try { const s = JSON.parse(localStorage.getItem(SAVE_KEY))
 function persist() { if (SOLO_SAVE) { persistCoop(); return; } try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} }   // a co-op session isn't saved
 
 // co-op: two players get more of everything (the host spawns it all)
-const COOP = { spawn: Math.max(.2, tn('coop.spawn', 1.5)), cap: Math.max(.2, tn('coop.cap', 1.5)), hp: Math.max(.1, tn('coop.hp', 1.3)), idle: Math.max(0, tn('coop.idle', 1.4)), horde: Math.max(0, tn('coop.horde', 2)), ammo: Math.max(0, tn('coop.ammo', 1.08)) };      // ammo: boxes drop 8% more often with two of you
+const COOP = { spawn: Math.max(.2, tn('coop.spawn', 1.5)), cap: Math.max(.2, tn('coop.cap', 1.5)), hp: Math.max(.1, tn('coop.hp', 1.3)), idle: Math.max(0, tn('coop.idle', 1.4)), horde: Math.max(0, tn('coop.horde', 2)), ammo: Math.max(0, tn('coop.ammo', 1.24)) };      // ammo: boxes drop 24% more often with two of you
 const coopMul = k => NET.role === 'host' ? COOP[k] : 1;
 // elites: any kind of zombie can turn up as one. Violet, glowing, a health bar, very hard to put down.
 const ELITE = { solo: tn('elites.solo', .03), coop: tn('elites.coop', .09), from: tn('elites.from', 3), hp: Math.max(1, tn('elites.hp', 6)), dmg: Math.max(0, tn('elites.dmg', 1.5)),
@@ -2268,7 +2336,7 @@ const gunKey = id => SHARED_GUNS.includes(id) ? 'primary' : id;
 const gunSave = (id, sv = save) => (sv.gun && sv.gun[gunKey(id)]) || { up: {} };
 const attLv = (id, a, sv = save) => clamp(((gunSave(id, sv).up || {})[a]) || 0, 0, ARM_LV);
 const magOf = (id, sv = save) => Math.max(1, Math.round(WEAP[id].base.mag * (1 + ARM.mag.per * attLv(id, 'mag', sv))));
-function capOf(id, sv = save) { return CLIPS * magOf(id, sv); }
+function capOf(id, sv = save) { return (CLIPS + (sv && (sv.relics || []).includes('bandolier') ? 1 : 0)) * magOf(id, sv); }
 for (const id in CAP_BASE) AMMO_CAP[id] = capOf(id);
 function applyGunMods() {
   for (const w of WEAPON_LIST) {
@@ -2287,8 +2355,8 @@ const PT = { hp: Math.max(1, tn('player.hp', 100)), speed: Math.max(1, tn('playe
 };
 const maxHp = () => Math.round(PT.hp + SUP.jacketHp * (save.up.jacket ? 1 : 0) + TRN.health.per * attrLv('health'));
 const dmgMul = () => 1;                              // (a gun's own level and attachments are in its numbers now)
-const moveSpeed = () => PT.speed * (1 + SUP.shoes * (save.up.shoes ? 1 : 0)) * (1 + TRN.agility.per * attrLv('agility')) * (player && player.speedT > 0 ? 1.6 : 1);
-const searchRate = () => 1 / 1.1;
+const moveSpeed = () => PT.speed * (1 + SUP.shoes * (save.up.shoes ? 1 : 0)) * (1 + TRN.agility.per * attrLv('agility')) * (player && player.speedT > 0 ? 1.6 : 1) * (player && player.adrenT > 0 ? IT.adren : 1);
+const searchRate = () => 1 / 1.1 * (has('scavenger') ? IT.scav : 1);
 const reloadMul = () => 1;
 // The loop: each street brings in something new (Maple St walkers, Elm St runners and bats, Oak Ave crawlers and
 // brutes, Birch Ln the hounds), then the Dispatcher at the depot. After that the streets come round again with
@@ -2437,7 +2505,7 @@ function spawnEdge(side, type, ax = null) {
 function resetLevel(bossNight = false) {
   houses.forEach(h => { h.lit = h.litInit; h.searched = false; h.relic = false; });
   drops = []; fires = []; nums = []; ammoBoxes = []; relicTook = new Set(); G.relicPop = null; G.onDrop = null;
-  zombies = []; bullets = []; parts = []; decals = []; spits = []; buddies = []; airShots = []; airT.me = airT.ally = 0; coins = []; floaters = []; casings = []; spawnQ = []; props = []; debris = []; nades = []; NADE.on = false; G.boom = null;
+  zombies = []; bullets = []; parts = []; minis = []; decals = []; spits = []; buddies = []; airShots = []; airT.me = airT.ally = 0; coins = []; floaters = []; casings = []; spawnQ = []; props = []; debris = []; nades = []; NADE.on = false; G.boom = null;
   // on the depot night the bus isn't there yet: it pulls in once the boss is down
   const trail = bossNight && exitKind() === 'trail';           // Main St: out the back gate of the depot, into the woods
   bus = { x: bossNight && !trail ? BUS_X + 420 : BUS_X - 8, vx: 0, door: bossNight ? 0 : 1, leaving: false, arriving: false, t: 0, wheel: 0 };
@@ -2680,12 +2748,13 @@ function cancelReload() {
   player.mag[w.id] = roundsIn();
   player.reloadT = 0; player.calmT = 0;
 }
-function rollLoot(H, unowned, ammoGuns, nearFull) {
+function rollLoot(H, unowned, ammoGuns, nearFull, scav = false) {
   const r = Math.random();
   let res;
   if (H.type === 'hardware') res = r < .4 ? 'weapon' : r < .8 ? 'ammo' : 'cash';
   else if (H.type === 'diner') res = r < .6 ? 'med' : 'cash';
   else res = r < .07 ? 'weapon' : r < .27 ? 'ammo' : r < .43 ? 'med' : r < .88 ? 'cash' : 'empty';
+  if (scav && (res === 'empty' || (res === 'cash' && Math.random() < .3))) res = 'ammo';       // Scavenger's Bag: the ammo others miss
   if (res === 'weapon' && !unowned.length) res = 'ammo';
   if (res === 'ammo' && (!ammoGuns.length || Math.random() < .35)) res = 'nade';
   if (res === 'med' && nearFull) res = 'cash';
@@ -2698,12 +2767,12 @@ function finishSearch() {
   const unowned = [];                                  // guns aren't found any more: you picked yours
   const ammoGuns = WEAPON_LIST.filter(w => w.id !== 'pistol' && save.owned[w.id] && !ammoFull(w.id));
   if (H.relic && dropRelics(H)) { persist(); return; }           // a special house: the items come out instead
-  const res = rollLoot(H, unowned, ammoGuns, player.hp > maxHp() - 8);
+  const res = rollLoot(H, unowned, ammoGuns, player.hp > maxHp() - 8, has('scavenger'));
   const fx = H.doorX, fy = GROUND - 44;
   if (res === 'cash') { const a = H.type === 'house' ? irnd(8, 26) : irnd(22, 40); addCash(a); floater(fx, fy, '+$' + a, '#ffb43a'); sfx('loot'); }
   else if (res === 'ammo') { const w = pick(ammoGuns); const n = addAmmo(w.id, w.id === 'smg' ? irnd(18, 30) : irnd(3, 5)); floater(fx, fy, tr(w.id === 'shotgun' ? 'fShells' : 'fRounds', { n }), '#e2bf62'); sfx('loot'); }
   else if (res === 'nade') { const n = addNades(irnd(1, 2)); floater(fx, fy, n ? tr('fNades', { n }) : tr('fNadesFull'), '#a8c46a'); sfx('loot'); }
-  else if (res === 'med') { const a = PT.med; player.hp = Math.min(maxHp(), player.hp + a); floater(fx, fy, tr('fHealth', { n: a }), '#7fd08a'); sfx('med'); }
+  else if (res === 'med') { const a = Math.round(PT.med * (has('medic') ? IT.medic : 1)); healMe(a); floater(fx, fy, tr('fHealth', { n: a }), '#7fd08a'); sfx('med'); }
   else if (res === 'weapon') {
     const w = unowned[0]; save.owned[w.id] = true; addAmmo(w.id, AMMO_CAP[w.id]);
     player.weapon = w.id; player.reloadT = 0; player.mag[w.id] = Math.min(w.mag, save.ammo[w.id]); floater(fx, fy, tr(w.id === 'shotgun' ? 'fFoundSg' : 'fFoundSmg'), '#ffb43a'); setBanner(tr('newGun'), tr('w_' + w.id).toUpperCase(), 2); sfx('gun');
@@ -2860,14 +2929,18 @@ function fire() {
   if (player.mag[w.id] <= 0) { startReload(); return; }
   player.mag[w.id]--; player.calmT = 0;
   if (w.id !== 'pistol') save.ammo[w.id]--;
+  const last = player.mag[w.id] === 0 && has('lastround');           // Last Round
   const sid = ++shotSeq;                             // every pellet of one blast shares it (One-Two Wraps)
+  player.shotN = (player.shotN || 0) + 1;
+  const S = { tr: has('tracer') && player.shotN % (IT.tracer * (w.id === 'smg' ? 3 : 1)) === 0, lit: false, rico: false };   // Tracer Rounds, Ricochet Rounds (once a shot)
   const m = muzzle(), P = playerPose(), el = P.arm ? P.arm.ang : 0, ce = Math.cos(el), se = Math.sin(el);
   if (NET.role === 'guest') netEv('shot', WEAPON_ORDER.indexOf(w.id), r1(m.x), r1(m.y), player.face, Math.round(el * 100), Math.round(dmgMul() * 100));
-  else { noiseHorde(w.id, w.noise || 0); netEv('hs', WEAPON_ORDER.indexOf(w.id), r1(m.x), r1(m.y), player.face, Math.round(el * 100)); }
+  else { noiseHorde(w.id, (w.noise || 0) * (has('silencer') ? IT.quiet : 1)); netEv('hs', WEAPON_ORDER.indexOf(w.id), r1(m.x), r1(m.y), player.face, Math.round(el * 100)); }
   player.fireCd = w.cd; player.flashT = .06; player.recoil = w.id === 'pistol' ? .5 : 1.5; player.shotT = 0; player.aimHoldT = AIM_HOLD;
-  for (let i = 0; i < w.pellets; i++) {
+  const pel = w.pellets + (w.id === 'shotgun' && has('buckshot') ? IT.buck : 0), dm = dmgMul() * (last ? IT.last : 1) * buddyMul();
+  for (let i = 0; i < pel; i++) {
     const sp = w.speed * rnd(.92, 1.05), dv = w.speed * w.spread * rnd(-1, 1);
-    bullets.push({ x: m.x, y: m.y + rnd(-.5, .5), px: m.x, px0: player.x, py: m.y, vx: player.face * (sp * ce + dv * se), vy: -sp * se + dv * ce, life: w.life * rnd(.85, 1.1), dmg: w.dmg * dmgMul(), kb: w.kb * strMul(), face: player.face, low: w.id === 'shotgun', sid, pierce: !!w.pierce, rifle: w.id === 'rifle', crit: critChance(w) });
+    bullets.push({ x: m.x, y: m.y + rnd(-.5, .5), px: m.x, px0: player.x, py: m.y, vx: player.face * (sp * ce + dv * se), vy: -sp * se + dv * ce, life: w.life * rnd(.85, 1.1), dmg: w.dmg * dm, kb: w.kb * strMul(), face: player.face, low: w.id === 'shotgun', sid, pierce: !!w.pierce, rifle: w.id === 'rifle', crit: critChance(w), S, big: last });
   }
   for (let i = 0; i < 3; i++) parts.push({ k: 's', x: m.x + player.face * 2, y: m.y, vx: player.face * rnd(5, 20), vy: rnd(-10, -2), life: rnd(.3, .6), t: 0 });
   addShake(w.shake); sfx(w.id, w.id === 'smg' ? 60 : 0);
@@ -2886,7 +2959,7 @@ function quickSwing() {
   if (player.swingT >= 0 || player.meleeCd > 0 || NADE.on) return;
   cancelSearch();
   const M = melee();
-  player.meleeCd = M.cd; player.swingT = 0; player.swingHit = false; player.swingN = (player.swingN || 0) + 1;
+  player.meleeCd = M.cd * (has('griptape') ? GRIP_CD : 1); player.swingT = 0; player.swingHit = false; player.swingN = (player.swingN || 0) + 1;
   player.aim = 0; player.aimHoldT = 0; player.fireCd = Math.max(player.fireCd, SWING);
   sfx('whoosh');
 }
@@ -2900,8 +2973,9 @@ function updTraps(dt) {
   if (p.dead || p.hidden || p.inBus || p.trapT > 0 || p.porchT > .2) return;
   for (let i = 0; i < traps.length; i++) {
     const t = traps[i]; if (t.st || Math.abs(p.x - t.x) > 3.5) continue;
-    t.st = 1; p.trapT = TRAP.hold; p.x = t.x; p.kbv = 0;
-    dmgPlayer(TRAP.dmg); sfx('clang'); addShake(3); blood(p.x, p.fy - 3, 1, 5); blood(p.x, p.fy - 3, -1, 5);
+    const ss = has('snowshoes') ? .5 : 1;                      // Snowshoes: half as bad
+    t.st = 1; p.trapT = TRAP.hold * ss; p.x = t.x; p.kbv = 0;
+    dmgPlayer(TRAP.dmg * ss); sfx('clang'); addShake(3); blood(p.x, p.fy - 3, 1, 5); blood(p.x, p.fy - 3, -1, 5);
     setBanner(tr('trapped'), tr('trappedSub'), 1.6, true);
     netEv('trap', i, 1);
     break;
@@ -2914,12 +2988,12 @@ function batTraps() {                                // the bat: pry open the on
   for (let i = 0; i < traps.length; i++) {
     const t = traps[i]; if (t.st) continue;
     const ahead = (t.x - p.x) * p.face; if (ahead < -5 || ahead > M.reach + 5) continue;
-    t.st = 2; sfx('clang'); addShake(1.4); sparks(t.x, GROUND - 3, p.face); sparks(t.x, GROUND - 3, -p.face);
-    floater(t.x, GROUND - 16, tr('trapOffF'), '#c9ccd6', .8);
-    netEv('trap', i, 2);
+    t.st = has('trapkit') ? 3 : 2; sfx('clang'); addShake(1.4); sparks(t.x, GROUND - 3, p.face); sparks(t.x, GROUND - 3, -p.face);   // Trap Kit: it opens again, for them
+    floater(t.x, GROUND - 16, tr(t.st === 3 ? 'trapArmF' : 'trapOffF'), t.st === 3 ? '#7fd08a' : '#c9ccd6', .8);
+    netEv('trap', i, t.st);
   }
 }
-function trapNews(i, st) { const t = traps[+i]; if (t && !t.st && (st === 1 || st === 2)) t.st = st; }
+function trapNews(i, st) { const t = traps[+i]; if (t && ((!t.st && (st === 1 || st === 2 || st === 3)) || (t.st === 3 && st === 1))) t.st = st; }
 function meleeHit() { meleeHitFrom(player, melee()); batTraps(); }
 function meleeHitFrom(src, M) {
   const targets = [];
@@ -2934,17 +3008,19 @@ function meleeHitFrom(src, M) {
   let hits = 0;
   const kbM = (src === player && has('crowbar') ? 1.8 : 1) * (src === player ? strMul() : 1);
   for (const [, z] of targets.slice(0, M.max)) {
-    const cr = src === player && z.type !== 'hound' && Math.random() < critChance(M), md = M.dmg * (cr ? CRIT_MUL : 1);
+    const cr = src === player && z.type !== 'hound' && Math.random() < critChance(M), md = M.dmg * (cr ? CRIT_MUL : 1) * (src === player ? lampMul(z) * buddyMul() : 1);
+    const cut = src === player && z.type !== 'hound' && has('knuckles');
     if (z.type === 'hound') { if (src === player && z.batN !== player.swingN) { z.batN = player.swingN; batHound(z, src.face, M); hits++; } continue; }
     if (NET.role === 'guest') {
       hits++; guestHit(z, md, src.face, M.kb * kbM, M.stun * (z.type === 'brute' ? .6 : 1), 1, cr, cr); if (cr) critFx(z, hitY(z));
       if (has('onetwo') && z.type !== 'boss') z.primed = G.t;
+      if (cut) z.bleedT = BLEED_T;
       continue;
     }
     hits++; z.idle = false; z.flash = .07;
     if (z.type === 'boss') {                     // too big to stagger with a bat, unless it's a parry (see updBoss)
       const d = md * bossMul(z);
-      z.hp -= d; blood(z.x - src.face * 6, z.fy - 34, src.face, 4);
+      z.hp -= d; blood(z.x - src.face * 6, z.fy - 34, src.face, 4); if (cut) z.bleedT = BLEED_T;
       dmgNum(z.x, hitY(z), d, cr ? 'crit' : 'melee'); flareOn(z); if (cr) critFx(z, hitY(z));
       if (z.hp <= 0) ownKill(z, src.face);
       continue;
@@ -2952,6 +3028,7 @@ function meleeHitFrom(src, M) {
     z.kbv += src.face * M.kb * kbM * (1 - z.kbRes * .6);
     z.stun = Math.max(z.stun || 0, M.stun * (z.type === 'brute' ? .6 : 1) * (z.elite ? .5 : 1));
     if (has('onetwo')) z.primed = G.t;
+    if (cut) z.bleedT = BLEED_T;
     z.hp -= md;
     blood(z.x - src.face * 2, z.fy - Math.round(z.h * .55), src.face, M.id === 'axe' ? 6 : 3);
     dmgNum(z.x, hitY(z), md, cr ? 'crit' : 'melee'); flareOn(z); if (cr) critFx(z, hitY(z));
@@ -3010,8 +3087,8 @@ function deathFx(z, dir, crit) {
 function blood(x, y, dir, n) {
   for (let i = 0; i < n; i++) parts.push({ k: 'b', x, y, vx: dir * rnd(10, 70) + rnd(-15, 15), vy: rnd(-60, 10), life: 2, t: 0, gy: GROUND + irnd(-3, 5), c: Math.random() < .6 ? '#8e1f33' : '#5c1022', sz: Math.random() < .2 ? 2 : 1 });
 }
-function hurtZombie(z, b, m = 1, cr = false) {           // my bullet (m: One-Two Wraps; cr: a critical hit)
-  const d = b.dmg * m * (cr ? CRIT_MUL : 1) * (z.type === 'boss' ? bossMul(z) : 1);
+function hurtZombie(z, b, m = 1, cr = false, x = 1) {    // my bullet (m: One-Two Wraps; cr: a critical hit; x: anything else, like the Headlamp)
+  const d = b.dmg * m * x * (cr ? CRIT_MUL : 1) * (z.type === 'boss' ? bossMul(z) : 1);
   if (cr) critFx(z, b.y);
   z.hp -= d; z.flash = .07; z.idle = false;
   z.kbv += b.face * b.kb * (1 - z.kbRes);
@@ -3066,13 +3143,21 @@ function dmgPlayer(a, kb = 0, fromX = null) {
     const side = fromX !== null ? Math.sign(fromX - player.x) : kb ? -Math.sign(kb) : 0;
     if (side && side === player.face) a *= .5;
   }
+  if (a > 0 && has('flashbang') && !player.flashUsed) flashbang();
+  if (a > 0 && player.hp - a <= 0 && has('rabbit') && !player.luckUsed) {       // Lucky Rabbit's Foot: not this time
+    player.luckUsed = true; a = Math.max(0, player.hp - 1); player.invulnT = 1.2;
+    floater(player.x, player.fy - 48, tr('luckF'), '#fff3c4', 1.2); sfx('luck'); addShake(2);
+    for (let i = 0; i < 14; i++) parts.push({ k: 'y', x: player.x + rnd(-8, 8), y: player.fy - rnd(4, 30), vx: rnd(-40, 40), vy: rnd(-60, -10), life: rnd(.4, .8), t: 0 });
+  }
   if (a > 0 && has('flare') && !player.flareReady) { player.flareReady = true; floater(player.x, player.fy - 46, tr('flareF'), '#ff8a2a', .9); sfx('flareArm'); }
   player.hp -= a;
+  if (a > 0 && has('adren')) player.adrenT = ADREN_T;
   G.hurtFlash = Math.min(.45, G.hurtFlash + a * .03);
   if (kb) { player.kbv += kb; cancelSearch(); }
   if (player.hurtSfxT <= 0 || kb) { sfx('hurt'); player.hurtSfxT = .45; player.hurtT = .26; addShake(kb ? 3 : 1.6); blood(player.x, player.fy - 18, -player.face, kb ? 6 : 3); }
   if (player.hp <= 0) {
     player.hp = 0; dropGun(); player.dead = true; player.deadT = 0; cancelSearch(); player.hurtT = .26;
+    if (has('deadman')) deadmanNade();
     blood(player.x, player.fy - 16, -player.face, 20); sfx('die'); addShake(4);
     if (upright(mate())) setBanner(tr('coopYouDown'), tr(player.reviveUsed ? 'coopYouDownSub' : 'coopYouDownRv'), 3);
   }
@@ -3116,6 +3201,9 @@ function updPlayer(dt) {
     return;
   }
   if (player.inBus) return;
+  if (player.adrenT > 0) player.adrenT -= dt;
+  if (has('wind2') && !player.windUsed && player.hp > 0 && player.hp < maxHp() * .25) { player.windUsed = true; player.windT = WIND_T; floater(player.x, player.fy - 46, tr('windF'), '#7fd08a', 1.1); sfx('med'); }
+  if (player.windT > 0) { player.windT -= dt; player.hp = Math.min(maxHp(), player.hp + IT.wind * dt); }
   player.fireCd -= dt; player.flashT -= dt; player.hurtSfxT -= dt;
   player.meleeCd -= dt;
   if (player.kbv) { player.x += player.kbv * dt; player.kbv *= Math.exp(-7 * dt); if (Math.abs(player.kbv) < 3) player.kbv = 0; }
@@ -3145,6 +3233,7 @@ function updPlayer(dt) {
   else if (dir) player.face = dir;
   if ((dir || input.fire) && player.searching) cancelSearch();
   let moving = false, spd = moveSpeed();
+  if (dir && has('walkie')) { const m = mate(); if (m && m.dead && Math.sign(m.x - player.x) === dir) spd *= IT.walkie; }     // Walkie-Talkie: on my way
   // keyboard / button fire plants his feet; with the shooting stick he can keep walking (slower), backing up
   // if he walks away from where he's shooting. Mid-swing the arrows only turn him around.
   const runGun = input.stick && player.swingT < 0;
@@ -3225,7 +3314,7 @@ function updZombie(z, dt) {
   const P = z.tgt || player, target = P.inBus ? bus.x + 10 : P.x;
   const dx = target - z.x, adx = Math.abs(dx);
   if (z.idle) {
-    if (!P.dead && !P.inBus && adx < z.wake) z.idle = false;
+    if (!P.dead && !P.inBus && adx < z.wake * (hasP(P, 'cologne') ? IT.cologne : 1)) z.idle = false;
     else {
       z.swayT -= dt; if (z.swayT <= 0) { z.swayT = rnd(1.5, 4); z.swayDir = Math.random() < .5 ? -1 : 1; z.face = z.swayDir; }
       z.x += z.swayDir * 3 * dt; z.anim += dt * 1.2; z.atk = false; return;
@@ -3245,7 +3334,7 @@ function updZombie(z, dt) {
     z.x += z.face * sp * dt; z.anim += dt * z.spd * .16;
   }
   else if (z.rank < 2 && z.type === 'trash') trashSlam(z, P, dt);
-  else if (z.rank < 2) { z.atk = true; z.atkT += dt; if (!P.dead && !P.inBus) { hurtEnt(P, z.dps * dt, 0, z.x); if (P === player) barbTick(z, dt); } }
+  else if (z.rank < 2) { z.atk = true; z.atkT += dt; if (!P.dead && !P.inBus && !(P === player && sprayed(z))) { hurtEnt(P, z.dps * dt, 0, z.x); if (P === player) barbTick(z, dt); } }
   else { z.atk = false; z.anim += dt * .8; }
   z.x = clamp(z.x, 4, WORLD_LEN - 4);
 }
@@ -3782,7 +3871,7 @@ function updHound(z, dt) {
     if (!z.hitDone) for (const q of livePlayers()) {
       if (!upright(q) || q.hidden || Math.abs(q.x - z.x) >= 8 || z.jy < 6) continue;
       z.hitDone = true;
-      if (q === player) { dmgPlayer(z.leap ?? HOUND.dmg, z.face * 150); sfx('bite'); barbHit(z, 12); }   // (your partner's own screen decides about them)
+      if (q === player && !sprayed(z)) { dmgPlayer(z.leap ?? HOUND.dmg, z.face * 150); sfx('bite'); barbHit(z, 12); }   // (your partner's own screen decides about them)
       break;
     }
     if (k >= 1) { z.st = 'recover'; z.t = 0; z.jy = 0; }
@@ -3944,7 +4033,8 @@ function updNades(dt) {
   }
   for (const n of nades) {
     n.t += dt;
-    if (!n.rest) {
+    if (stuckNade(n)) {}
+    else if (!n.rest) {
       n.vy += NADE_G * dt; n.x += n.vx * dt; n.y += n.vy * dt; n.a += n.va * dt;
       if (n.y >= n.gy) {
         n.y = n.gy;
@@ -3959,37 +4049,43 @@ function updNades(dt) {
   if (G.boom) { G.boom.t += dt; if (G.boom.t > 1) G.boom = null; }
 }
 // everything the blast reaches: k = 1 at the centre, 0 at the edge
-function blastHits(x, y, fn) {
+function blastHits(x, y, fn, R = NADE_R) {
   for (const z of zombies) {
     if (z.dead || z.vaultT >= 0 || (z.type === 'boss' && z.st === 'drop')) continue;
     const air = z.type === 'flyer', zy = air ? z.y : z.fy - z.h / 2;
     const d = Math.max(0, Math.hypot(z.x - x, (zy - y) * (air ? 1 : .5)) - z.half);
-    if (d > NADE_R) continue;
-    fn(z, 1 - d / NADE_R, Math.sign(z.x - x) || 1, zy);
+    if (d > R) continue;
+    fn(z, 1 - d / R, Math.sign(z.x - x) || 1, zy);
   }
 }
-function blastSelf(x) {                                 // too close and it gets you as well
+function blastSelf(x, R0 = NADE_R) {                    // too close and it gets you as well (Blast Gloves: half as much)
   if (!upright(player) || player.hidden) return;
-  const d = Math.abs(player.x - x), R = NADE_R * .8;
-  if (d < R) { const k = 1 - d / R; dmgPlayer(Math.round(NADE_SELF * (.23 + .77 * k)), (Math.sign(player.x - x) || 1) * 120 * k); }
+  const d = Math.abs(player.x - x), R = R0 * .8;
+  if (d < R) { const k = 1 - d / R; dmgPlayer(Math.round(NADE_SELF * (.23 + .77 * k) * (has('gloves') ? .5 : 1)), (Math.sign(player.x - x) || 1) * 120 * k); }
 }
 function explode(x, y) {                                // my grenade (solo, or the host's)
-  explodeFx(x, y); netEv('boom', r1(x), r1(y));
+  const R = nadeR(), bm = buddyMul();
+  explodeFx(x, y); netEv('boom', r1(x), r1(y), r1(R));
   noiseHorde('grenade', NADE_NOISE, x);
   blastHits(x, y, (z, k, dir, zy) => {
-    const d = nadeDmg(k) * (z.type === 'boss' ? .6 : 1);
+    const d = nadeDmg(k) * bm * (z.type === 'boss' ? .6 : 1);
     z.hp -= d; z.flash = .1; z.idle = false;
     if (z.type !== 'boss') { z.kbv += dir * NADE_KB * k * (1 - z.kbRes); z.stun = Math.max(z.stun || 0, .2 + .6 * k); }
     blood(z.x, zy, dir, 4);
     dmgNum(z.x, hitY(z), d, 'blast'); flareOn(z);
     if (z.hp <= 0) ownKill(z, dir);
-  });
-  blastSelf(x);
+  }, R);
+  blastSelf(x, R);
+  if (has('cluster')) clusterOut(x, y, 'me');
 }
 // host: the guest's grenade going off (their screen does the damage to zombies; it still makes noise)
-function explodeCos(x, y) { explodeFx(x, y); noiseHorde('grenade', NADE_NOISE, x); blastSelf(x); }
+function explodeCos(x, y) { explodeFx(x, y); noiseHorde('grenade', NADE_NOISE, x); blastSelf(x, nadeR(mate())); }
 // guest: my grenade, on my screen
-function explodeGuest(x, y) { explodeFx(x, y); blastHits(x, y, (z, k, dir) => guestHit(z, nadeDmg(k), dir, NADE_KB * k, .2 + .6 * k, 2)); blastSelf(x); }
+function explodeGuest(x, y) {
+  const R = nadeR(), bm = buddyMul();
+  explodeFx(x, y); blastHits(x, y, (z, k, dir) => guestHit(z, nadeDmg(k) * bm, dir, NADE_KB * k, .2 + .6 * k, 2), R); blastSelf(x, R);
+  if (has('cluster')) clusterOut(x, y, 'me');
+}
 function explodeFx(x, y) {                               // the flash, the smoke, the scorch (no damage)
   sfx('boom'); addShake(6.5); G.boom = { x, y, t: 0 };
   for (let i = 0; i < 28; i++) { const a = rnd(Math.PI * 1.05, Math.PI * 1.95), sp = rnd(40, 160); parts.push({ k: 'f', x, y: y - 2, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp * .8, life: rnd(.22, .5), t: 0, sz: irnd(1, 3) }); }
@@ -4034,7 +4130,7 @@ function drawNadeAim(cam) {
   // where it comes down, and how far the blast reaches
   const pulse = .55 + .35 * Math.sin(G.t * 10);
   ctx.fillStyle = `rgba(255,90,74,${pulse.toFixed(2)})`;
-  for (let a = 0; a < Math.PI * 2; a += .09) ctx.fillRect(Math.round(lx + Math.cos(a) * NADE_R), Math.round(pl.gy + 1 + Math.sin(a) * 4), 1, 1);
+  const NR = nadeR(); for (let a = 0; a < Math.PI * 2; a += .09) ctx.fillRect(Math.round(lx + Math.cos(a) * NR), Math.round(pl.gy + 1 + Math.sin(a) * 4), 1, 1);
   ctx.fillStyle = '#ff5a4a'; ctx.fillRect(Math.round(lx) - 1, pl.gy, 3, 1); ctx.fillRect(Math.round(lx), pl.gy - 1, 1, 3);
   // the wind-up, over his head
   const bx = Math.round(player.x - cam) - 8, by = player.fy - 44, f = clamp((G.t - NADE.t0) / NADE_CHARGE, 0, 1);
@@ -4063,12 +4159,21 @@ function updBullets(dt) {
     }
     hits.sort((p, q) => p[0] - q[0]);
     for (const [, hit] of hits) {
-      if (!b.cos) { const m = oneTwo(hit, b), cr = Math.random() < (b.crit || 0); if (NET.role === 'guest') guestHit(hit, b.dmg * m * (cr ? CRIT_MUL : 1), b.face, b.kb, 0, 0, m > 1 || cr, cr); else hurtZombie(hit, b, m, cr); }
+      if (!b.cos) {
+        const m = oneTwo(hit, b), cr = Math.random() < (b.crit || 0), lm = lampMul(hit); b.hitAny = true;
+        if (NET.role === 'guest') guestHit(hit, b.dmg * m * lm * (cr ? CRIT_MUL : 1), b.face, b.kb, 0, 0, m > 1 || cr, cr); else hurtZombie(hit, b, m, cr, lm);
+        if (b.S && b.S.tr && !b.S.lit) { b.S.lit = true; ignite(hit.x); }
+      }
       if (!b.pierce) { b.life = 0; break; }
       (b.done || (b.done = new Set())).add(hit);
       if (!b.cos) { b.dmg *= RIFLE_FALL; if (b.dmg < 1) { b.life = 0; break; } }
     }
     if (b.own === 2 ? Math.abs(b.x - b.ox) > VW * .75 : b.x < G.camX - 30 || b.x > G.camX + VW + 30) b.life = 0;
+  }
+  if (has('ricochet')) {
+    const nb = [];
+    for (const b of bullets) if (b.life <= 0 && !b.cos && !b.hitAny && b.S && !b.S.rico && b.x > G.camX - 10 && b.x < G.camX + VW + 10) { const r = ricochet(b); if (r) { b.S.rico = true; nb.push(r); } }
+    bullets.push(...nb);
   }
   bullets = bullets.filter(b => b.life > 0);
 }
@@ -4078,11 +4183,11 @@ function updMisc(dt) {
       c.t += dt; c.vy += 320 * dt; c.x += c.vx * dt; c.y += c.vy * dt;
       if (c.y >= c.fy - 3) { c.y = c.fy - 3; c.vy *= -.35; c.vx *= .6; }
       let P = null, d = 1e9;
-      for (const q of livePlayers()) { if (!upright(q) || q.hidden) continue; const dd = Math.hypot(q.x - c.x, (q.fy - 8) - c.y); if (dd < d) { d = dd; P = q; } }
-      if (P) {
-        const dx = P.x - c.x, dy = (P.fy - 8) - c.y;
-        if (d < 44 && c.t > .35) { c.x += dx / d * 170 * dt; c.y += dy / d * 170 * dt; c.vy = 0; }
-        if (d < 7 && c.t > .35) { c.got = true; addCash(c.v); floater(P.x, P.fy - 38, '+$' + c.v, '#ffb43a', .7); sfx('coin', 40); }
+      for (const q of livePlayers()) { if (!upright(q) || q.hidden) continue; const dd = Math.hypot(q.x - c.x, (q.fy - 8) - c.y); if (dd < d && dd < (hasP(q, 'magnet') ? IT.magnet : 44)) { d = dd; P = q; } }   // (Magnet: from further off)
+      if (P && c.t > .35) {
+        const dx = P.x - c.x, dy = (P.fy - 8) - c.y, v = d > 44 ? 230 : 170;
+        c.x += dx / Math.max(d, .01) * v * dt; c.y += dy / Math.max(d, .01) * v * dt; c.vy = 0;
+        if (d < 7) { const cv = Math.round(c.v * (has('tipjar') || hasA('tipjar') ? IT.tip : 1)); c.got = true; addCash(cv); floater(P.x, P.fy - 38, '+$' + cv, '#ffb43a', .7); sfx('coin', 40); }   // (Tip Jar)
       }
     }
     coins = coins.filter(c => !c.got && c.t < 14);
@@ -4156,6 +4261,183 @@ function updMisc(dt) {
    ============================================================ */
 const RELIC_T = Math.max(.5, tn('items.collect', 2)), RELIC_R = 7, BARB_DPS = tn('items.barbed', 10), FIRE_R = 20, FIRE_LIFE = Math.max(.5, tn('items.flareLife', 3)), FIRE_TICK = tn('items.flareDmg', 6);
 const has = id => !!(save && save.relics && save.relics.includes(id));
+// some only turn up in the forest (the ones for bears, wolves and traps) or with a partner in the game
+const RELIC_ONLY = { bearspray: 'forest', trapkit: 'forest', snowshoes: 'forest', buddy: 'coop', canteen: 'coop', walkie: 'coop' };
+const relicOK = id => { const w = RELIC_ONLY[id]; return !w || (w === 'forest' ? !!(world && world.forest) : !!coopAlly()); };
+const relOf = P => !P ? [] : P === player ? (save && save.relics) || [] : P.relics || [];
+const hasP = (P, id) => relOf(P).includes(id);                  // does this survivor (me, or my partner) have it
+const hasA = id => { const m = mate(); return !!(m && (m.relics || []).includes(id)); };      // does my partner
+// the numbers behind the newer items (the tuning page can change them)
+const IT = { medic: Math.max(0, tn('items.medic', 1.5)), leech: Math.max(0, tn('items.leech', 1)), last: Math.max(1, tn('items.lastRound', 3)),
+  tracer: Math.max(1, Math.round(tn('items.tracerEvery', 5))), rico: Math.max(0, tn('items.ricochet', .6)), buck: Math.max(0, Math.round(tn('items.buckshot', 2))),
+  quiet: clamp(tn('items.silencer', .5), 0, 1), scav: Math.max(.1, tn('items.scavenger', 1.4)), magnet: Math.max(44, tn('items.magnet', 95)), tip: Math.max(0, tn('items.tipjar', 1.25)),
+  cologne: Math.max(0, tn('items.cologne', .6)), lamp: Math.max(0, tn('items.headlamp', 1.15)), flash: Math.max(0, tn('items.flashStun', 2.5)), spray: Math.max(0, tn('items.sprayStun', 3)),
+  kitHold: Math.max(0, tn('items.trapKitHold', 4)), kitDmg: Math.max(0, tn('items.trapKitDmg', 30)), buddy: Math.max(0, tn('items.buddy', 1.1)), walkie: Math.max(0, tn('items.walkie', 1.2)),
+  bleed: Math.max(0, tn('items.bleedDps', 4)), adren: Math.max(0, tn('items.adrenaline', 1.5)), wind: Math.max(0, tn('items.secondWind', 10)) };
+const FLASH_R = 45, BUDDY_R = 60, LAMP_R = 100, BINOC_R = 260, ADREN_T = 2, WIND_T = 3, BLEED_T = 3, GRIP_CD = .75, GLOVE_R = 1.25;
+let minis = [];                                       // Cluster Pins: the little blasts still to come
+// Buddy System: close to your partner (either of you has it), you both hit harder
+function buddyMul() { const m = mate(); return (has('buddy') || hasA('buddy')) && upright(player) && upright(m) && !player.hidden && !m.hidden && Math.abs(player.x - m.x) < BUDDY_R ? IT.buddy : 1; }
+// Headlamp: the ones close in front of you, in the light
+function lampMul(z) { if (!z || !player || !has('headlamp')) return 1; const ahead = (z.x - player.x) * player.face; return ahead > -6 && ahead < LAMP_R ? IT.lamp : 1; }
+function healMe(a) {                                  // health found (Medic Pouch already counted); Shared Canteen passes half to your partner
+  if (!player || player.dead || !(a > 0)) return 0;
+  const h0 = player.hp; player.hp = Math.min(maxHp(), player.hp + a);
+  if (has('canteen') && upright(mate())) netEv('heal', Math.max(1, Math.round(a / 2)));
+  return player.hp - h0;
+}
+function gotHeal(v) {                                 // my partner's canteen
+  const h = clamp(Math.round(+v || 0), 0, 200); if (!h || !upright(player)) return;
+  player.hp = Math.min(maxHp(), player.hp + h); floater(player.x, player.fy - 40, tr('fHealth', { n: h }), '#7fd08a'); sfx('med');
+}
+function myKill() { if (has('leech') && player && !player.dead && !player.inBus) player.hp = Math.min(maxHp(), player.hp + IT.leech); }   // Leech Charm
+// stun one for s seconds: the host's zombies are the real ones (the guest shows it straight away and tells the host)
+function stunZ(z, sec) {
+  if (!z || z.dead || z.type === 'boss' || z.type === 'flyer') return;
+  z.atk = false; z.idle = false;
+  if (NET.role === 'guest') { z.stunUntil = G.t + sec; netEv('stunz', z.id, r1(sec)); return; }
+  z.stun = Math.max(z.stun || 0, sec);
+  if (z.type === 'hound') { z.st = 'recover'; z.t = 0; }
+}
+function flashFx(x, mine) {
+  for (let i = 0; i < 20; i++) parts.push({ k: 'y', x: x + rnd(-5, 5), y: GROUND - 20 + rnd(-8, 6), vx: rnd(-110, 110), vy: rnd(-80, 40), life: rnd(.2, .45), t: 0 });
+  sfx('flashbang'); addShake(mine ? 2.5 : 1);
+  if (mine) G.whiteFlash = reduceMotion ? .2 : .45;
+}
+// Flashbang Pin: the first time you're hurt each night (with something close enough to catch the flash)
+function flashbang() {
+  const near = zombies.filter(z => !z.dead && z.type !== 'flyer' && z.type !== 'boss' && Math.abs(z.x - player.x) < FLASH_R + z.half);
+  if (!near.length) return;
+  player.flashUsed = true;
+  for (const z of near) stunZ(z, IT.flash);
+  flashFx(player.x, true); floater(player.x, player.fy - 46, tr('flashF'), '#fff3c4', 1); netEv('flash', r1(player.x));
+}
+function sprayFx(x, d) {
+  for (let i = 0; i < 16; i++) parts.push({ k: 'r', x: x + d * rnd(4, 10), y: GROUND - 20 + rnd(-3, 3), vx: d * rnd(40, 110), vy: rnd(-14, 10), life: rnd(.4, .8), t: 0, sz: irnd(2, 4), c: pick(['#ff8a2a', '#ffb43a', '#f3c07a']) });
+  sfx('spray');
+}
+// Bear Spray: the first bear or wolf to go for you each night gets a face full, and you get nothing
+function sprayed(z) {
+  if (!player || player.sprayUsed || !has('bearspray') || !z || z.dead || !(z.v === 'bear' || z.v === 'wolf')) return false;
+  player.sprayUsed = true; stunZ(z, IT.spray);
+  const d = Math.sign(z.x - player.x) || player.face;
+  sprayFx(player.x, d); floater(player.x, player.fy - 46, tr('sprayF'), '#ff8a2a', 1); netEv('spray', r1(player.x), d);
+  return true;
+}
+// Dead Man's Switch: going down, the pin comes out
+function deadmanNade() {
+  const n = { x: player.x, y: player.fy - 8, vx: -player.face * 20, vy: -70, t: Math.max(0, NADE_FUSE - 1.2), a: 0, va: 8, gy: player.fy + 2, rest: false, bounces: 0, noStick: true };
+  nades.push(n);
+  if (NET.role === 'guest') netEv('nade', r1(n.x), r1(n.y), r1(n.vx), r1(n.vy), n.gy, r2(n.t), 1);
+  floater(player.x, player.fy - 40, tr('deadmanF'), '#ff5a4a', 1.2); sfx('pin');
+}
+// Spiked Knuckles: the ones you've cut with the bat keep bleeding (my damage, like the barbs)
+function updBleeds(dt) {
+  if (!player || !has('knuckles')) return;
+  for (const z of zombies) {
+    if (!(z.bleedT > 0)) continue;
+    if (z.dead) { z.bleedT = 0; continue; }
+    z.bleedT -= dt; z.bleedAcc = (z.bleedAcc || 0) + IT.bleed * dt;
+    if (Math.random() < dt * 8) parts.push({ k: 'b', x: z.x + rnd(-3, 3), y: hitY(z) + 4, vx: rnd(-10, 10), vy: rnd(-10, 5), life: 2, t: 0, gy: (z.fy || GROUND) + irnd(-1, 3), c: Math.random() < .6 ? '#8e1f33' : '#5c1022', sz: 1 });
+    if (z.bleedAcc >= 2) { z.bleedAcc -= 2; sideDmg(z, 2, 6); }
+  }
+}
+// Ricochet Rounds: a miss glances off toward the nearest zombie
+function ricochet(b) {
+  const x = b.x, y = Math.min(b.y, GROUND - 1);
+  let best = null, bd = 120;
+  for (const z of zombies) {
+    if (z.dead || z.vaultT >= 0 || z.type === 'hound' || (z.type === 'boss' && z.st === 'drop')) continue;
+    const d = Math.hypot(z.x - x, (z.type === 'flyer' ? z.y : hitY(z)) - y); if (d < bd) { bd = d; best = z; }
+  }
+  if (!best) return null;
+  const ty = best.type === 'flyer' ? best.y : hitY(best) + 2, L = Math.hypot(best.x - x, ty - y) || 1, sp = 520;
+  sparks(x, y, Math.sign(best.x - x) || 1); sfx('clink', 60);
+  return { x, y, px: x, py: y, vx: (best.x - x) / L * sp, vy: (ty - y) / L * sp, life: Math.min(.6, L / sp + .15), dmg: b.dmg * IT.rico, kb: b.kb * .5, face: Math.sign(best.x - x) || b.face, low: true, sid: b.sid, pierce: false, rifle: false, crit: b.crit, rico: true };
+}
+// Cluster Pins: three little blasts scattered round the big one. who 'me': they're mine and they hurt; otherwise just shown
+function clusterOut(x, y, who) {
+  const pts = [];
+  for (let i = 0; i < 3; i++) pts.push({ x: clamp(x + (i - 1) * rnd(15, 22) + rnd(-3, 3), 4, WORLD_LEN - 4), y, t: -(.25 + i * .1), who });
+  minis.push(...pts);
+  if (who === 'me') netEv('mb', ...pts.flatMap(p => [r1(p.x), r1(p.y)]));
+}
+function miniNews(a) { for (let i = 0; i + 1 < a.length && i < 12; i += 2) minis.push({ x: +a[i], y: +a[i + 1], t: -(.25 + i / 2 * .1), who: null }); }
+function updMinis(dt) {
+  for (const m of minis) { m.t += dt; if (m.t >= 0 && !m.done) { m.done = true; miniBlast(m); } }
+  minis = minis.filter(m => !m.done);
+}
+function miniBlast(m) {
+  const { x, y } = m;
+  sfx('boom', 60); addShake(2.5);
+  for (let i = 0; i < 14; i++) { const a = rnd(Math.PI * 1.05, Math.PI * 1.95), sp = rnd(30, 100); parts.push({ k: 'f', x, y: y - 2, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp * .8, life: rnd(.18, .35), t: 0, sz: irnd(1, 2) }); }
+  for (let i = 0; i < 5; i++) parts.push({ k: 'm', x: x + rnd(-6, 6), y: y - rnd(2, 8), vx: rnd(-12, 12), vy: rnd(-20, -6), life: rnd(.7, 1.3), t: 0, sz: irnd(2, 4) });
+  if (m.who !== 'me') return;
+  const bm = buddyMul();
+  blastHits(x, y, (z, k, dir, zy) => {
+    const d = nadeDmg(k) * .5 * bm;
+    if (NET.role === 'guest') { guestHit(z, d, dir, NADE_KB * .4 * k, .2 + .3 * k, 2); return; }
+    const dd = d * (z.type === 'boss' ? .6 : 1);
+    z.hp -= dd; z.flash = .1; z.idle = false;
+    if (z.type !== 'boss') { z.kbv += dir * NADE_KB * .4 * k * (1 - z.kbRes); z.stun = Math.max(z.stun || 0, .2 + .3 * k); }
+    blood(z.x, zy, dir, 2); dmgNum(z.x, hitY(z), dd, 'blast');
+    if (z.hp <= 0) ownKill(z, dir);
+  }, nadeR() * .6);
+}
+// Sticky Tape: a grenade rides on whatever it hit
+function stuckNade(n) {
+  if (n.stk) {
+    const z = n.stk;
+    if (z.dead || !zombies.includes(z)) { n.stk = null; n.vx = 0; n.vy = 0; n.rest = false; return false; }
+    n.x = z.x + n.sx; n.y = (z.type === 'flyer' ? z.y : z.fy) + n.sy; return true;
+  }
+  if (n.rest || n.noStick || !(n.cos ? hasA('sticky') : has('sticky'))) return false;
+  for (const z of zombies) {
+    if (z.dead || z.vaultT >= 0 || (z.type === 'boss' && z.st === 'drop')) continue;
+    const air = z.type === 'flyer', top = air ? z.y - 7 : z.fy - z.h - 2, bot = air ? z.y + 5 : z.fy;
+    if (Math.abs(n.x - z.x) > z.half + 2 || n.y < top || n.y > bot) continue;
+    n.stk = z; n.sx = clamp(n.x - z.x, -z.half, z.half); n.sy = n.y - (air ? z.y : z.fy); sfx('clink', 60); return true;
+  }
+  return false;
+}
+// Blast Gloves: the grenade's reach, for whoever threw it
+const nadeR = (P = player) => NADE_R * (hasP(P, 'gloves') ? GLOVE_R : 1);
+// Trap Kit: a trap set for them catches the first zombie to step in it (the host's zombies are the real ones)
+function updZTraps() {
+  for (let i = 0; i < traps.length; i++) {
+    const t = traps[i]; if (t.st !== 3) continue;
+    for (const z of zombies) {
+      if (z.dead || z.type === 'flyer' || z.type === 'boss' || z.falling || z.vaultT >= 0 || Math.abs(z.x - t.x) > 4 || (z.type === 'hound' && (z.jy || 0) > 2)) continue;
+      t.st = 1; z.x = t.x; z.kbv = 0; z.atk = false; z.idle = false; z.heldUntil = G.t + IT.kitHold;
+      sfx('clang'); addShake(1.5); blood(z.x, z.fy - 3, 1, 5); blood(z.x, z.fy - 3, -1, 5);
+      z.hp -= IT.kitDmg; z.flash = .07; dmgNum(z.x, hitY(z), IT.kitDmg, 'melee');
+      if (z.hp <= 0) killZombie(z, 1);
+      netEv('trap', i, 1);
+      break;
+    }
+  }
+}
+function kitFlag(x) {                                  // a trap set for them: a green ribbon on a stake beside it
+  const y = GROUND + 1;
+  ctx.fillStyle = '#0b0814'; ctx.fillRect(x + 11, y - 9, 3, 10); ctx.fillRect(x + 13, y - 9, 4, 4);
+  ctx.fillStyle = '#8a6a44'; ctx.fillRect(x + 12, y - 8, 1, 8);
+  ctx.fillStyle = Math.floor(G.t * 3) % 2 ? '#7fd08a' : '#5fae2e'; ctx.fillRect(x + 13, y - 8, 3, 2);
+}
+// Binoculars: what's coming from off screen, as arrows at the edges
+function drawBinocs(cam) {
+  if (!player || G.state !== 'play' || !has('binocs')) return;
+  for (const z of zombies) {
+    if (z.dead || z.idle || z.type === 'boss') continue;
+    const sx = z.x - cam, L = sx < -2; if (!L && sx <= VW + 2) continue;
+    const off = L ? -sx : sx - VW; if (off > BINOC_R) continue;
+    const y = Math.round(z.type === 'flyer' ? z.y : z.fy - z.h * .6), x = L ? 2 : VW - 3, d = L ? 1 : -1;
+    ctx.globalAlpha = .45 + .55 * (1 - off / BINOC_R);
+    ctx.fillStyle = '#0b0814'; ctx.fillRect(L ? x - 1 : x - 3, y - 3, 5, 7);
+    ctx.fillStyle = z.elite ? '#ff7ae6' : '#ff5a6a';
+    ctx.fillRect(x, y, 1, 1); ctx.fillRect(x + d, y - 1, 1, 3); ctx.fillRect(x + 2 * d, y - 2, 1, 5);
+    ctx.globalAlpha = 1;
+  }
+}
 let drops = [], fires = [], nums = [], relicTook = new Set(), dropUid = 0, dropGroup = 0, shotSeq = 0, ammoBoxes = [];
 function rollAmmoDrop(z) {                           // once per zombie; the box is for your gun (in co-op each of you rolls your own)
   if (!z || z.ammoRolled || z.type === 'boss') return;
@@ -4172,6 +4454,7 @@ function updAmmoBoxes(dt) {
       a.vy += 320 * dt; a.x += a.vx * dt; a.y += a.vy * dt;
       if (a.y >= a.fy - 2 && a.vy > 0) { a.y = a.fy - 2; if (a.vy > 70) { a.vy *= -.3; a.vx *= .5; } else { a.vy = 0; a.vx = 0; a.land = true; } }
     }
+    if (a.land && p && upright(p) && !p.hidden && has('magnet') && PRIMARIES.includes(id) && save.owned[id] && !ammoFull(id) && Math.abs(p.x - a.x) < 60) a.x += Math.sign(p.x - a.x) * Math.min(Math.abs(p.x - a.x), 80 * dt);   // Magnet
     if (!p || !upright(p) || p.hidden || p.inBus || a.t < .4 || !PRIMARIES.includes(id) || !save.owned[id] || Math.abs(p.x - a.x) > 9 || Math.abs(p.fy - a.fy) > 12) { a.near = false; continue; }
     if (ammoFull(id)) { if (!a.near) { a.near = true; floater(a.x, a.y - 10, tr('fAmmoFull'), '#b9ad94', .6); } continue; }
     const n = addAmmo(id, Math.max(1, Math.round(AMMO_DROP.clips * WEAP[id].mag)));
@@ -4191,7 +4474,7 @@ function drawAmmoBoxes(cam) {                        // a little olive ammo can 
 }
 
 // ---- the icons: 10x10 pixel art, outlined when drawn ----
-const RELIC_PAL = { k: '#0b0814', w: '#f3ead6', W: '#b7aec8', g: '#9aa3b5', G: '#5b6275', y: '#ffd45a', Y: '#d99a2e', r: '#e0434f', R: '#8e1f33', b: '#b07a44', B: '#6a4222', o: '#ff8a2a', v: '#8a9a52', V: '#56622e', c: '#7fe0ee', s: '#e8b48a' };
+const RELIC_PAL = { k: '#0b0814', w: '#f3ead6', W: '#b7aec8', g: '#9aa3b5', G: '#5b6275', y: '#ffd45a', Y: '#d99a2e', r: '#e0434f', R: '#8e1f33', b: '#b07a44', B: '#6a4222', o: '#ff8a2a', v: '#8a9a52', V: '#56622e', c: '#7fe0ee', s: '#e8b48a', n: '#7fd08a', N: '#3f7a3a', u: '#6aa8ff', U: '#2f5aa8', p: '#e98ac4', P: '#9a3f78', O: '#b85a1a' };
 const RELIC_PX = {
   bouncer: ['....yyyY..', '...yyyY...', '..yyyY....', '.yyyyyyyY.', '....yyyY..', '...yyyY...', '..yyY.....', '.yY.......', 'y.........', '..........'],
   quickmag: ['..yY.yY...', '.GGGGGG...', '.GgyggG...', '.GgyggG...', '..GgyggG..', '..GgyggG..', '...GgyggG.', '...GgyggG.', '...GGGGGG.', '..........'],
@@ -4205,6 +4488,36 @@ const RELIC_PX = {
   collar: ['..rrrrrr..', '.rR....Rr.', 'rR......Rr', 'r........r', 'r........r', 'rR......Rr', '.rR....Rr.', '..rrrrrr..', '....yY....', '....YY....'],
   air: ['WWWWWWWWW.', '....g.....', '..gggg....', '.gccggggg.', '.gccgggggG', '..gggg....', '..g..g....', '.gggggg...', '..........', '..........'],
   flare: ['......oyo.', '.....oywyo', '......oyo.', '......rr..', '.....rr...', '....rr....', '...rr.....', '..rr......', '.RR.......', '..........'],
+  rabbit: ['....yy....', '...y..y...', '....yy....', '....ww....', '...wwwW...', '...wwwW...', '..wwwwwW..', '..wwwwwW..', '.wwWwWwW..', '..W.W.W...'],
+  wind2: ['.rr.rr....', 'rrrrrrr...', 'rwrrrrr.cc', 'rrrrrrr...', '.rrrrr..cc', '..rrr...c.', '...r.cccc.', '..........', '.cccccc...', '......c...'],
+  adren: ['.........w', '........w.', '......WW..', '.....WyyW.', '....WyyyW.', '...WyyyW..', '..WyyyW...', '.GWWWW....', 'G.G.......', '.G........'],
+  medic: ['...rrrr...', '..r....r..', '.rrrrrrrr.', '.rrrwwrrr.', '.rrrwwrrr.', '.rwwwwwwr.', '.rwwwwwwr.', '.rrrwwrrr.', '.rrrwwrrr.', '.RRRRRRRR.'],
+  leech: ['..........', '....VVV...', '..VVvvvV..', '.VvvvvvvV.', '.VvvVvvvvV', '..VVVVVvvV', '......VVV.', '..r.......', '.rrr......', '.rRr......'],
+  deadman: ['....rr....', '...rRRr...', '..GGGGGG..', '..GggggG..', '..GgkkgG..', '..GggggG..', '..GgkkgG..', '..GggggG..', '..GGGGGG..', '...G..G...'],
+  lastround: ['....o.....', '...ooO..w.', '...ooO.w.w', '...yyY..w.', '...ywY....', '...ywY....', '...yyY....', '...yyY....', '..YYYYY...', '..........'],
+  tracer: ['o.........', '.o..r...r.', '..orrO.rrO', '...yyY.yyY', '...yyY.yyY', '...yyY.yyY', '...yyY.yyY', '...yyY.yyY', '...YYY.YYY', '..........'],
+  ricochet: ['..........', 'o.........', '.o......Y.', '..y....y..', '...y..y...', '....yy....', '...wyyw...', 'GGGGGGGGGG', 'gGgGgGgGgG', '..........'],
+  buckshot: ['..........', '.rR.rR.rR.', '.rR.rR.rR.', '.rR.rR.rR.', 'BbbbbbbbbB', 'bbbbbbbbbb', 'BbbbbbbbbB', '.rR.rR.rR.', '.yY.yY.yY.', '..........'],
+  silencer: ['..........', '...ooooooo', '...oOoOoOo', '...oOoOoOo', 'GGGoOoOoOo', 'gggoOoOoOo', '...oOoOoOo', '...oOoOoOo', '...ooooooo', '..........'],
+  bandolier: ['y.........', 'bby.......', 'Bbby......', '.Bbby.....', '..Bbby....', '...Bbby...', '....Bbby..', '.....Bbby.', '......Bbby', '.......Bbb'],
+  sticky: ['..gggggg..', '.gWWWWWWg.', 'gWWggggWWg', 'gWg....gWg', 'gWg....gWg', 'gWg....gWg', 'gWWggggWWg', '.gWWWWWWgG', '..ggggggGG', '........GG'],
+  cluster: ['..........', '.....y....', '....vvv...', '....vVv...', '....vvv...', '..y....y..', '.vvv..vvv.', '.vVv..vVv.', '.vvv..vvv.', '..........'],
+  gloves: ['..b.b.b...', '..bbbbbb..', '..bbbbbbb.', 'b.bbbbbbb.', 'bbbbbbbbb.', '.bbbbbbbb.', '..bbbbbb..', '..BBBBBB..', '..oOoOoO..', '..oOoOoO..'],
+  griptape: ['........bb', '.......bbB', '......bbB.', '.....bbB..', '....bbB...', '...kgk....', '..gkg.....', '.kgk......', 'gkg.......', 'G.........'],
+  knuckles: ['..........', '..w.w.w.w.', '..g.g.g.g.', '.yyyyyyyyy', '.ykykykyky', '.yyyyyyyyy', '..YyyyyyY.', '...YyyyY..', '....YYY...', '..........'],
+  scavenger: ['...BBB....', '....B.....', '...bbb....', '..bbbbb...', '.bbbbbbb..', 'bbbbbbbyb.', 'bbbBbbbbb.', 'bbbbbbBbb.', '.bbbbbbb..', '..BBBBB...'],
+  magnet: ['..........', '.ggg..ggg.', '.ggg..ggg.', '.rrr..rrr.', '.rrr..rrr.', '.rrr..rrr.', '.rrrrrrrr.', '..rrrrrr..', '...RRRR...', '..........'],
+  tipjar: ['..gggggg..', '..GGGGGG..', '.c......c.', '.c......c.', '.c.yy...c.', '.cyyYy..c.', '.cyyyyy.c.', '.cyyYyyyc.', '.cyyyyyyc.', '..cccccc..'],
+  cologne: ['...n..n...', '....n..n..', '...n..n...', '....gg....', '....GG....', '..pppppp..', '..pnnnnP..', '..pnnnnP..', '..pnnnnP..', '..PPPPPP..'],
+  headlamp: ['..........', '..........', '..GGGG....', '.GwwwyG.y.', 'bGwyyyGyy.', 'BGyyyyGyyy', 'bGyyyYGyy.', '.GGGGGG.y.', '..........', '..........'],
+  binocs: ['..........', '.GG....GG.', '.GG....GG.', 'GGGG..GGGG', 'GGGGGGGGGG', 'GggGGGGggG', 'GgcG..GgcG', 'GccG..GccG', '.GG....GG.', '..........'],
+  flashbang: ['.....y....', '..y..y..y.', '...y.y.y..', '....GGG...', '...GgggG..', '...GwwwG..', '...GgggG..', '...GwwwG..', '...GgggG..', '....GGG...'],
+  bearspray: ['...rr..W.W', '...rrR.WW.', '..oooo.W.W', '..oooO....', '..owwO....', '..owwO....', '..oooO....', '..oooO....', '..oooO....', '..OOOO....'],
+  trapkit: ['..........', '..........', '.nn.......', 'nnnn......', '.nn.......', 'W.W.gg.W.W', 'gggggggggg', 'GGGGGGGGGG', '........GG', '..........'],
+  snowshoes: ['.bb....bb.', 'bwwb..bwwb', 'bWwb..bWwb', 'bwWb..bwWb', 'bWwb..bWwb', 'bwWb..bwWb', 'bWwb..bWwb', 'bwwb..bwwb', '.bb....bb.', '.B......B.'],
+  buddy: ['..........', '.ss....ss.', 'ssss..ssss', '.ss....ss.', 'oooo..uuuu', 'oooooouuuu', 'oooo..uuuu', 'oooo..uuuu', '.OO....UU.', '.OO....UU.'],
+  canteen: ['....gg....', '....GG....', '..VVVVVV..', '.VvvvvvvV.', '.VvwvvvvV.', '.VvwvvvvV.', '.BbbbbbbB.', '.BbbbbbbB.', '..BBBBBB..', '..........'],
+  walkie: ['...g......', '...g......', '..gggggg..', '..gGGGGg..', '..gGkGkg..', '..gGGGGg..', '..gccccg..', '..gGGGGg..', '..gyGrGg..', '..gggggg..'],
 };
 const RELIC_ART = {}, RELIC_URL = {};
 function relicArt(id) {                              // 12x12: the art plus a dark outline all round
@@ -4229,8 +4542,8 @@ function relicURL(id) {                              // for the pause screen
 }
 
 // ---- damage numbers: every hit of yours pops its number ----
-const NUM_COL = { dog: '#f0c97a', gun: '#ffe7a0', melee: '#f3ead6', crit: '#ff9a2a', blast: '#ffb43a', fire: '#ff6a3a', thorn: '#d7c8f0' };
-const NUM_KIND = ['gun', 'melee', 'blast', null, 'thorn', 'fire'];
+const NUM_COL = { dog: '#f0c97a', gun: '#ffe7a0', melee: '#f3ead6', crit: '#ff9a2a', blast: '#ffb43a', fire: '#ff6a3a', thorn: '#d7c8f0', bleed: '#ff6b7d' };
+const NUM_KIND = ['gun', 'melee', 'blast', null, 'thorn', 'fire', 'bleed'];
 const NUM_OUT = [[-1, 0], [1, 0], [0, -1], [0, 1], [1, 1], [-1, 1]];
 function dmgNum(x, y, v, style = 'gun') {
   v = Math.round(v); if (!(v > 0)) return;
@@ -4250,7 +4563,7 @@ function drawNums(cam) {
   ctx.globalAlpha = 1;
 }
 const hitY = z => z.type === 'flyer' ? z.y - 6 : z.type === 'boss' ? z.fy - 54 : z.type === 'hound' ? z.fy - 14 - (z.jy || 0) : z.type === 'crawler' ? z.fy - z.h - 3 : z.fy - Math.round(z.h * .85);
-function ownKill(z, dir) { if (player) player.killT = G.t; killZombie(z, dir); }    // a kill of mine (Kill & Fill)
+function ownKill(z, dir) { if (player) player.killT = G.t; killZombie(z, dir); myKill(); }    // a kill of mine (Kill & Fill)
 
 // ---- the effects ----
 // Emergency Road Flare: hurt, and the next thing you hit goes up in flames
@@ -4291,22 +4604,22 @@ function barbTick(z, dt) {
   if (z.barbAcc >= 5) { z.barbAcc -= 5; sideDmg(z, 5, 4); }
 }
 function barbHit(z, d) { if (has('barbed') && z && !z.dead) sideDmg(z, d, 4); }
-function sideDmg(z, d, kind) {                       // barbs (4) and fire (5): my damage, no knockback
+function sideDmg(z, d, kind) {                       // barbs (4), fire (5) and bleeding (6): my damage, no knockback
   if (!z || z.dead || !player) return;
   const face = Math.sign(z.x - player.x) || player.face || 1;
   if (NET.role === 'guest') { guestHit(z, d, face, 0, 0, kind); return; }
   if (z.type === 'boss' && z.st === 'drop') return;
   const dd = d * (z.type === 'boss' ? bossKindMul(z, kind) : 1);
   z.hp -= dd; z.flash = .07; z.idle = false;
-  if (kind === 4) blood(z.x, hitY(z) + 4, face, 2);
-  dmgNum(z.x, hitY(z), dd, kind === 5 ? 'fire' : 'thorn');
+  if (kind === 4 || kind === 6) blood(z.x, hitY(z) + 4, face, kind === 6 ? 1 : 2);
+  dmgNum(z.x, hitY(z), dd, kind === 5 ? 'fire' : kind === 6 ? 'bleed' : 'thorn');
   if (z.hp <= 0) ownKill(z, face);
 }
 
 // ---- the special houses ----
 function relicWanted() {                             // anyone here still with items to find?
   const mine = save.relics || [], a = NET.role === 'host' ? ally : null;
-  return RELICS.some(id => !mine.includes(id)) || !!(a && RELICS.some(id => !(a.relics || []).includes(id)));
+  return RELICS.some(id => relicOK(id) && !mine.includes(id)) || !!(a && RELICS.some(id => relicOK(id) && !(a.relics || []).includes(id)));
 }
 function pickRelicHouses() {
   houses.forEach(h => { h.relic = false; });
@@ -4321,7 +4634,7 @@ function pickRelicHouses() {
 // searched: out they come, one new to each of you (host: this runs for either player's search)
 function dropRelics(H) {
   const a = coopAlly(), picks = [];
-  const pool = (own, not) => RELICS.filter(id => !own.includes(id) && !not.includes(id));
+  const pool = (own, not) => RELICS.filter(id => relicOK(id) && !own.includes(id) && !not.includes(id));
   const A = pool(save.relics || [], []), B = a ? pool(a.relics || [], []) : null;
   if (!B) { const mine = pick(A); if (mine) picks.push(mine); }
   else if (!A.length || !B.length) { const one = pick(A.length ? A : B); if (one) picks.push(one); const two = pick((A.length ? A : B).filter(id => id !== one)); if (two) picks.push(two); }
@@ -4342,6 +4655,7 @@ function grabRelic(d) {
   drops = drops.filter(q => q !== d); relicTook.add(d.g);
   if (NET.role === 'guest') { NET.gone.add(d.uid); netEv('grab', d.uid); }
   if (!save.relics.includes(d.rid)) { save.relics.push(d.rid); (save.relicsNight || (save.relicsNight = [])).push(d.rid); }
+  if (d.rid === 'bandolier') applyGunMods();
   persist();
   G.relicPop = { id: d.rid, t: 0 }; G.relicNew = { id: d.rid, t: 0 }; G.banner = null; G.onDrop = null;
   sfx('relic'); addShake(2);
@@ -4472,16 +4786,28 @@ function drawFires(cam) {
     }
   }
 }
+const relicSpent = id => !!player && ((id === 'rabbit' && player.luckUsed) || (id === 'wind2' && player.windUsed && !(player.windT > 0)) || (id === 'flashbang' && player.flashUsed) || (id === 'bearspray' && player.sprayUsed));
+function relicGlow(id) {
+  const p = player; if (!p) return null;
+  if (id === 'flare' && p.flareReady) return Math.floor(G.t * 6) % 2 ? 'rgba(255,138,42,.75)' : 'rgba(255,212,90,.5)';
+  if (id === 'getaway' && p.speedT > 0) return 'rgba(127,224,238,.55)';
+  if (id === 'adren' && p.adrenT > 0) return 'rgba(255,212,90,.55)';
+  if (id === 'wind2' && p.windT > 0) return 'rgba(127,208,138,.6)';
+  if (id === 'buddy' && buddyMul() > 1) return 'rgba(233,138,196,.5)';
+  return null;
+}
 function drawRelicHUD(y) {                            // the tally, top left under the cash and grenades
   const list = save.relics || []; if (!list.length) return y;
+  const S = list.length > 12 ? 8 : 12, per = S === 12 ? 12 : 14;     // lots of them: smaller, in rows
+  ctx.imageSmoothingEnabled = false;
   list.forEach((id, i) => {
-    const x = 3 + i * 12;
-    if (id === 'flare' && player && player.flareReady) { ctx.fillStyle = Math.floor(G.t * 6) % 2 ? 'rgba(255,138,42,.75)' : 'rgba(255,212,90,.5)'; ctx.fillRect(x, y, 12, 12); }
-    if (id === 'getaway' && player && player.speedT > 0) { ctx.fillStyle = 'rgba(127,224,238,.55)'; ctx.fillRect(x, y, 12, 12); }
-    ctx.drawImage(relicArt(id), x, y);
-    if (G.relicNew && G.relicNew.id === id && Math.floor(G.relicNew.t * 8) % 2 === 0) { ctx.fillStyle = 'rgba(255,243,196,.65)'; ctx.fillRect(x + 1, y + 1, 10, 10); }
+    const x = 3 + (i % per) * S, yy = y + Math.floor(i / per) * S;
+    const glow = relicGlow(id); if (glow) { ctx.fillStyle = glow; ctx.fillRect(x, yy, S, S); }
+    if (relicSpent(id)) ctx.globalAlpha = .35;
+    ctx.drawImage(relicArt(id), x, yy, S, S); ctx.globalAlpha = 1;
+    if (G.relicNew && G.relicNew.id === id && Math.floor(G.relicNew.t * 8) % 2 === 0) { ctx.fillStyle = 'rgba(255,243,196,.65)'; ctx.fillRect(x + 1, yy + 1, S - 2, S - 2); }
   });
-  return y + 12;
+  return y + Math.ceil(list.length / per) * S;
 }
 function wrapText(s, maxW) {
   if (/[^\x00-\x7f]/.test(s)) return [s];
@@ -4522,7 +4848,7 @@ function drawRelicPop() {                            // just picked up: the item
    On claude.ai the page's `room` carries the snapshots; on the game's own website PeerJS does (a free
    public server introduces the two browsers, then they talk directly).
    ============================================================ */
-const GAME_BUILD = 54;                              // shown on the co-op screen, so two players can check they have the same game
+const GAME_BUILD = 55;                              // shown on the co-op screen, so two players can check they have the same game
 // on the game's own website: browsers may keep an old copy of the page for up to 10 minutes after an update,
 // so check for a newer upload when the game opens and load it straight away if there is one
 (function checkForUpdate() {
@@ -4534,7 +4860,7 @@ const GAME_BUILD = 54;                              // shown on the co-op screen
     location.replace(location.pathname + '?v=' + n);
   }).catch(() => {});
 })();
-const NET_V = 10, ZTYPES = ['walker', 'runner', 'brute', 'crawler', 'flyer', 'hound', 'trash', 'spitter'], FLY_ST = ['cruise', 'wind', 'dive', 'leave'];
+const NET_V = 11, ZTYPES = ['walker', 'runner', 'brute', 'crawler', 'flyer', 'hound', 'trash', 'spitter'], FLY_ST = ['cruise', 'wind', 'dive', 'leave'];
 const NET = { role: 'solo', room: null, code: '', t: 0, push: 0, rate: 20, seq: 0, out: [], seen: 0, run: 0, night: 1, hostRun: 0,
   partner: null, lastP: null, lastSeen: 0, hadPartner: false, mateId: null, rtt: 0, lead: 0, theirTs: 0, theirAt: 0, pend: [], gone: new Set() };
 let ally = null;                                  // the other survivor on this screen, a puppet built from their messages
@@ -4748,7 +5074,7 @@ function hostSnap() {
   let bvx = 0;
   if (boss) { if (boss._st !== undefined && now - boss._st > .01) boss._vx = (boss.x - boss._sx) / (now - boss._st); if (boss._st === undefined || now - boss._st > .01) { boss._sx = boss.x; boss._st = now; } bvx = boss.dead ? 0 : Math.round(clamp(boss._vx || 0, -250, 250)); }
   const snap = stamp({
-    r: 'h', v: NET_V, gb: GAME_BUILD, st, n: NET.night, run: NET.run, k: stats ? stats.kills : 0, p: pState(player), ak: NET.seen,
+    r: 'h', v: NET_V, gb: GAME_BUILD, st, n: NET.night, run: NET.run, k: stats ? stats.kills : 0, p: pState(player), ak: NET.seen, rl: (save.relics || []).map(id => RELICS.indexOf(id)),
     z: live ? zs.slice(0, 40) : [],
     b: live && boss ? [Math.round(boss.x), boss.fy, boss.face, boss.st, r2(boss.stT), boss.dir || 1, boss.run ? 1 : 0, Math.round(boss.dropY || 0), boss.dead ? 1 : 0, r1(boss.deadT || 0), boss.flash > 0 && !(G.t - (boss.allyFlashT ?? -9) < .1) ? 1 : 0, Math.round(boss.hp), boss.maxHp, r1(boss.anim || 0), bvx] : 0,
     bu: live && bus ? [Math.round(bus.x), r2(bus.door), bus.leaving ? 1 : 0, Math.round(bus.wheel || 0) % 1000, r1(bus.t || 0)] : 0,
@@ -4794,26 +5120,31 @@ function hostIn(P) {
     const [, type, ...a] = e;
     if (type === 'shot') allyShot(a);
     else if (type === 'hit') allyHit(a);
-    else if (type === 'nade') nades.push({ x: +a[0], y: +a[1], vx: +a[2], vy: +a[3], t: 0, a: 0, va: Math.sign(a[2] || 1) * 14, gy: +a[4] || GROUND + 2, rest: false, bounces: 0, cos: true });
+    else if (type === 'nade') nades.push({ x: +a[0], y: +a[1], vx: +a[2], vy: +a[3], t: clamp(+a[5] || 0, 0, NADE_FUSE), a: 0, va: Math.sign(a[2] || 1) * 14, gy: +a[4] || GROUND + 2, rest: false, bounces: 0, cos: true, noStick: !!a[6] });
     else if (type === 'parry') allyParry();
     else if (type === 'loot') allyLoot(a[0]);
     else if (type === 'grab') drops = drops.filter(d => d.uid !== +a[0]);        // they took an item off the sidewalk
     else if (type === 'trap') trapNews(a[0], +a[1]);
     else if (type === 'rv') getRevived();
     else if (type === 'fire') ignite(+a[0], false);
+    else if (type === 'heal') gotHeal(a[0]);
+    else if (type === 'flash') flashFx(+a[0], false);
+    else if (type === 'spray') sprayFx(+a[0], +a[1] < 0 ? -1 : 1);
+    else if (type === 'stunz') { const z = zombies.find(q => q.id === +a[0]); if (z) stunZ(z, clamp(+a[1] || 0, 0, 5)); }
+    else if (type === 'mb') miniNews(a);
   }
 }
 // their shot, drawn here (the tracers stop at zombies but don't hurt them: their own screen says what they hit)
 function allyShot(a) {
   const w = WEAP[WEAPON_ORDER[a[0]]]; if (!w || !Number.isFinite(+a[1])) return;
   const el = clamp((a[4] || 0) / 100, AIM_DOWN, AIM_UP), ce = Math.cos(el), se = Math.sin(el), face = a[3] < 0 ? -1 : 1;
-  for (let i = 0; i < w.pellets; i++) {
+  for (let i = 0, N = w.pellets + (w.id === 'shotgun' && hasA('buckshot') ? IT.buck : 0); i < N; i++) {
     const sp = w.speed * rnd(.92, 1.05), dv = w.speed * w.spread * rnd(-1, 1);
     bullets.push({ x: +a[1], y: +a[2] + rnd(-.5, .5), px: +a[1], py: +a[2], vx: face * (sp * ce + dv * se), vy: -sp * se + dv * ce, life: w.life * rnd(.85, 1.1), dmg: 0, kb: 0, face, low: w.id === 'shotgun', own: 2, ox: +a[1], cos: true, pierce: !!w.pierce, rifle: w.id === 'rifle' });
   }
   ally.flashT = .06; ally.shotT = 0;
   sfx(w.id, 30);
-  noiseHorde(w.id, w.noise || 0, +a[1]);
+  noiseHorde(w.id, (w.noise || 0) * (hasA('silencer') ? IT.quiet : 1), +a[1]);
 }
 // "I hit zombie #id": kind 0 bullet, 1 bat, 2 blast
 function allyHit(a) {
@@ -4850,10 +5181,10 @@ function allyLoot(i) {
   const own = q.owned;
   const unowned = [], ammoGuns = WEAPON_LIST.filter((w, k) => k > 0 && (own[k - 1] & 1) && !(own[k - 1] & 2));
   if (H.relic && dropRelics(H)) { netEv('loot', 'relic', 0, 0); return; }
-  const res = rollLoot(H, unowned, ammoGuns, q.hp > q.maxHp - 8);
+  const res = rollLoot(H, unowned, ammoGuns, q.hp > q.maxHp - 8, hasP(q, 'scavenger'));
   if (res === 'cash') { const v = H.type === 'house' ? irnd(8, 26) : irnd(22, 40); addCash(v); floater(fx, fy, '+$' + v, '#ffb43a'); }
   else if (res === 'ammo') { const w = pick(ammoGuns), n = w.id === 'smg' ? irnd(18, 30) : irnd(3, 5); netEv('loot', 'ammo', n, WEAPON_ORDER.indexOf(w.id)); floater(fx, fy, tr(w.id === 'shotgun' ? 'fShells' : 'fRounds', { n }), '#e2bf62'); }
-  else if (res === 'med') { netEv('loot', 'med', PT.med, 0); floater(fx, fy, tr('fHealth', { n: PT.med }), '#7fd08a'); }
+  else if (res === 'med') { netEv('loot', 'med', PT.med, 0); floater(fx, fy, tr('fHealth', { n: Math.round(PT.med * (hasP(q, 'medic') ? IT.medic : 1)) }), '#7fd08a'); }
   else if (res === 'weapon') { const w = unowned[0]; netEv('loot', 'gun', 0, WEAPON_ORDER.indexOf(w.id)); floater(fx, fy, tr(w.id === 'shotgun' ? 'fFoundSg' : 'fFoundSmg'), '#ffb43a'); }
   else if (res === 'nade') { const n = irnd(1, 2); netEv('loot', 'nade', n, 0); floater(fx, fy, tr('fNades', { n }), '#a8c46a'); }
   else { netEv('loot', 'empty', 0, 0); floater(fx, fy, tr('fEmpty'), '#a99fbd'); }
@@ -4891,7 +5222,7 @@ function guestHit(z, dmg, face, kb, stun, kind, crit = false, real = false) {
   NET.pend.push({ seq: NET.seq, id: isBoss ? -1 : z.id, d, t: G.t });
   z.hp = (z.hp || 0) - d;
   if (real && kind === 0) critFx(z, hitY(z));
-  if (!isBoss && z.hp <= 0) { player.killT = G.t; predictKill(z, face, real); }
+  if (!isBoss && z.hp <= 0) { player.killT = G.t; predictKill(z, face, real); myKill(); }
 }
 // down on my screen right away; the host will agree a moment later (if it doesn't, it gets back up)
 function predictKill(z, face, crit = false) {
@@ -4907,6 +5238,7 @@ function guestIn(P) {
   const cur = P.run === NET.hostRun && (G.state === 'play' || G.state === 'pause');
   const wasDead = ally.dead;
   applyPState(ally, P.p);
+  if (Array.isArray(P.rl)) ally.relics = P.rl.map(i => RELICS[i]).filter(Boolean);            // the host's items (Buddy System and friends)
   ally.run = P.run;
   if (cur && !wasDead && ally.dead && !player.dead) setBanner(tr('coopDown'), ally.revivable ? tr('coopDownSub') : '', 2.4);
   if (Number.isFinite(P.ak)) NET.pend = NET.pend.filter(p => p.seq > P.ak && G.t - p.t < 3);   // the host has these hits now
@@ -4918,7 +5250,7 @@ function guestIn(P) {
     if (Array.isArray(P.bn)) guestBanner(+P.bn[0], P.bn[1], P.bn[2], P.bn[3], P.bn[4], P.bn[5]);
     houses.forEach((h, i) => { const lit = inMask(P.lit, i); if (!lit) { if (h.lit) h.searched = true; h.lit = false; } else h.lit = !h.searched; h.relic = inMask(P.rh, i); });
     if (typeof P.hs === 'string') stands.forEach((q, i) => { q.used = P.hs[i] === '1'; });
-    if (typeof P.tp === 'string') traps.forEach((q, i) => { const v = +P.tp[i] || 0; if (v && !q.st) q.st = v; });
+    if (typeof P.tp === 'string') traps.forEach((q, i) => { const v = +P.tp[i] || 0; if (v && (!q.st || (q.st === 3 && v === 1))) q.st = v; });
     if (Array.isArray(P.dg)) buddies = P.dg.filter(Array.isArray).map((e, i) => { const o = buddies[i] || { anim: 0 }; return { x: o.x === undefined ? +e[0] : o.x + (+e[0] - o.x) * .5, st: DOG_ST[e[1]] || 'follow', face: e[2] ? 1 : -1, own: e[3] ? 'me' : 'ally', anim: o.anim }; });
     if (Array.isArray(P.it)) {                      // the items on the sidewalk (the ones I haven't just picked up)
       const byU = new Map(drops.map(d => [d.uid, d]));
@@ -4939,13 +5271,17 @@ function guestIn(P) {
     else if (type === 'loot') guestLoot(a);
     else if (!cur) continue;
     else if (type === 'hs') hostShotFx(a);
-    else if (type === 'boom') { explodeFx(+a[0], +a[1]); blastSelf(+a[0]); }
+    else if (type === 'boom') { explodeFx(+a[0], +a[1]); blastSelf(+a[0], +a[2] || NADE_R); }
     else if (type === 'atk') guestAttacked(a);
     else if (type === 'trap') trapNews(a[0], +a[1]);
     else if (type === 'air') for (let i = 0; i + 3 < a.length; i += 4) airShots.push({ x0: +a[i], y0: -10, x1: +a[i + 1], y1: +a[i + 2], t: -(+a[i + 3] || 0), T: airFlight(+a[i], -10, +a[i + 1], +a[i + 2]), z: null });
     else if (type === 'spit' && a.length >= 6) spits.push({ x0: +a[0], y0: +a[1], tx: +a[2], ty: +a[3], T: clamp(+a[4] || .8, .2, 2), arc: +a[5] || 30, t: 0, x: +a[0], y: +a[1], cos: true });
     else if (type === 'rv') getRevived();
     else if (type === 'fire') ignite(+a[0], false);
+    else if (type === 'heal') gotHeal(a[0]);
+    else if (type === 'flash') flashFx(+a[0], false);
+    else if (type === 'spray') sprayFx(+a[0], +a[1] < 0 ? -1 : 1);
+    else if (type === 'mb') miniNews(a);
     else if (type === 'bn') guestBanner(e[0], a[0], a[1], a[2], a[3], a[4]);
   }
   if (cur && (P.st === 'won' || P.st === 'dead')) guestEnd(P.st === 'won');
@@ -4962,7 +5298,7 @@ function guestAttacked(a) {
 function hostShotFx(a) {                           // the host's shot: tracers and the bang (the host's screen decides what it hit)
   const w = WEAP[WEAPON_ORDER[a[0]]]; if (!w) return;
   const el = (a[4] || 0) / 100, ce = Math.cos(el), se = Math.sin(el), face = a[3] < 0 ? -1 : 1;
-  for (let i = 0; i < w.pellets; i++) { const sp = w.speed * rnd(.92, 1.05), dv = w.speed * w.spread * rnd(-1, 1); bullets.push({ x: +a[1], y: +a[2], px: +a[1], py: +a[2], vx: face * (sp * ce + dv * se), vy: -sp * se + dv * ce, life: w.life, face, own: 2, ox: +a[1], cos: true, pierce: !!w.pierce, rifle: w.id === 'rifle' }); }
+  for (let i = 0, N = w.pellets + (w.id === 'shotgun' && hasA('buckshot') ? IT.buck : 0); i < N; i++) { const sp = w.speed * rnd(.92, 1.05), dv = w.speed * w.spread * rnd(-1, 1); bullets.push({ x: +a[1], y: +a[2], px: +a[1], py: +a[2], vx: face * (sp * ce + dv * se), vy: -sp * se + dv * ce, life: w.life, face, own: 2, ox: +a[1], cos: true, pierce: !!w.pierce, rifle: w.id === 'rifle' }); }
   if (ally) { ally.flashT = .06; ally.shotT = 0; }
   sfx(w.id, 30);
 }
@@ -4976,7 +5312,7 @@ function guestLoot(a) {
     setBanner(tr('newGun'), tr('w_' + w.id).toUpperCase(), 2); sfx('gun');
   }
   else if (kind === 'nade') { const n = addNades(k); floater(fx, fy, n ? tr('fNades', { n }) : tr('fNadesFull'), '#a8c46a'); sfx('loot'); }
-  else if (kind === 'med') { if (!player.dead) player.hp = Math.min(maxHp(), player.hp + k); floater(fx, fy, tr('fHealth', { n: k }), '#7fd08a'); sfx('med'); }
+  else if (kind === 'med') { const h = Math.round(k * (has('medic') ? IT.medic : 1)); healMe(h); floater(fx, fy, tr('fHealth', { n: h }), '#7fd08a'); sfx('med'); }
   else { floater(fx, fy, tr('fEmpty'), '#a99fbd'); sfx('empty'); }
   persist();
 }
@@ -5056,11 +5392,11 @@ function tickGuestWorld(dt) {
       z.t = (z.t || 0) + dt; z.anim += Math.abs(z.x - ox) * .12;
       z.jy = z.dead ? Math.max(0, (z.jy || 0) - dt * 70) : (z.jy || 0) + ((z.tjy || 0) - (z.jy || 0)) * Math.min(1, dt * 16);
       // its leap goes for my face on my screen
-      if (me && !z.dead && z.st === 'leap' && !z.hitDone && Math.abs(z.x - player.x) < 8 && z.jy >= 6) { z.hitDone = true; dmgPlayer(z.leap ?? HOUND.dmg, (z.face || 1) * 150); sfx('bite'); barbHit(z, 12); }
+      if (me && !z.dead && z.st === 'leap' && !z.hitDone && !((z.stunUntil || 0) > G.t) && Math.abs(z.x - player.x) < 8 && z.jy >= 6) { z.hitDone = true; if (!sprayed(z)) { dmgPlayer(z.leap ?? HOUND.dmg, (z.face || 1) * 150); sfx('bite'); barbHit(z, 12); } }
     } else {
       z.anim += Math.abs(z.x - ox) * .16 + (z.idle || z.atk ? dt * 1.2 : 0); z.stT = (z.stT || 0) + dt;
       // a zombie that's after me and biting: it only hurts if it's in reach of where I am on my screen
-      if (me && z.mine && z.atk && !z.dead && Math.abs(z.x - player.x) < z.half + 12) { dmgPlayer((z.dps ?? ZT[z.type].dps) * dt, 0, z.x); barbTick(z, dt); }
+      if (me && z.mine && z.atk && !z.dead && !((z.stunUntil || 0) > G.t) && Math.abs(z.x - player.x) < z.half + 12 && !sprayed(z)) { dmgPlayer((z.dps ?? ZT[z.type].dps) * dt, 0, z.x); barbTick(z, dt); }
     }
     if (z.atk) z.atkT += dt;
     z.flash = Math.max(0, z.flash - dt);
@@ -5358,7 +5694,14 @@ function drawMateTag(cam) {
   const tag = NET.role === 'host' ? 'P2' : 'P1', col = NET.role === 'host' ? '#7fd0ff' : '#ffb43a';
   const x = Math.round(m.x - cam);
   if (x < 6 || x > VW - 6) {                        // off screen: an arrow at the edge
-    drawText(x < 6 ? '<' + tag : tag + '>', x < 6 ? 4 : VW - 4, GROUND - 40, col, 1, x < 6 ? 'left' : 'right');
+    const Lf = x < 6, tx = Lf ? 4 : VW - 4, al = Lf ? 'left' : 'right', wk = has('walkie');
+    drawText(Lf ? '<' + tag : tag + '>', tx, GROUND - 40, wk && m.dead && Math.floor(G.t * 4) % 2 ? '#ff5a6a' : col, 1, al);
+    if (wk && player) {                              // Walkie-Talkie: how far, and how they're doing
+      drawText(tr('meters', { n: Math.round(Math.abs(m.x - player.x) / 20) }), tx, GROUND - 32, '#b7aec8', 1, al);
+      const f = clamp(m.hp / (m.maxHp || 100), 0, 1), bx = Lf ? 4 : VW - 18;
+      ctx.fillStyle = '#0b0814'; ctx.fillRect(bx, GROUND - 24, 14, 3); ctx.fillStyle = '#3a1420'; ctx.fillRect(bx + 1, GROUND - 23, 12, 1);
+      ctx.fillStyle = m.dead ? '#4a4263' : '#d0435a'; ctx.fillRect(bx + 1, GROUND - 23, Math.round(12 * f), 1);
+    }
     return;
   }
   if (m.hidden) return;
@@ -5382,13 +5725,13 @@ function update(dt) {
   if (G.state === 'pause' || G.state === 'boot') return;
   if (G.intro) { if (G.intro.pause || !G.banner) G.intro.t += dt; if (G.intro.pause) return; if (G.intro.t > 5.5) G.intro = null; }
   const guestView = NET.role === 'guest' && G.state !== 'title';
-  if (G.state === 'play') { updPlayer(dt); if (!guestView) updSpawns(dt); updBullets(dt); updNades(dt); stats.t += dt; }
+  if (G.state === 'play') { updPlayer(dt); if (!guestView) updSpawns(dt); updBullets(dt); updNades(dt); updMinis(dt); updBleeds(dt); stats.t += dt; }
   else updBullets(dt);
   if (guestView) { tickGuestWorld(dt); updTraps(dt); }
   else {
     rankZombies();
     if (G.state === 'play') { updBuddies(dt); updAir(dt); updStands(dt); }
-    updTraps(dt);
+    updTraps(dt); if (G.state === 'play') updZTraps();
     zombies.forEach(z => updZombie(z, dt));
     zombies = zombies.filter(z => !(z.dead && z.deadT > 5));
   }
@@ -5429,6 +5772,7 @@ function update(dt) {
   }
   G.shake *= Math.exp(-10 * dt); if (G.shake < .15) G.shake = 0;
   G.hurtFlash = Math.max(0, G.hurtFlash - dt * 1.4);
+  G.whiteFlash = Math.max(0, (G.whiteFlash || 0) - dt * 1.6);
   if (G.banner) { G.banner.t += dt; if (G.banner.t > G.banner.life) G.banner = null; }
   groanT -= dt;
   if (groanT <= 0) { groanT = rnd(2.5, 6); if (zombies.some(z => !z.dead && Math.abs(z.x - (G.camX + VW / 2)) < VW)) sfx('groan'); }
@@ -6320,6 +6664,9 @@ function drawLighting(cam, sx, sy) {
   }
   if (player && !player.hidden) {
     L(player.x, player.fy - 17, 42, .5, null);
+    for (const q of [player, mate()]) if (q && upright(q) && !q.hidden && hasP(q, 'headlamp')) {
+      const f = q.face || 1; L(q.x + f * 26, q.fy - 22, 30, .7, 'rgba(255,240,190,.12)'); L(q.x + f * 55, q.fy - 16, 40, .65, 'rgba(255,240,190,.1)'); L(q.x + f * 88, q.fy - 12, 46, .5, 'rgba(255,240,190,.07)');
+    }
     for (const z of zombies) if (z.type === 'flyer' && !z.dead) L(z.x, z.y - 2, z.st === 'wind' ? 22 : 15, .32, 'rgba(255,60,80,.14)');
     if (player.flashT > 0) { const m = muzzle(); L(m.x, m.y, 64, 1, 'rgba(255,190,80,.4)'); }
     if (G.boom && G.boom.t < .5) { const k = 1 - G.boom.t / .5; L(G.boom.x, G.boom.y - 8, 60 + 90 * k, 1, `rgba(255,190,110,${(.55 * k).toFixed(3)})`); }
@@ -6461,7 +6808,7 @@ function draw() {
   drawBoom(cam);
   for (const b of bullets) {
     const sp = Math.hypot(b.vx, b.vy) || 1, dx = b.vx / sp, dy = b.vy / sp, x = b.x - cam, y = b.y;     // a short tracer along its flight
-    ctx.fillStyle = '#ffb43a'; for (let k = 2, L = b.rifle ? 9 : 4; k <= L; k++) ctx.fillRect(Math.round(x - dx * k), Math.round(y - dy * k), 1, 1);
+    ctx.fillStyle = b.S && b.S.tr ? '#ff5a2a' : b.big ? '#ff8a6a' : '#ffb43a'; for (let k = 2, L = b.rifle || b.big || (b.S && b.S.tr) ? 9 : 4; k <= L; k++) ctx.fillRect(Math.round(x - dx * k), Math.round(y - dy * k), 1, 1);
     ctx.fillStyle = '#fff3c4'; ctx.fillRect(Math.round(x), Math.round(y), 1, 1); ctx.fillRect(Math.round(x - dx), Math.round(y - dy), 1, 1);
   }
   drawSpits(cam);
@@ -6515,6 +6862,7 @@ function draw() {
   }
   drawNums(cam);
   drawMateTag(cam);
+  drawBinocs(cam);
   if (G.state === 'play' || G.state === 'pause') { drawHUD(); drawPing(); }
   if (G.relicPop && (G.state === 'play' || G.state === 'pause') && !(G.banner && G.banner.red)) drawRelicPop();
   else if (G.banner && G.state === 'play') {
@@ -6525,6 +6873,7 @@ function draw() {
     }
   }
   if (G.hurtFlash > 0) { ctx.fillStyle = `rgba(200,30,50,${G.hurtFlash * .5})`; ctx.fillRect(0, 0, VW, VH); }
+  if (G.whiteFlash > 0) { ctx.fillStyle = `rgba(255,250,235,${G.whiteFlash.toFixed(3)})`; ctx.fillRect(0, 0, VW, VH); }
   if (G.intro && (G.state === 'play' || G.state === 'pause')) drawIntro();
   if (player && !player.dead && !player.hidden && G.state === 'play' && player.hp / maxHp() < .3) {
     const a = .18 + .12 * Math.sin(G.t * 6);
@@ -6680,7 +7029,7 @@ function pauseCoopUI() {
 const escH = v => String(v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 function renderRelics(sel) {
   const list = save.relics || [], box = $('pauseRelics'), info = $('relicInfo');
-  box.hidden = !list.length;
+  box.hidden = !list.length; box.classList.toggle('many', list.length > 12);
   if (!list.length) { box.innerHTML = ''; info.textContent = tr('noItems'); return; }
   if (!list.includes(sel)) sel = null;
   box.innerHTML = list.map(id => `<button class="relic${id === sel ? ' on' : ''}" data-relic="${id}" aria-label="${escH(tr('r_' + id))}" aria-pressed="${id === sel}"><img src="${relicURL(id)}" alt=""></button>`).join('');
@@ -7412,7 +7761,7 @@ try { if (hot && typeof hot.snapshot === 'function') hot.snapshot(() => ({ save 
 try {
   if (hot && typeof hot.ready === 'function') hot.ready(start); else start((hot && hot.data) || {});
 } catch (e) { console.error(e); start({}); }
-window.__porch = { addCash, get DEATH_LOSS() { return DEATH_LOSS; }, buildBuddyFrames, buildBearFrames, buildWolfFrames, get stands() { return stands; }, get traps() { return traps; }, updTraps, trapNews, statKind, zKind, exitKind, loopOf, streetOf, NADE_MAX, addNades, SIDES, ALPHA_DMG, alphaHp, bossHp, TRAP, STAND, get world() { return world; }, updStands, tickBuddy, get ammoBoxes() { return ammoBoxes; }, rollAmmoDrop, AMMO_DROP, CLIPS, magOf, gunSave, pauseCoopUI, views, offscreenX, spawnEdge, enterCoopSave, leaveCoopSave, coopStored, capNow, noiseHorde, get buddies() { return buddies; }, updBuddies, airVolley, get airShots() { return airShots; }, makeElite, COOP, ELITE, updSpitter, get spits() { return spits; }, spitAt, zArt, applyGunMods, SUP, ARM, TRN, capOf, strMul, get critBonus() { return critBonus(); }, renderShop, deathFx, CRIT_MUL, critChance, hurtZombie, get decals() { return decals; }, trashSlam, buildTrashFrames, get TRASH_ART() { return TRASH_ART; }, zLevel, zStats, headOf, hatFor, ZLV, get parts() { return parts; }, TUNING, MELEE, ZT, PT, BOSS_DMG, get RIFLE_FALL() { return RIFLE_FALL; }, bossHp, get NADE_R() { return NADE_R; }, get FLY_DMG() { return FLY_DMG; }, nadeDmg, nadeChargeStart, nadeChargeEnd, nadeMaxD, openIntro, closeIntro, checkIntros, nightCfg, unlocked, ROSTER, openSettings, cancelReload, roundsIn, getRevived, updRevive, get SOLO_SAVE() { return SOLO_SAVE; }, nadePlan, openShop, PRIMARIES, pickGun, openPick, ensureLoadout, gunFor, sticks, pollTouch, input, WEAP, fire, startReload, moveSpeed, normalizeSave, addAmmo, get fires() { return fires; }, RELICS, AMMO_CAP, has, grabRelic, dropRelics, pickRelicHouses, ignite, renderRelics, relicArt, get drops() { return drops; }, get nums() { return nums; }, shopItems, buy, fillPrice, houndWave, HOUND, buildHoundFrames, batHound, get bullets() { return bullets; }, skinOf, get WORN() { return WORN; }, get AF() { return AF; }, NET, get ally() { return ally; }, hostSnap, areaHit, get hostNades() { return hostNades; }, meleeHit, quickSwing, coopAlly, get stats() { return stats; }, get coins() { return coins; }, get K() { return K; }, noiseHorde, get spawnQ() { return spawnQ; }, spawnFlyer, NADE, get nades() { return nades; }, nadeCalc, throwNade, explode, TRACKS, G, get player() { return player; }, get zombies() { return zombies; }, get save() { return save; }, get boss() { return boss; }, get bus() { return bus; }, get props() { return props; }, get debris() { return debris; }, WX, startNight, startBoss, setWeather, houses: () => houses, dmgPlayer, spawnZombie, CE, makeTemplate, importSheet, get CUSTOM() { return CUSTOM; } };
+window.__porch = { relicOK, RELIC_ONLY, IT, get minis() { return minis; }, updZTraps, sprayed, stunZ, flashbang, healMe, buddyMul, lampMul, capOf, nightCfg, COOP, get cfg() { return cfg; }, ricochet, nadeR, relicSpent, addCash, get DEATH_LOSS() { return DEATH_LOSS; }, buildBuddyFrames, buildBearFrames, buildWolfFrames, get stands() { return stands; }, get traps() { return traps; }, updTraps, trapNews, statKind, zKind, exitKind, loopOf, streetOf, NADE_MAX, addNades, SIDES, ALPHA_DMG, alphaHp, bossHp, TRAP, STAND, get world() { return world; }, updStands, tickBuddy, get ammoBoxes() { return ammoBoxes; }, rollAmmoDrop, AMMO_DROP, CLIPS, magOf, gunSave, pauseCoopUI, views, offscreenX, spawnEdge, enterCoopSave, leaveCoopSave, coopStored, capNow, noiseHorde, get buddies() { return buddies; }, updBuddies, airVolley, get airShots() { return airShots; }, makeElite, COOP, ELITE, updSpitter, get spits() { return spits; }, spitAt, zArt, applyGunMods, SUP, ARM, TRN, capOf, strMul, get critBonus() { return critBonus(); }, renderShop, deathFx, CRIT_MUL, critChance, hurtZombie, get decals() { return decals; }, trashSlam, buildTrashFrames, get TRASH_ART() { return TRASH_ART; }, zLevel, zStats, headOf, hatFor, ZLV, get parts() { return parts; }, TUNING, MELEE, ZT, PT, BOSS_DMG, get RIFLE_FALL() { return RIFLE_FALL; }, bossHp, get NADE_R() { return NADE_R; }, get FLY_DMG() { return FLY_DMG; }, nadeDmg, nadeChargeStart, nadeChargeEnd, nadeMaxD, openIntro, closeIntro, checkIntros, nightCfg, unlocked, ROSTER, openSettings, cancelReload, roundsIn, getRevived, updRevive, get SOLO_SAVE() { return SOLO_SAVE; }, nadePlan, openShop, PRIMARIES, pickGun, openPick, ensureLoadout, gunFor, sticks, pollTouch, input, WEAP, fire, startReload, moveSpeed, normalizeSave, addAmmo, get fires() { return fires; }, RELICS, AMMO_CAP, has, grabRelic, dropRelics, pickRelicHouses, ignite, renderRelics, relicArt, get drops() { return drops; }, get nums() { return nums; }, shopItems, buy, fillPrice, houndWave, HOUND, buildHoundFrames, batHound, get bullets() { return bullets; }, skinOf, get WORN() { return WORN; }, get AF() { return AF; }, NET, get ally() { return ally; }, hostSnap, areaHit, get hostNades() { return hostNades; }, meleeHit, quickSwing, coopAlly, get stats() { return stats; }, get coins() { return coins; }, get K() { return K; }, noiseHorde, get spawnQ() { return spawnQ; }, spawnFlyer, NADE, get nades() { return nades; }, nadeCalc, throwNade, explode, TRACKS, G, get player() { return player; }, get zombies() { return zombies; }, get save() { return save; }, get boss() { return boss; }, get bus() { return bus; }, get props() { return props; }, get debris() { return debris; }, WX, startNight, startBoss, setWeather, houses: () => houses, dmgPlayer, spawnZombie, CE, makeTemplate, importSheet, get CUSTOM() { return CUSTOM; } };
 })();
 </script>
 </body></html>
