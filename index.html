@@ -28,6 +28,7 @@ body{margin:0;background:var(--night);color:var(--ink);font-family:var(--body);o
 
 /* touch controls */
 #controls{position:absolute;inset:0;z-index:3;pointer-events:none}
+#controls.picking .stick{pointer-events:none}
 .cbtn{position:absolute;pointer-events:auto;touch-action:none;display:grid;place-items:center;margin:0;padding:0;-webkit-appearance:none;appearance:none;background:rgba(20,16,41,.5);border:max(2px,calc(var(--px)*1)) solid rgba(243,234,214,.32);border-radius:calc(var(--px)*3);color:var(--ink);font:700 calc(var(--px)*5.5)/1 var(--body);letter-spacing:.08em;cursor:pointer}
 .cbtn.on{background:rgba(255,180,58,.38);border-color:var(--amber)}
 .cbtn svg{width:42%;height:42%;shape-rendering:crispEdges;fill:currentColor}
@@ -230,7 +231,7 @@ body{margin:0;background:var(--night);color:var(--ink);font-family:var(--body);o
         <button class="btn ghost" id="titleChar" data-t="charBtn">Your character</button>
         <button class="btn ghost" id="titleCoop" data-t="coopBtn">Play with a friend</button>
       </div>
-      <p class="keys" id="keysHint" data-t="keys"><kbd>A</kbd> <kbd>D</kbd> walk &middot; <kbd>J</kbd> or <kbd>Space</kbd> fire (hold <kbd>W</kbd> / <kbd>S</kbd> to aim up / down) &middot; <kbd>E</kbd> search a lit porch &middot; <kbd>Q</kbd> swap gun &middot; <kbd>F</kbd> swing bat &middot; hold <kbd>G</kbd> to wind up a grenade, let go to throw &middot; <kbd>R</kbd> reload &middot; <kbd>P</kbd> pause</p>
+      <p class="keys" id="keysHint" data-t="keys"><kbd>A</kbd> <kbd>D</kbd> walk &middot; <kbd>J</kbd> or <kbd>Space</kbd> fire (hold <kbd>W</kbd> / <kbd>S</kbd> to aim up / down) &middot; <kbd>E</kbd> search a lit porch &middot; <kbd>Q</kbd> swap gun &middot; <kbd>F</kbd> swing bat &middot; <kbd>G</kbd> then click where a grenade should land &middot; <kbd>R</kbd> reload &middot; <kbd>P</kbd> pause</p>
       <p class="keys" id="touchHint" data-t="touch" hidden>Arrows to walk &middot; hold FIRE &middot; tap BAT to swing &middot; SWAP changes guns &middot; tap SEARCH at a lit porch</p>
       <div class="row">
         <button class="link" id="setBtnT" data-t="settings">Settings</button>
@@ -494,8 +495,8 @@ const STR = {
     lede: 'The town fell at dusk. The last bus out leaves from the far end of the block. Houses with the porch light on still have supplies inside.',
     logoSub: '',
     start1: 'Start night 1', cont: 'Continue: night {n}', startN: 'Start night {n}', shop: 'Supply shop',
-    keys: '<kbd>A</kbd> <kbd>D</kbd> walk &middot; <kbd>J</kbd> or <kbd>Space</kbd> fire your gun &middot; <kbd>L</kbd> fire the revolver (hold <kbd>W</kbd> / <kbd>S</kbd> to aim up / down) &middot; <kbd>E</kbd> search a lit porch &middot; <kbd>F</kbd> swing bat &middot; hold <kbd>G</kbd> to wind up a grenade, let go to throw &middot; <kbd>R</kbd> reload &middot; <kbd>P</kbd> pause',
-    touch: 'Left stick walks &middot; bottom right: your gun, then the revolver in the corner &middot; BAT above them &middot; hold the grenade button to wind up a throw, let go to throw &middot; SEARCH at a lit porch',
+    keys: '<kbd>A</kbd> <kbd>D</kbd> walk &middot; <kbd>J</kbd> or <kbd>Space</kbd> fire your gun &middot; <kbd>L</kbd> fire the revolver (hold <kbd>W</kbd> / <kbd>S</kbd> to aim up / down) &middot; <kbd>E</kbd> search a lit porch &middot; <kbd>F</kbd> swing bat &middot; <kbd>G</kbd> then click where a grenade should land &middot; <kbd>R</kbd> reload &middot; <kbd>P</kbd> pause',
+    touch: 'Left stick walks &middot; bottom right: your gun, then the revolver in the corner &middot; BAT above them &middot; tap the grenade button, then tap where it should land &middot; SEARCH at a lit porch',
     soundOn: 'Sound: on', soundOff: 'Sound: off', fs: 'Full screen', fsExit: 'Exit full screen', pick: 'Pick night: {n}',
     reset: 'Reset progress', resetSure: 'Tap again to erase all progress', langBtn: '中文',
     titleSub: 'Night {n} · {street}', titleSubEsc: 'Escaped once · Night {n} · {street}',
@@ -742,15 +743,15 @@ const STR = {
     retryStation: 'Retry at the station', deadSubAlpha: 'Night {n} · the ranger station, {p}% of the way through the Alpha',
     station: 'THE RANGER STATION', stationSub: 'IT IS STILL OUT THERE', wolves: 'WOLVES!', wolvesSub: 'BAT THEM AS THEY JUMP',
     bossDownTrail: 'THE BACK GATE IS OPEN. INTO THE WOODS', alphaDown: 'ALPHA DOWN', alphaDownSub: 'THE RANGER TRUCK IS COMING', fAmmoFull: 'AMMO FULL', gunCarry: 'These upgrades go with whichever gun you pick after being bitten.', fHealth: '+{n} HEALTH', fFoundSg: 'FOUND A SHOTGUN', fFoundSmg: 'FOUND AN SMG', fEmpty: 'EMPTY', fNoAmmo: 'OUT OF AMMO', fNades: '+{n} GRENADES', fNoNades: 'NO GRENADES',
-    nades: 'GRENADES', nadesSub: 'HOLD THE GRENADE BUTTON, LET GO TO THROW', nadesSubKey: 'HOLD G, LET GO TO THROW',
-    nadeName: 'Grenades', nadeDesc: '+{n} grenades. Hold the grenade button to throw farther. Loud.',
+    nades: 'GRENADES', nadesSub: 'TAP THE GRENADE BUTTON, THEN TAP WHERE IT LANDS', nadesSubKey: 'PRESS G, THEN CLICK WHERE IT LANDS', nadePick: 'TAP WHERE IT SHOULD LAND', nadePickKey: 'CLICK WHERE IT SHOULD LAND · G AGAIN THROWS IT',
+    nadeName: 'Grenades', nadeDesc: '+{n} grenades. Tap the grenade button, then tap where it should land. Loud.',
   },
   zh: {
     lede: '小镇在黄昏时沦陷。最后一班巴士从街区尽头发车。门廊灯还亮着的房子里，还有物资。',
     logoSub: '门廊灯',
     start1: '开始第 1 夜', cont: '继续：第 {n} 夜', startN: '开始第 {n} 夜', shop: '补给商店',
-    keys: '<kbd>A</kbd> <kbd>D</kbd> 移动 &middot; <kbd>J</kbd> 或 <kbd>空格</kbd> 用你的枪射击 &middot; <kbd>L</kbd> 用左轮射击（按住 <kbd>W</kbd> / <kbd>S</kbd> 向上 / 向下瞄准）&middot; <kbd>E</kbd> 搜索亮灯的门廊 &middot; <kbd>F</kbd> 挥棒 &middot; 按住 <kbd>G</kbd> 蓄力投手雷，松手扔出 &middot; <kbd>R</kbd> 换弹 &middot; <kbd>P</kbd> 暂停',
-    touch: '左摇杆移动 &middot; 右下角：你的枪，角落是左轮 &middot; 上面是「球棒」 &middot; 按住手雷按钮蓄力，松手扔出 &middot; 在亮灯门廊点「搜索」',
+    keys: '<kbd>A</kbd> <kbd>D</kbd> 移动 &middot; <kbd>J</kbd> 或 <kbd>空格</kbd> 用你的枪射击 &middot; <kbd>L</kbd> 用左轮射击（按住 <kbd>W</kbd> / <kbd>S</kbd> 向上 / 向下瞄准）&middot; <kbd>E</kbd> 搜索亮灯的门廊 &middot; <kbd>F</kbd> 挥棒 &middot; 按 <kbd>G</kbd> 再点击手雷要落的地方 &middot; <kbd>R</kbd> 换弹 &middot; <kbd>P</kbd> 暂停',
+    touch: '左摇杆移动 &middot; 右下角：你的枪，角落是左轮 &middot; 上面是「球棒」 &middot; 点手雷按钮，再点它要落的地方 &middot; 在亮灯门廊点「搜索」',
     soundOn: '声音：开', soundOff: '声音：关', fs: '全屏', fsExit: '退出全屏', pick: '选择夜晚：{n}',
     reset: '重置进度', resetSure: '再点一次，清除全部进度', langBtn: 'English',
     titleSub: '第 {n} 夜 · {street}', titleSubEsc: '已逃出一次 · 第 {n} 夜 · {street}',
@@ -995,8 +996,8 @@ const STR = {
     retryStation: '在护林站重试', deadSubAlpha: '第 {n} 夜 · 护林站，头熊已被打掉 {p}%',
     station: '护林站', stationSub: '它还在外面', wolves: '狼群！', wolvesSub: '趁它们扑过来时挥棒',
     bossDownTrail: '后门开了，走进树林', alphaDown: '头熊倒下了', alphaDownSub: '护林员的卡车来了', fAmmoFull: '弹药已满', gunCarry: '被咬后换枪，这些升级也会跟着新枪。', fHealth: '+{n} 生命', fFoundSg: '找到霰弹枪', fFoundSmg: '找到冲锋枪', fEmpty: '空的', fNoAmmo: '没子弹了', fNades: '+{n} 手雷', fNoNades: '没有手雷',
-    nades: '手雷', nadesSub: '按住手雷键，松手投出', nadesSubKey: '按住 G，松手投出',
-    nadeName: '手雷', nadeDesc: '+{n} 枚手雷。按住手雷键越久扔得越远。很吵。',
+    nades: '手雷', nadesSub: '点手雷按钮，再点落点', nadesSubKey: '按 G，再点击落点', nadePick: '点它要落的地方', nadePickKey: '点击落点 · 再按 G 投出',
+    nadeName: '手雷', nadeDesc: '+{n} 枚手雷。点手雷按钮，再点落点。很吵。',
   },
 };
 let LANG = 'en';
@@ -2928,10 +2929,10 @@ addEventListener('keydown', e => {
   unlockAudio();
   if (G.state === 'play') e.preventDefault();
   if (e.repeat) return;
-  if (a === 'nade') { if (G.state === 'play' && player && !player.dead) nadeChargeStart('key'); return; }
+  if (a === 'nade') { if (NADE.on && NADE.pick) nadePickEnd(true); else if (G.state === 'play' && player && !player.dead && nadePickStart()) sfx('pin'); return; }
   if (a === 'left' || a === 'right' || a === 'fire' || a === 'fire2') keys.add(a); else action(a);
 });
-addEventListener('keyup', e => { const a = KEYMAP[e.code]; if (a === 'nade' && NADE.on && NADE.id === 'key') nadeChargeEnd(true); if (a) keys.delete(a); if (e.code === 'ArrowUp' || e.code === 'KeyW') keys.delete('up'); if (e.code === 'ArrowDown' || e.code === 'KeyS') keys.delete('down'); });
+addEventListener('keyup', e => { const a = KEYMAP[e.code]; if (a) keys.delete(a); if (e.code === 'ArrowUp' || e.code === 'KeyW') keys.delete('up'); if (e.code === 'ArrowDown' || e.code === 'KeyS') keys.delete('down'); });
 addEventListener('blur', () => { keys.clear(); pointers.clear(); resetSticks(); });
 
 const ctrlEl = $('controls');
@@ -2984,8 +2985,7 @@ sticks.forEach(S => {
   S.el.addEventListener('contextmenu', e => e.preventDefault());
 });
 function resetSticks() { sticks.forEach(stickRelease); }
-$('bNade').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); unlockAudio(); setTouch(true); try { $('bNade').setPointerCapture(e.pointerId); } catch (err) {} nadeChargeStart(e.pointerId); });
-['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => $('bNade').addEventListener(ev, e => { if (NADE.on && NADE.charge && NADE.id === e.pointerId) nadeChargeEnd(ev === 'pointerup' || ev === 'lostpointercapture'); }));
+$('bNade').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); unlockAudio(); setTouch(true); if (NADE.on && NADE.pick) { nadePickEnd(false); sfx('click'); } else if (nadePickStart()) sfx('pin'); });
 ctrlEl.addEventListener('pointerdown', e => {
   const b = e.target.closest('.cbtn'); if (!b || b.id === 'bNade') return;
   e.preventDefault(); unlockAudio(); setTouch(true);
@@ -4537,8 +4537,28 @@ function nadeChargeEnd(throwIt) {
   NADE.on = false; NADE.charge = false; $('bNade').classList.remove('charging');
   if (pl) throwNade(pl);
 }
+// picking a spot: the grenade button (or G) starts it, then a tap / click on the screen says where it lands
+// (straight down from the tap, no further than he can throw). Button or G again: G throws at the marker, the button puts it away.
+function nadePickStart() {
+  if (NADE.on || !nadeReady()) return false;
+  if ((save.grenades || 0) <= 0) { floater(player.x, player.fy - 40, tr('fNoNades'), '#a99fbd', .8); sfx('empty'); return false; }
+  Object.assign(NADE, { on: true, pick: true, charge: false, id: null, t0: G.t, pinned: false, stick: false, tx: player.x + player.face * Math.min(nadeMaxD(), 80) });
+  $('bNade').classList.add('charging'); $('controls').classList.add('picking');
+  return true;
+}
+function nadePickEnd(throwIt) {
+  if (!NADE.on || !NADE.pick) return;
+  const pl = throwIt ? nadePlan() : null;
+  NADE.on = false; NADE.pick = false; NADE.id = null; $('bNade').classList.remove('charging'); $('controls').classList.remove('picking');
+  if (pl) throwNade(pl);
+}
+function worldX(clientX) { const r = cv.getBoundingClientRect(); return G.camX + (clientX - r.left) / (r.width / VW); }
 function nadePlan() {
   if (!NADE.on) return null;
+  if (NADE.pick) {
+    const dir = Math.sign(NADE.tx - player.x) || player.face, x0 = player.x + dir * 4;
+    return nadeCalcD(clamp(Math.abs(NADE.tx - x0), 10, nadeMaxD()), NADE_TH, dir);
+  }
   if (NADE.charge) {
     const p = clamp((G.t - NADE.t0) / NADE_CHARGE, 0, 1);
     return nadeCalcD(NADE_MIN_D + p * Math.max(0, nadeMaxD() - NADE_MIN_D), NADE_TH, NADE.dir);
@@ -4572,16 +4592,17 @@ function quickNade() {                                  // keyboard: lob one ahe
   sfx('pin'); throwNade(nadeCalc(.55, .8, player.face));
 }
 cv.addEventListener('pointerdown', e => {
-  unlockAudio(); return;                                 // (grenades: the button, or hold G)
   unlockAudio();
-  if (nadeStart(e)) { e.preventDefault(); try { cv.setPointerCapture(e.pointerId); } catch (err) {} }
+  if (!NADE.on || !NADE.pick) return;                   // picking where a grenade lands: press, slide to adjust, let go to throw
+  e.preventDefault(); NADE.id = e.pointerId; NADE.tx = worldX(e.clientX);
+  try { cv.setPointerCapture(e.pointerId); } catch (err) {}
 });
-cv.addEventListener('pointermove', e => { if (NADE.on && e.pointerId === NADE.id) { NADE.cx = e.clientX; NADE.cy = e.clientY; } });
-cv.addEventListener('pointerup', e => { if (NADE.on && e.pointerId === NADE.id) nadeRelease(); });
-['pointercancel', 'lostpointercapture'].forEach(ev => cv.addEventListener(ev, e => { if (NADE.on && e.pointerId === NADE.id && ev === 'pointercancel') NADE.on = false; }));
+cv.addEventListener('pointermove', e => { if (NADE.on && NADE.pick && (NADE.id === e.pointerId || (NADE.id === null && e.pointerType === 'mouse'))) NADE.tx = worldX(e.clientX); });
+cv.addEventListener('pointerup', e => { if (NADE.on && NADE.pick && NADE.id === e.pointerId) nadePickEnd(true); });
+cv.addEventListener('pointercancel', e => { if (NADE.on && NADE.pick && NADE.id === e.pointerId) NADE.id = null; });
 function updNades(dt) {
   if (NADE.on) {
-    if (!nadeReady()) { NADE.on = false; NADE.charge = false; $('bNade').classList.remove('charging'); }
+    if (!nadeReady()) { NADE.on = false; NADE.charge = false; NADE.pick = false; $('bNade').classList.remove('charging'); $('controls').classList.remove('picking'); }
     else if (!NADE.pinned && G.t - NADE.t0 > .12) { NADE.pinned = true; sfx('pin'); }      // the pin comes out
   }
   for (const n of nades) {
@@ -4720,6 +4741,7 @@ function drawNadeAim(cam) {
   ctx.fillStyle = `rgba(255,90,74,${pulse.toFixed(2)})`;
   const NR = has('firebomb') ? molR() : nadeR(); for (let a = 0; a < Math.PI * 2; a += .09) ctx.fillRect(Math.round(lx + Math.cos(a) * NR), Math.round(pl.gy + 1 + Math.sin(a) * 4), 1, 1);
   ctx.fillStyle = '#ff5a4a'; ctx.fillRect(Math.round(lx) - 1, pl.gy, 3, 1); ctx.fillRect(Math.round(lx), pl.gy - 1, 1, 3);
+  if (NADE.pick) { drawText(tr(G.isTouch ? 'nadePick' : 'nadePickKey'), Math.round(VW / 2), 44, Math.floor(G.t * 3) % 2 ? '#fff3c4' : '#ffb43a', 1, 'center'); return; }
   // the wind-up, over his head
   const bx = Math.round(player.x - cam) - 8, by = player.fy - 44, f = clamp((G.t - NADE.t0) / NADE_CHARGE, 0, 1);
   ctx.fillStyle = '#0b0814'; ctx.fillRect(bx - 1, by - 1, 18, 4); ctx.fillStyle = '#3a3157'; ctx.fillRect(bx, by, 16, 2);
@@ -6088,7 +6110,7 @@ function drawRelicPop() {                            // just picked up: the item
    On claude.ai the page's `room` carries the snapshots; on the game's own website PeerJS does (a free
    public server introduces the two browsers, then they talk directly).
    ============================================================ */
-const GAME_BUILD = 65;                              // shown on the co-op screen, so two players can check they have the same game
+const GAME_BUILD = 66;                              // shown on the co-op screen, so two players can check they have the same game
 // on the game's own website: browsers may keep an old copy of the page for up to 10 minutes after an update,
 // so check for a newer upload when the game opens and load it straight away if there is one
 (function checkForUpdate() {
@@ -9206,7 +9228,7 @@ try { if (hot && typeof hot.snapshot === 'function') hot.snapshot(() => ({ save 
 try {
   if (hot && typeof hot.ready === 'function') hot.ready(start); else start((hot && hot.data) || {});
 } catch (e) { console.error(e); start({}); }
-window.__porch = { TUNING, TUNE_SCHEMA, openTuning, get tuneOK() { return tuneOK; }, get SD() { return SD; }, set SD(v) { SD = v; }, get SDg() { return SDg; }, planSupply, SUPPLY, GOOSE_MAX, lastMul, get crowsIn() { return crowsIn; }, get raccoons() { return raccoons; }, updRaccoons, racOut, crowFlock, CUT_RELICS, molR, molHost, set DUAL(v) { DUAL_DX = v[0]; DUAL_DY = v[1]; }, reviveMist, REVIVE_CLEAR, canTake, RELIC_GUN, gunOK, gunOf, myGun, relicWanted, LEG, makeLegend, legendRoll, toggleReady, coopReadyUI, mateReady, get NF() { return NF; }, set NF(v) { NF = v; }, get rcs() { return rcs; }, get scarecrows() { return scarecrows; }, get oldMen() { return oldMen; }, get goose() { return goose; }, updWatchers, updRC, flareFor, itemSpeed, shotMul, meleeMul, coinVal, rollLoot, trySearch, nearDoor, relicOK, relEnc, relDec, finishSearch, mateFound, get floaters() { return floaters; }, get turret() { return turret; }, get turret2() { return turret2; }, get allyTur() { return allyTur; }, get allyTur2() { return allyTur2; }, TUR, TUR2, updTurret, turretTick, gunBullets, COOP_EASE, coopMul, relicOK, RELIC_ONLY, IT, get minis() { return minis; }, updZTraps, sprayed, stunZ, flashbang, healMe, buddyMul, lampMul, capOf, nightCfg, COOP, get cfg() { return cfg; }, ricochet, nadeR, relicSpent, addCash, get DEATH_LOSS() { return DEATH_LOSS; }, buildBuddyFrames, buildBearFrames, buildWolfFrames, get stands() { return stands; }, get traps() { return traps; }, updTraps, trapNews, statKind, zKind, exitKind, loopOf, streetOf, NADE_MAX, addNades, SIDES, ALPHA_DMG, alphaHp, bossHp, TRAP, STAND, get world() { return world; }, updStands, tickBuddy, get ammoBoxes() { return ammoBoxes; }, rollAmmoDrop, AMMO_DROP, CLIPS, magOf, gunSave, pauseCoopUI, views, offscreenX, spawnEdge, enterCoopSave, leaveCoopSave, coopStored, capNow, noiseHorde, get buddies() { return buddies; }, updBuddies, airVolley, get airShots() { return airShots; }, makeElite, COOP, ELITE, updSpitter, get spits() { return spits; }, spitAt, zArt, applyGunMods, SUP, ARM, TRN, capOf, strMul, get critBonus() { return critBonus(); }, renderShop, deathFx, CRIT_MUL, critChance, hurtZombie, get decals() { return decals; }, trashSlam, buildTrashFrames, get TRASH_ART() { return TRASH_ART; }, zLevel, zStats, headOf, hatFor, ZLV, get parts() { return parts; }, TUNING, MELEE, ZT, PT, BOSS_DMG, get RIFLE_FALL() { return RIFLE_FALL; }, bossHp, get NADE_R() { return NADE_R; }, get FLY_DMG() { return FLY_DMG; }, nadeDmg, nadeChargeStart, nadeChargeEnd, nadeMaxD, openIntro, closeIntro, checkIntros, nightCfg, unlocked, ROSTER, openSettings, cancelReload, roundsIn, getRevived, updRevive, get SOLO_SAVE() { return SOLO_SAVE; }, nadePlan, openShop, PRIMARIES, pickGun, openPick, ensureLoadout, gunFor, sticks, pollTouch, input, WEAP, fire, startReload, moveSpeed, normalizeSave, addAmmo, get fires() { return fires; }, RELICS, AMMO_CAP, has, grabRelic, dropRelics, pickRelicHouses, ignite, renderRelics, relicArt, get drops() { return drops; }, get nums() { return nums; }, shopItems, buy, fillPrice, houndWave, HOUND, buildHoundFrames, batHound, get bullets() { return bullets; }, skinOf, get WORN() { return WORN; }, get AF() { return AF; }, NET, get ally() { return ally; }, hostSnap, areaHit, get hostNades() { return hostNades; }, meleeHit, quickSwing, coopAlly, get stats() { return stats; }, get coins() { return coins; }, get K() { return K; }, noiseHorde, get spawnQ() { return spawnQ; }, spawnFlyer, NADE, get nades() { return nades; }, nadeCalc, throwNade, explode, TRACKS, G, get player() { return player; }, get zombies() { return zombies; }, get save() { return save; }, get boss() { return boss; }, get bus() { return bus; }, get props() { return props; }, get debris() { return debris; }, WX, startNight, startBoss, setWeather, houses: () => houses, dmgPlayer, spawnZombie, CE, makeTemplate, importSheet, get CUSTOM() { return CUSTOM; } };
+window.__porch = { nadePickStart, nadePickEnd, worldX, TUNING, TUNE_SCHEMA, openTuning, get tuneOK() { return tuneOK; }, get SD() { return SD; }, set SD(v) { SD = v; }, get SDg() { return SDg; }, planSupply, SUPPLY, GOOSE_MAX, lastMul, get crowsIn() { return crowsIn; }, get raccoons() { return raccoons; }, updRaccoons, racOut, crowFlock, CUT_RELICS, molR, molHost, set DUAL(v) { DUAL_DX = v[0]; DUAL_DY = v[1]; }, reviveMist, REVIVE_CLEAR, canTake, RELIC_GUN, gunOK, gunOf, myGun, relicWanted, LEG, makeLegend, legendRoll, toggleReady, coopReadyUI, mateReady, get NF() { return NF; }, set NF(v) { NF = v; }, get rcs() { return rcs; }, get scarecrows() { return scarecrows; }, get oldMen() { return oldMen; }, get goose() { return goose; }, updWatchers, updRC, flareFor, itemSpeed, shotMul, meleeMul, coinVal, rollLoot, trySearch, nearDoor, relicOK, relEnc, relDec, finishSearch, mateFound, get floaters() { return floaters; }, get turret() { return turret; }, get turret2() { return turret2; }, get allyTur() { return allyTur; }, get allyTur2() { return allyTur2; }, TUR, TUR2, updTurret, turretTick, gunBullets, COOP_EASE, coopMul, relicOK, RELIC_ONLY, IT, get minis() { return minis; }, updZTraps, sprayed, stunZ, flashbang, healMe, buddyMul, lampMul, capOf, nightCfg, COOP, get cfg() { return cfg; }, ricochet, nadeR, relicSpent, addCash, get DEATH_LOSS() { return DEATH_LOSS; }, buildBuddyFrames, buildBearFrames, buildWolfFrames, get stands() { return stands; }, get traps() { return traps; }, updTraps, trapNews, statKind, zKind, exitKind, loopOf, streetOf, NADE_MAX, addNades, SIDES, ALPHA_DMG, alphaHp, bossHp, TRAP, STAND, get world() { return world; }, updStands, tickBuddy, get ammoBoxes() { return ammoBoxes; }, rollAmmoDrop, AMMO_DROP, CLIPS, magOf, gunSave, pauseCoopUI, views, offscreenX, spawnEdge, enterCoopSave, leaveCoopSave, coopStored, capNow, noiseHorde, get buddies() { return buddies; }, updBuddies, airVolley, get airShots() { return airShots; }, makeElite, COOP, ELITE, updSpitter, get spits() { return spits; }, spitAt, zArt, applyGunMods, SUP, ARM, TRN, capOf, strMul, get critBonus() { return critBonus(); }, renderShop, deathFx, CRIT_MUL, critChance, hurtZombie, get decals() { return decals; }, trashSlam, buildTrashFrames, get TRASH_ART() { return TRASH_ART; }, zLevel, zStats, headOf, hatFor, ZLV, get parts() { return parts; }, TUNING, MELEE, ZT, PT, BOSS_DMG, get RIFLE_FALL() { return RIFLE_FALL; }, bossHp, get NADE_R() { return NADE_R; }, get FLY_DMG() { return FLY_DMG; }, nadeDmg, nadeChargeStart, nadeChargeEnd, nadeMaxD, openIntro, closeIntro, checkIntros, nightCfg, unlocked, ROSTER, openSettings, cancelReload, roundsIn, getRevived, updRevive, get SOLO_SAVE() { return SOLO_SAVE; }, nadePlan, openShop, PRIMARIES, pickGun, openPick, ensureLoadout, gunFor, sticks, pollTouch, input, WEAP, fire, startReload, moveSpeed, normalizeSave, addAmmo, get fires() { return fires; }, RELICS, AMMO_CAP, has, grabRelic, dropRelics, pickRelicHouses, ignite, renderRelics, relicArt, get drops() { return drops; }, get nums() { return nums; }, shopItems, buy, fillPrice, houndWave, HOUND, buildHoundFrames, batHound, get bullets() { return bullets; }, skinOf, get WORN() { return WORN; }, get AF() { return AF; }, NET, get ally() { return ally; }, hostSnap, areaHit, get hostNades() { return hostNades; }, meleeHit, quickSwing, coopAlly, get stats() { return stats; }, get coins() { return coins; }, get K() { return K; }, noiseHorde, get spawnQ() { return spawnQ; }, spawnFlyer, NADE, get nades() { return nades; }, nadeCalc, throwNade, explode, TRACKS, G, get player() { return player; }, get zombies() { return zombies; }, get save() { return save; }, get boss() { return boss; }, get bus() { return bus; }, get props() { return props; }, get debris() { return debris; }, WX, startNight, startBoss, setWeather, houses: () => houses, dmgPlayer, spawnZombie, CE, makeTemplate, importSheet, get CUSTOM() { return CUSTOM; } };
 })();
 </script>
 </body></html>
