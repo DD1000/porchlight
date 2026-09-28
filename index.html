@@ -584,7 +584,7 @@ const STR = {
     bats: 'BATS', batsSub: 'THEY SWOOP DOWN. AIM THE RIGHT STICK UP', batsSubKey: 'THEY SWOOP DOWN. HOLD W WHILE FIRING',
     boss: 'THE DISPATCHER', bossSub: 'SWING THE BAT AS HE CHARGES TO STOP HIM', bossDown: 'DISPATCHER DOWN', bossDownSub: 'THE LAST BUS IS PULLING IN',
     staggered: 'STAGGERED', staggeredF: 'STAGGERED!', dazed: 'DAZED', reload: 'RELOAD', search: 'SEARCH', searchKey: 'E  SEARCH', searching: 'SEARCHING',
-    fShells: '+{n} SHELLS', fRounds: '+{n} ROUNDS', meters: '{n}M', adl_sight: '+{n}% crit chance a level', adl_hot: '+{n}% damage a level', adl_mag: '+{n}% clip size and ammo carried a level', adl_grip: 'Reloads {n}% faster a level', adl_barrel: '+{n}% range and a tighter spread a level', adl_trigger: 'Fires {n}% faster a level', adNow: 'now {n}%', armRefund: 'The Armory changed: every upgrade now has ten levels. You got ${n} back for what you had bought, to spend again.', fNadesFull: 'GRENADES FULL', nadesFull: 'Full ({n} max)', trapped: 'TRAPPED!', trappedSub: 'SWING THE BAT TO PRY IT OPEN', trapFreeF: 'FREE!', trapOffF: 'SNAP!', alphaB: 'THE ALPHA', alphaBSub: 'SWING THE BAT AS IT CHARGES TO STOP IT',
+    fShells: '+{n} SHELLS', fRounds: '+{n} ROUNDS', meters: '{n}M', fItems: 'ITEMS!', mateFound: '{p} FOUND {t}', mateEmpty: '{p} FOUND NOTHING', gadgets: 'Gadgets', u_turret: 'Mini Turret', ud_turret: 'A little walking turret follows you. Every {s} seconds it fires a laser through every zombie in a line ({n} damage each).', adl_sight: '+{n}% crit chance a level', adl_hot: '+{n}% damage a level', adl_mag: '+{n}% clip size and ammo carried a level', adl_grip: 'Reloads {n}% faster a level', adl_barrel: '+{n}% range and a tighter spread a level', adl_trigger: 'Fires {n}% faster a level', adNow: 'now {n}%', armRefund: 'The Armory changed: every upgrade now has ten levels. You got ${n} back for what you had bought, to spend again.', fNadesFull: 'GRENADES FULL', nadesFull: 'Full ({n} max)', trapped: 'TRAPPED!', trappedSub: 'SWING THE BAT TO PRY IT OPEN', trapFreeF: 'FREE!', trapOffF: 'SNAP!', alphaB: 'THE ALPHA', alphaBSub: 'SWING THE BAT AS IT CHARGES TO STOP IT',
     iz_ranger: 'RANGERS', id_ranger: 'The park service never left. Slow and stubborn, and there are a lot of them out here.', ih_ranger: 'Same as the walkers: keep your distance and keep shooting.',
     iz_hunter: 'HUNTERS', id_hunter: 'Still up in their tree stands, waiting. When you walk under one he drops down on you.', ih_hunter: 'Watch the stands up in the trees. Step back as one drops, then shoot.',
     iz_bear: 'ZOMBIE BEARS', id_bear: 'Rotting grizzlies. Hard to put down, and a swipe takes a big piece of your health.', ih_bear: 'Never let one reach you. Grenades and steady fire from range. They do not burst when they drop.',
@@ -734,7 +734,7 @@ const STR = {
     bats: '蝙蝠', batsSub: '它们会俯冲下来。右摇杆往上推射击', batsSubKey: '它们会俯冲下来。射击时按住 W',
     boss: '调度员', bossSub: '它冲锋时挥棒，就能拦住它', bossDown: '调度员倒下了', bossDownSub: '最后一班巴士进站了',
     staggered: '踉跄', staggeredF: '踉跄！', dazed: '撞晕了', reload: '换弹', search: '搜索', searchKey: 'E 搜索', searching: '搜索中',
-    fShells: '+{n} 霰弹', fRounds: '+{n} 子弹', meters: '{n}米', adl_sight: '每级暴击率 +{n}%', adl_hot: '每级伤害 +{n}%', adl_mag: '每级弹匣和携弹量 +{n}%', adl_grip: '每级换弹快 {n}%', adl_barrel: '每级射程 +{n}%，散布更紧', adl_trigger: '每级射速快 {n}%', adNow: '现在 {n}%', armRefund: '军械库改了：每项升级现在有十级。之前买的东西退还你 ${n}，可以重新花。', fNadesFull: '手雷满了', nadesFull: '已满（最多 {n} 个）', trapped: '被夹住了！', trappedSub: '挥棒撬开它', trapFreeF: '挣脱了！', trapOffF: '咔嚓！', alphaB: '头熊', alphaBSub: '它冲过来时挥棒拦住它',
+    fShells: '+{n} 霰弹', fRounds: '+{n} 子弹', meters: '{n}米', fItems: '道具！', mateFound: '{p} 找到 {t}', mateEmpty: '{p} 什么也没找到', gadgets: '装备', u_turret: '迷你炮塔', ud_turret: '一个会走路的小炮塔跟着你。每 {s} 秒发射一道激光，穿透一排僵尸（每只 {n} 点伤害）。', adl_sight: '每级暴击率 +{n}%', adl_hot: '每级伤害 +{n}%', adl_mag: '每级弹匣和携弹量 +{n}%', adl_grip: '每级换弹快 {n}%', adl_barrel: '每级射程 +{n}%，散布更紧', adl_trigger: '每级射速快 {n}%', adNow: '现在 {n}%', armRefund: '军械库改了：每项升级现在有十级。之前买的东西退还你 ${n}，可以重新花。', fNadesFull: '手雷满了', nadesFull: '已满（最多 {n} 个）', trapped: '被夹住了！', trappedSub: '挥棒撬开它', trapFreeF: '挣脱了！', trapOffF: '咔嚓！', alphaB: '头熊', alphaBSub: '它冲过来时挥棒拦住它',
     iz_ranger: '护林员', id_ranger: '护林员一直没离开。又慢又固执，这里到处都是。', ih_ranger: '跟行尸一样：保持距离，一直开枪。',
     iz_hunter: '猎人', id_hunter: '还守在树上的狩猎台里。你从下面经过，他就跳下来扑你。', ih_hunter: '留意树上的狩猎台。他跳下来时后退，再开枪。',
     iz_bear: '僵尸熊', id_bear: '腐烂的灰熊。很难打倒，一爪就能拍掉你一大截血。', ih_bear: '千万别让它靠近。远处用手雷和持续火力。它们倒下时不会爆开。',
@@ -978,6 +978,7 @@ function buildSprites() {
     at_health: [['.rr.rr.', 'rrrrrrr', 'rrrWrrr', 'rrWWWrr', '.rrWrr.', '..rrr..', '...r...'], { r: '#d0435a', W: '#ffd0d8' }],
     at_agility: [['a...a...', '.a...a..', '..a...a.', '...a...a', '..a...a.', '.a...a..', 'a...a...'], { a: '#7fe0ee' }],
     at_strength: [['ss......ss', 'ss......ss', 'ssbbbbbbss', 'ss......ss', 'ss......ss'], { s: '#8e97a4', b: '#c9d0da' }],
+    turret: [['..........', '.GGGGGG...', '.GggggG...', '.GgrrgGccc', '.GggggG...', '.GGGGGG...', '..G..G....', '.GG..GG...'], { G: '#5f6774', g: '#c9d0da', r: '#ff3a4a', c: '#7fe0ee' }],
     at_precision: [['....r....', '..rrrrr..', '.r..r..r.', '.r.....r.', 'rrr.R.rrr', '.r.....r.', '.r..r..r.', '..rrrrr..', '....r....'], { r: '#ff5a6a', R: '#ffffff' }],
   };
   SPR.nade = makeSprite(['..rr...', '.r.ll..', '..lLl..', '.ggggg.', 'gGggggg', 'gGgdggg', 'ggggggg', '.ggggg.'], { g: '#56652e', G: '#7d8c45', d: '#3a4520', l: '#8a8f9a', L: '#c8ccd6', r: '#b8bcc6' });
@@ -2234,6 +2235,7 @@ const SFX = {
   relicDrop() { [784, 988, 1175, 1568].forEach((f, i) => tone(.26, { type: 'sine', f, g: .12, delay: i * .09 })); noise(.45, { f: 5200, q: 2, g: .07, delay: .1 }); },
   luck() { [1047, 1319, 1568, 2093].forEach((f, i) => tone(.14, { type: 'triangle', f, g: .1, delay: i * .05 })); noise(.3, { f: 6000, q: 2, g: .05, delay: .15 }); },
   flashbang() { noise(.5, { f: 5200, f2: 1600, q: .6, g: .5 }); tone(.9, { type: 'sine', f: 3900, f2: 3600, g: .05 }); },
+  laser() { tone(.2, { type: 'sawtooth', f: 1900, f2: 260, g: .1 }); noise(.12, { f: 5200, q: 2, g: .07 }); },
   spray() { noise(.55, { f: 4200, f2: 2400, q: .8, g: .32 }); },
   collect() { tone(.05, { type: 'triangle', f: rnd(1350, 1500), g: .045 }); },
   shove() { tone(.16, { type: 'sine', f: 120, f2: 38, g: .45 }); noise(.18, { type: 'lowpass', f: 1000, f2: 200, g: .42 }); },
@@ -2267,12 +2269,12 @@ const START_NADES = Math.max(0, Math.round(tn('grenade.start', 3)));
 const DEATH_LOSS = clamp(tn('nights.deathLoss', .8), 0, 1);                           // bitten: this much of the night's cash is lost (0.8 = 80%)
 const NADE_MAX = Math.max(1, Math.round(tn('grenade.max', 5)));                    // the most you can carry
 const addNades = n => { const b = save.grenades || 0; save.grenades = Math.min(NADE_MAX, b + n); return save.grenades - b; };
-function freshSave() { return { v: 1, night: 1, cash: 0, owned: { pistol: true, melee: true, shotgun: false, smg: false }, meleeTier: 0, ammo: { shotgun: 0, smg: 0, rifle: 0 }, up: { jacket: 0, shoes: 0 }, gun: {}, attr: {}, mig: 3, best: 1, totalKills: 0, muted: false, escaped: false, grenades: START_NADES, relics: [], relicsNight: [], primary: null, runNew: false }; }
+function freshSave() { return { v: 1, night: 1, cash: 0, owned: { pistol: true, melee: true, shotgun: false, smg: false }, meleeTier: 0, ammo: { shotgun: 0, smg: 0, rifle: 0 }, up: { jacket: 0, shoes: 0, turret: 0 }, gun: {}, attr: {}, mig: 3, best: 1, totalKills: 0, muted: false, escaped: false, grenades: START_NADES, relics: [], relicsNight: [], primary: null, runNew: false }; }
 function normalizeSave(s) {
   const f = freshSave(); if (!s || typeof s !== 'object') return f;
   const o = { ...f, ...s, owned: { ...f.owned, ...(s.owned || {}) }, ammo: { ...f.ammo, ...(s.ammo || {}) }, up: { ...f.up, ...(s.up || {}) }, grenades: Number.isFinite(s.grenades) ? Math.min(NADE_MAX, s.grenades) : START_NADES, v: 1 };
   const su = s.up || {};
-  o.up = { jacket: su.jacket > 0 ? 1 : 0, shoes: su.shoes > 0 ? 1 : 0 };
+  o.up = { jacket: su.jacket > 0 ? 1 : 0, shoes: su.shoes > 0 ? 1 : 0, turret: su.turret > 0 ? 1 : 0 };
   const ng = g => { const u = {}; for (const a of ATTS) u[a] = clamp(Math.floor(+(g && g.up && g.up[a]) || 0), 0, 50); return { up: u }; };
   if (!(s.mig >= 3)) {                               // the old Armory (a gun level, and attachments bought once): money back for all of it
     const old = g => ({ lv: clamp(Math.floor(+(g && g.lv) || 0), 0, 50), att: g && Array.isArray(g.att) ? [...new Set(g.att.filter(a => ATTS.includes(a)))] : [] });
@@ -2306,13 +2308,17 @@ function persist() { if (SOLO_SAVE) { persistCoop(); return; } try { localStorag
 
 // co-op: two players get more of everything (the host spawns it all)
 const COOP = { spawn: Math.max(.2, tn('coop.spawn', 1.5)), cap: Math.max(.2, tn('coop.cap', 1.5)), hp: Math.max(.1, tn('coop.hp', 1.3)), idle: Math.max(0, tn('coop.idle', 1.4)), horde: Math.max(0, tn('coop.horde', 2)), ammo: Math.max(0, tn('coop.ammo', 1.24)) };      // ammo: boxes drop 24% more often with two of you
-const coopMul = k => NET.role === 'host' ? COOP[k] : 1;
+// from night 3 on, co-op eases off a little: zombie health x0.8 (1.3 -> 1.04 of solo), walk-ins and the most awake at once x0.88
+const COOP_EASE = { from: Math.max(1, Math.round(tn('coop.easeFrom', 3))), hp: Math.max(0, tn('coop.easeHp', .8)), spawn: Math.max(.05, tn('coop.easeSpawn', .88)), cap: Math.max(.05, tn('coop.easeCap', .88)) };
+const coopMul = k => NET.role === 'host' ? COOP[k] * (nightNo() >= COOP_EASE.from && COOP_EASE[k] !== undefined && k !== 'from' ? COOP_EASE[k] : 1) : 1;
 // elites: any kind of zombie can turn up as one. Violet, glowing, a health bar, very hard to put down.
 const ELITE = { solo: tn('elites.solo', .03), coop: tn('elites.coop', .09), from: tn('elites.from', 3), hp: Math.max(1, tn('elites.hp', 6)), dmg: Math.max(0, tn('elites.dmg', 1.5)),
   kbRes: tn('elites.kbRes', .3), size: Math.max(.5, tn('elites.size', 1.15)), cash: Math.max(0, tn('elites.cash', 5)) };
 const SUP = { nadePrice: tn('supply.nades.price', 45), nadeCount: Math.max(1, Math.round(tn('supply.nades.count', 3))), jacketHp: tn('supply.jacket.hp', 25), jacketPrice: tn('supply.jacket.price', 100),
   shoes: tn('supply.shoes.speed', .1), shoesPrice: tn('supply.shoes.price', 90), axePrice: tn('supply.axe.price', 200) };
 const ATTS = ['sight', 'hot', 'mag', 'grip', 'barrel', 'trigger'];
+// the Mini Turret (Armory): walks after you, a laser through every zombie in a line every few seconds
+const TUR = { price: Math.max(0, tn('armory.turret.price', 150)), dmg: Math.max(0, tn('armory.turret.dmg', 6)), every: Math.max(.5, tn('armory.turret.every', 5)), range: Math.max(20, tn('armory.turret.range', 200)) };
 // the Armory: each upgrade has ARM_LV levels; each level adds 'per' (0.05 = 5%) and costs price x growth^level
 const ARM_LV = Math.max(1, Math.round(tn('armory.levels', 10)));
 const ARM = {};
@@ -2352,6 +2358,7 @@ function applyGunMods() {
   for (const id in CAP_BASE) AMMO_CAP[id] = capOf(id);
 }
 const PT = { hp: Math.max(1, tn('player.hp', 100)), speed: Math.max(1, tn('player.speed', 58)), med: Math.max(0, Math.round(tn('player.medkit', 35))),
+  regen: Math.max(0, tn('player.regen', 1)), regenEvery: Math.max(.5, tn('player.regenEvery', 10)),      // health back while you go unhurt: 1 every 10 seconds
 };
 const maxHp = () => Math.round(PT.hp + SUP.jacketHp * (save.up.jacket ? 1 : 0) + TRN.health.per * attrLv('health'));
 const dmgMul = () => 1;                              // (a gun's own level and attachments are in its numbers now)
@@ -2505,7 +2512,7 @@ function spawnEdge(side, type, ax = null) {
 function resetLevel(bossNight = false) {
   houses.forEach(h => { h.lit = h.litInit; h.searched = false; h.relic = false; });
   drops = []; fires = []; nums = []; ammoBoxes = []; relicTook = new Set(); G.relicPop = null; G.onDrop = null;
-  zombies = []; bullets = []; parts = []; minis = []; decals = []; spits = []; buddies = []; airShots = []; airT.me = airT.ally = 0; coins = []; floaters = []; casings = []; spawnQ = []; props = []; debris = []; nades = []; NADE.on = false; G.boom = null;
+  zombies = []; bullets = []; parts = []; minis = []; turret = null; allyTur = null; decals = []; spits = []; buddies = []; airShots = []; airT.me = airT.ally = 0; coins = []; floaters = []; casings = []; spawnQ = []; props = []; debris = []; nades = []; NADE.on = false; G.boom = null;
   // on the depot night the bus isn't there yet: it pulls in once the boss is down
   const trail = bossNight && exitKind() === 'trail';           // Main St: out the back gate of the depot, into the woods
   bus = { x: bossNight && !trail ? BUS_X + 420 : BUS_X - 8, vx: 0, door: bossNight ? 0 : 1, leaving: false, arriving: false, t: 0, wheel: 0 };
@@ -2766,18 +2773,19 @@ function finishSearch() {
   if (NET.role === 'guest') { netEv('loot', houses.indexOf(H)); return; }      // the host rolls it and tells us what we found
   const unowned = [];                                  // guns aren't found any more: you picked yours
   const ammoGuns = WEAPON_LIST.filter(w => w.id !== 'pistol' && save.owned[w.id] && !ammoFull(w.id));
-  if (H.relic && dropRelics(H)) { persist(); return; }           // a special house: the items come out instead
+  const tell = (k, n = 0, wi = 0) => { if (coopAlly()) netEv('fnd', k, n, wi); };      // co-op: my partner hears what I found
+  if (H.relic && dropRelics(H)) { tell('relic'); persist(); return; }           // a special house: the items come out instead
   const res = rollLoot(H, unowned, ammoGuns, player.hp > maxHp() - 8, has('scavenger'));
   const fx = H.doorX, fy = GROUND - 44;
-  if (res === 'cash') { const a = H.type === 'house' ? irnd(8, 26) : irnd(22, 40); addCash(a); floater(fx, fy, '+$' + a, '#ffb43a'); sfx('loot'); }
-  else if (res === 'ammo') { const w = pick(ammoGuns); const n = addAmmo(w.id, w.id === 'smg' ? irnd(18, 30) : irnd(3, 5)); floater(fx, fy, tr(w.id === 'shotgun' ? 'fShells' : 'fRounds', { n }), '#e2bf62'); sfx('loot'); }
-  else if (res === 'nade') { const n = addNades(irnd(1, 2)); floater(fx, fy, n ? tr('fNades', { n }) : tr('fNadesFull'), '#a8c46a'); sfx('loot'); }
-  else if (res === 'med') { const a = Math.round(PT.med * (has('medic') ? IT.medic : 1)); healMe(a); floater(fx, fy, tr('fHealth', { n: a }), '#7fd08a'); sfx('med'); }
+  if (res === 'cash') { const a = H.type === 'house' ? irnd(8, 26) : irnd(22, 40); addCash(a); floater(fx, fy, '+$' + a, '#ffb43a'); sfx('loot'); tell('cash', a); }
+  else if (res === 'ammo') { const w = pick(ammoGuns); const n = addAmmo(w.id, w.id === 'smg' ? irnd(18, 30) : irnd(3, 5)); floater(fx, fy, tr(w.id === 'shotgun' ? 'fShells' : 'fRounds', { n }), '#e2bf62'); sfx('loot'); tell('ammo', n, WEAPON_ORDER.indexOf(w.id)); }
+  else if (res === 'nade') { const k = irnd(1, 2), n = addNades(k); floater(fx, fy, n ? tr('fNades', { n }) : tr('fNadesFull'), '#a8c46a'); sfx('loot'); tell('nade', k); }
+  else if (res === 'med') { const a = Math.round(PT.med * (has('medic') ? IT.medic : 1)); healMe(a); floater(fx, fy, tr('fHealth', { n: a }), '#7fd08a'); sfx('med'); tell('med', a); }
   else if (res === 'weapon') {
     const w = unowned[0]; save.owned[w.id] = true; addAmmo(w.id, AMMO_CAP[w.id]);
     player.weapon = w.id; player.reloadT = 0; player.mag[w.id] = Math.min(w.mag, save.ammo[w.id]); floater(fx, fy, tr(w.id === 'shotgun' ? 'fFoundSg' : 'fFoundSmg'), '#ffb43a'); setBanner(tr('newGun'), tr('w_' + w.id).toUpperCase(), 2); sfx('gun');
   }
-  else { floater(fx, fy, tr('fEmpty'), '#a99fbd'); sfx('empty'); }
+  else { floater(fx, fy, tr('fEmpty'), '#a99fbd'); sfx('empty'); tell('empty'); }
   persist();
 }
 const usable = id => !!save.owned[id] && (id === 'pistol' || id === 'melee' || save.ammo[id] > 0);
@@ -3152,6 +3160,7 @@ function dmgPlayer(a, kb = 0, fromX = null) {
   if (a > 0 && has('flare') && !player.flareReady) { player.flareReady = true; floater(player.x, player.fy - 46, tr('flareF'), '#ff8a2a', .9); sfx('flareArm'); }
   player.hp -= a;
   if (a > 0 && has('adren')) player.adrenT = ADREN_T;
+  if (a > 0) player.regenT = 0;                         // hurt: the slow healing starts counting again
   G.hurtFlash = Math.min(.45, G.hurtFlash + a * .03);
   if (kb) { player.kbv += kb; cancelSearch(); }
   if (player.hurtSfxT <= 0 || kb) { sfx('hurt'); player.hurtSfxT = .45; player.hurtT = .26; addShake(kb ? 3 : 1.6); blood(player.x, player.fy - 18, -player.face, kb ? 6 : 3); }
@@ -3204,6 +3213,10 @@ function updPlayer(dt) {
   if (player.adrenT > 0) player.adrenT -= dt;
   if (has('wind2') && !player.windUsed && player.hp > 0 && player.hp < maxHp() * .25) { player.windUsed = true; player.windT = WIND_T; floater(player.x, player.fy - 46, tr('windF'), '#7fd08a', 1.1); sfx('med'); }
   if (player.windT > 0) { player.windT -= dt; player.hp = Math.min(maxHp(), player.hp + IT.wind * dt); }
+  if (PT.regen > 0 && player.hp < maxHp()) {           // slow healing: a little back for every stretch you go unhurt
+    player.regenT = (player.regenT || 0) + dt;
+    if (player.regenT >= PT.regenEvery) { player.regenT -= PT.regenEvery; player.hp = Math.min(maxHp(), player.hp + PT.regen); floater(player.x, player.fy - 40, '+' + PT.regen, '#7fd08a', .7); }
+  } else player.regenT = 0;
   player.fireCd -= dt; player.flashT -= dt; player.hurtSfxT -= dt;
   player.meleeCd -= dt;
   if (player.kbv) { player.x += player.kbv * dt; player.kbv *= Math.exp(-7 * dt); if (Math.abs(player.kbv) < 3) player.kbv = 0; }
@@ -3535,6 +3548,77 @@ function buildBuddyFrames() {                      // golden fur, white chest, f
     tug1: make({ legs: [.1, .4, .6, -.2], lift: 12, tilt: -.5, head: .2, bite: true, tail: 3 }),
   };
   return { f, W, H, cx: CX, gy: GY };
+}
+// ---- THE MINI TURRET: a knee-high walking gun on two little legs. It trots along behind you and every few seconds
+//      fires a laser along the ground at the nearest awake zombie, through every zombie in that line. Its hits are
+//      yours (in co-op each of you runs your own; your partner sees yours walk and fire). ----
+let turret = null, allyTur = null;
+const TUR_Y = 9;                                       // how far above the ground the beam runs
+function turretFollow(T, P, dt) {
+  const want = P.x - (P.face || 1) * 16, dx = want - T.x;
+  if (Math.abs(dx) > 1.5) { const v = Math.min(Math.abs(dx), (55 + Math.abs(dx) * 2.2) * dt); T.x += Math.sign(dx) * v; T.anim += v * .35; T.moving = true; if (!T.beam || T.beam.t > .25) T.face = Math.sign(dx); }
+  else T.moving = false;
+  if (T.beam) { T.beam.t += dt; if (T.beam.t > .3) T.beam = null; }
+}
+function updTurret(dt) {
+  if (!player || !save.up.turret || G.state !== 'play') { turret = null; }
+  else {
+    if (!turret) turret = { x: player.x - player.face * 16, face: player.face, anim: 0, cd: 2, beam: null, moving: false };
+    const T = turret; turretFollow(T, player, dt);
+    T.cd -= dt;
+    if (T.cd <= 0 && !player.dead && !player.inBus && !player.hidden) {
+      let best = null, bd = TUR.range;
+      for (const z of zombies) {
+        if (z.dead || z.idle || z.type === 'flyer' || z.vaultT >= 0 || (z.type === 'boss' && z.st === 'drop')) continue;
+        const d = Math.abs(z.x - T.x); if (d < bd) { bd = d; best = z; }
+      }
+      if (best) turretFire(T, Math.sign(best.x - T.x) || T.face);
+    }
+  }
+  const m = mate();                                      // my partner's turret: it walks here too (their screen fires it)
+  if (m && m.hasTurret && m.x > -900 && G.state === 'play') { if (!allyTur) allyTur = { x: m.x - (m.face || 1) * 16, face: m.face || 1, anim: 0, beam: null, moving: false }; turretFollow(allyTur, m, dt); }
+  else allyTur = null;
+}
+function turretFire(T, dir) {
+  T.face = dir; T.cd = TUR.every;
+  const x0 = T.x + dir * 6, y = GROUND - TUR_Y, x1 = x0 + dir * TUR.range;
+  T.beam = { x0, x1, y, t: 0 };
+  for (const z of zombies) {
+    if (z.dead || z.type === 'flyer' || z.vaultT >= 0 || (z.type === 'boss' && z.st === 'drop')) continue;
+    const ahead = (z.x - x0) * dir; if (ahead < -z.half || ahead > TUR.range + z.half) continue;
+    if (y < z.fy - z.h - 2 || y > z.fy + 1) continue;
+    for (let i = 0; i < 3; i++) parts.push({ k: 'l', x: z.x + rnd(-2, 2), y: y + rnd(-2, 2), vx: rnd(-30, 30), vy: rnd(-40, 0), life: rnd(.2, .35), t: 0 });
+    sideDmg(z, TUR.dmg, 7);
+  }
+  sfx('laser'); netEv('lz', r1(x0), r1(x1), y);
+}
+function drawTurretBot(T, cam, mine) {
+  const x = Math.round(T.x - cam), y = GROUND + 1, f = T.face || 1;
+  if (x < -20 || x > VW + 20) return;
+  const step = T.moving ? Math.floor(T.anim) % 2 : 0, charge = mine && T.cd !== undefined && T.cd < .6;
+  ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(x - 4, y, 9, 1);
+  ctx.fillStyle = '#0b0814'; ctx.fillRect(x - 3, y - 6, 3, 6); ctx.fillRect(x + 1, y - 6, 3, 6);                  // legs
+  ctx.fillStyle = '#5f6774'; ctx.fillRect(x - 2, y - 5 - (step ? 1 : 0), 1, 4); ctx.fillRect(x + 2, y - 5 - (step ? 0 : 1), 1, 4);
+  ctx.fillStyle = '#3a3546'; ctx.fillRect(x - 3, y - 1 - (step ? 1 : 0), 2, 1); ctx.fillRect(x + 2, y - 1 - (step ? 0 : 1), 2, 1);
+  const by = y - 13 + (T.moving && step ? 1 : 0);
+  ctx.fillStyle = '#0b0814'; ctx.fillRect(x - 5, by - 1, 11, 8); ctx.fillRect(f > 0 ? x + 5 : x - 9, by + 2, 5, 3);   // body and barrel
+  ctx.fillStyle = '#8e97a4'; ctx.fillRect(x - 4, by, 9, 6);
+  ctx.fillStyle = '#c9d0da'; ctx.fillRect(x - 4, by, 9, 1);
+  ctx.fillStyle = '#5f6774'; ctx.fillRect(x - 4, by + 5, 9, 1); ctx.fillRect(f > 0 ? x + 5 : x - 8, by + 3, 3, 1);
+  ctx.fillStyle = charge && Math.floor(G.t * 16) % 2 ? '#fff3c4' : '#ff3a4a'; ctx.fillRect(x + f * 2 - (f > 0 ? 0 : 1), by + 2, 2, 2);   // its eye
+  if (charge) { ctx.fillStyle = '#7fe0ee'; ctx.fillRect(f > 0 ? x + 8 : x - 9, by + 3, 1, 1); }
+  if (T.beam) {                                          // the laser
+    const b = T.beam, a = clamp(1 - b.t / .3, 0, 1), x0 = Math.round(b.x0 - cam), x1 = Math.round(b.x1 - cam), lo = Math.min(x0, x1), w = Math.abs(x1 - x0);
+    ctx.globalAlpha = a * .45; ctx.fillStyle = '#7fe0ee'; ctx.fillRect(lo, b.y - 2, w, 5);
+    ctx.globalAlpha = a; ctx.fillStyle = '#7fe0ee'; ctx.fillRect(lo, b.y - 1, w, 3);
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(lo, b.y, w, 1);
+    ctx.globalAlpha = 1;
+  }
+}
+function drawTurrets(cam) {
+  if (G.state !== 'play' && G.state !== 'pause') return;
+  if (turret && player && !player.inBus && !player.hidden) drawTurretBot(turret, cam, true);
+  const m = mate(); if (allyTur && m && !m.inBus && !m.hidden) drawTurretBot(allyTur, cam, false);
 }
 function drawBuddies(cam) {
   if (!buddies.length) return;
@@ -4542,8 +4626,8 @@ function relicURL(id) {                              // for the pause screen
 }
 
 // ---- damage numbers: every hit of yours pops its number ----
-const NUM_COL = { dog: '#f0c97a', gun: '#ffe7a0', melee: '#f3ead6', crit: '#ff9a2a', blast: '#ffb43a', fire: '#ff6a3a', thorn: '#d7c8f0', bleed: '#ff6b7d' };
-const NUM_KIND = ['gun', 'melee', 'blast', null, 'thorn', 'fire', 'bleed'];
+const NUM_COL = { dog: '#f0c97a', gun: '#ffe7a0', melee: '#f3ead6', crit: '#ff9a2a', blast: '#ffb43a', fire: '#ff6a3a', thorn: '#d7c8f0', bleed: '#ff6b7d', laser: '#7fe0ee' };
+const NUM_KIND = ['gun', 'melee', 'blast', null, 'thorn', 'fire', 'bleed', 'laser'];
 const NUM_OUT = [[-1, 0], [1, 0], [0, -1], [0, 1], [1, 1], [-1, 1]];
 function dmgNum(x, y, v, style = 'gun') {
   v = Math.round(v); if (!(v > 0)) return;
@@ -4604,7 +4688,7 @@ function barbTick(z, dt) {
   if (z.barbAcc >= 5) { z.barbAcc -= 5; sideDmg(z, 5, 4); }
 }
 function barbHit(z, d) { if (has('barbed') && z && !z.dead) sideDmg(z, d, 4); }
-function sideDmg(z, d, kind) {                       // barbs (4), fire (5) and bleeding (6): my damage, no knockback
+function sideDmg(z, d, kind) {                       // barbs (4), fire (5), bleeding (6) and the turret's laser (7): my damage, no knockback
   if (!z || z.dead || !player) return;
   const face = Math.sign(z.x - player.x) || player.face || 1;
   if (NET.role === 'guest') { guestHit(z, d, face, 0, 0, kind); return; }
@@ -4612,7 +4696,7 @@ function sideDmg(z, d, kind) {                       // barbs (4), fire (5) and 
   const dd = d * (z.type === 'boss' ? bossKindMul(z, kind) : 1);
   z.hp -= dd; z.flash = .07; z.idle = false;
   if (kind === 4 || kind === 6) blood(z.x, hitY(z) + 4, face, kind === 6 ? 1 : 2);
-  dmgNum(z.x, hitY(z), dd, kind === 5 ? 'fire' : kind === 6 ? 'bleed' : 'thorn');
+  dmgNum(z.x, hitY(z), dd, kind === 5 ? 'fire' : kind === 6 ? 'bleed' : kind === 7 ? 'laser' : 'thorn');
   if (z.hp <= 0) ownKill(z, face);
 }
 
@@ -4848,7 +4932,7 @@ function drawRelicPop() {                            // just picked up: the item
    On claude.ai the page's `room` carries the snapshots; on the game's own website PeerJS does (a free
    public server introduces the two browsers, then they talk directly).
    ============================================================ */
-const GAME_BUILD = 55;                              // shown on the co-op screen, so two players can check they have the same game
+const GAME_BUILD = 56;                              // shown on the co-op screen, so two players can check they have the same game
 // on the game's own website: browsers may keep an old copy of the page for up to 10 minutes after an update,
 // so check for a newer upload when the game opens and load it straight away if there is one
 (function checkForUpdate() {
@@ -4860,7 +4944,7 @@ const GAME_BUILD = 55;                              // shown on the co-op screen
     location.replace(location.pathname + '?v=' + n);
   }).catch(() => {});
 })();
-const NET_V = 11, ZTYPES = ['walker', 'runner', 'brute', 'crawler', 'flyer', 'hound', 'trash', 'spitter'], FLY_ST = ['cruise', 'wind', 'dive', 'leave'];
+const NET_V = 12, ZTYPES = ['walker', 'runner', 'brute', 'crawler', 'flyer', 'hound', 'trash', 'spitter'], FLY_ST = ['cruise', 'wind', 'dive', 'leave'];
 const NET = { role: 'solo', room: null, code: '', t: 0, push: 0, rate: 20, seq: 0, out: [], seen: 0, run: 0, night: 1, hostRun: 0,
   partner: null, lastP: null, lastSeen: 0, hadPartner: false, mateId: null, rtt: 0, lead: 0, theirTs: 0, theirAt: 0, pend: [], gone: new Set() };
 let ally = null;                                  // the other survivor on this screen, a puppet built from their messages
@@ -5001,7 +5085,7 @@ function testRoom(name) {
 
 // ---- a survivor as a short list of numbers, and back ----
 function pState(p) {
-  const fl = (p.moving ? 1 : 0) | (p.dead ? 2 : 0) | (p.inBus ? 4 : 0) | (p.hidden ? 8 : 0) | (p.backing ? 16 : 0) | (p.searching ? 32 : 0) | (p.flashT > 0 ? 64 : 0) | (p.trapT > 0 ? 256 : 0) | (p.dead && !p.reviveUsed ? 128 : 0);
+  const fl = (p.moving ? 1 : 0) | (p.dead ? 2 : 0) | (p.inBus ? 4 : 0) | (p.hidden ? 8 : 0) | (p.backing ? 16 : 0) | (p.searching ? 32 : 0) | (p.flashT > 0 ? 64 : 0) | (p.trapT > 0 ? 256 : 0) | (p.dead && !p.reviveUsed ? 128 : 0) | ((p === player ? save.up.turret : p.hasTurret) ? 512 : 0);
   return [r1(p.x), r1(p.fy), p.face, fl, Math.round(p.aim * 100), Math.round((p.elev || 0) * 100), Math.max(0, WEAPON_ORDER.indexOf(p.weapon)),
     Math.round(Math.min(9, p.shotT) * 100), r1(p.runPhase || 0), Math.round(Math.max(0, p.reloadT) * 100), Math.round((p.reloadDur || 1) * 100),
     Math.round(p.swingT * 100), Math.round(Math.max(0, p.hurtT) * 100), r1(Math.min(9, p.deadT || 0)), r1(p.recoil || 0), Math.round(p.porchT * 100),
@@ -5019,7 +5103,7 @@ function applyPState(q, a) {
   if (q.tx === null || Math.abs(a[0] - q.x) > 80) q.x = a[0];
   q.tx = a[0]; q.fy = a[1]; q.face = a[2] < 0 ? -1 : 1;
   q.revivable = !!(f & 128);
-  q.moving = !!(f & 1); q.inBus = !!(f & 4); q.hidden = !!(f & 8); q.backing = !!(f & 16); q.searching = (f & 32) ? true : null; q.trapped = !!(f & 256);
+  q.moving = !!(f & 1); q.inBus = !!(f & 4); q.hidden = !!(f & 8); q.backing = !!(f & 16); q.searching = (f & 32) ? true : null; q.trapped = !!(f & 256); q.hasTurret = !!(f & 512);
   if (f & 64) q.flashT = .05;
   q.aim = a[4] / 100; q.elev = a[5] / 100; q.weapon = WEAPON_ORDER[a[6]] || 'pistol'; q.shotT = a[7] / 100;
   if (Math.abs(a[8] - q.runPhase) > 2) q.runPhase = a[8];
@@ -5132,6 +5216,8 @@ function hostIn(P) {
     else if (type === 'spray') sprayFx(+a[0], +a[1] < 0 ? -1 : 1);
     else if (type === 'stunz') { const z = zombies.find(q => q.id === +a[0]); if (z) stunZ(z, clamp(+a[1] || 0, 0, 5)); }
     else if (type === 'mb') miniNews(a);
+    else if (type === 'fnd') mateFound(String(a[0]), clamp(+a[1] || 0, 0, 999), clamp(+a[2] || 0, 0, 9));
+    else if (type === 'lz') { if (allyTur) { allyTur.face = +a[1] > +a[0] ? 1 : -1; allyTur.beam = { x0: +a[0], x1: +a[1], y: +a[2] || GROUND - TUR_Y, t: 0 }; } sfx('laser', 60); }
   }
 }
 // their shot, drawn here (the tracers stop at zombies but don't hurt them: their own screen says what they hit)
@@ -5180,14 +5266,23 @@ function allyLoot(i) {
   H.lit = false; H.searched = true; stats.searched++;
   const own = q.owned;
   const unowned = [], ammoGuns = WEAPON_LIST.filter((w, k) => k > 0 && (own[k - 1] & 1) && !(own[k - 1] & 2));
-  if (H.relic && dropRelics(H)) { netEv('loot', 'relic', 0, 0); return; }
+  if (H.relic && dropRelics(H)) { netEv('loot', 'relic', 0, 0); mateFound('relic'); return; }
   const res = rollLoot(H, unowned, ammoGuns, q.hp > q.maxHp - 8, hasP(q, 'scavenger'));
-  if (res === 'cash') { const v = H.type === 'house' ? irnd(8, 26) : irnd(22, 40); addCash(v); floater(fx, fy, '+$' + v, '#ffb43a'); }
-  else if (res === 'ammo') { const w = pick(ammoGuns), n = w.id === 'smg' ? irnd(18, 30) : irnd(3, 5); netEv('loot', 'ammo', n, WEAPON_ORDER.indexOf(w.id)); floater(fx, fy, tr(w.id === 'shotgun' ? 'fShells' : 'fRounds', { n }), '#e2bf62'); }
-  else if (res === 'med') { netEv('loot', 'med', PT.med, 0); floater(fx, fy, tr('fHealth', { n: Math.round(PT.med * (hasP(q, 'medic') ? IT.medic : 1)) }), '#7fd08a'); }
+  if (res === 'cash') { const v = H.type === 'house' ? irnd(8, 26) : irnd(22, 40); addCash(v); netEv('loot', 'cash', v, 0); mateFound('cash', v); }
+  else if (res === 'ammo') { const w = pick(ammoGuns), n = w.id === 'smg' ? irnd(18, 30) : irnd(3, 5); netEv('loot', 'ammo', n, WEAPON_ORDER.indexOf(w.id)); mateFound('ammo', n, WEAPON_ORDER.indexOf(w.id)); }
+  else if (res === 'med') { netEv('loot', 'med', PT.med, 0); mateFound('med', Math.round(PT.med * (hasP(q, 'medic') ? IT.medic : 1))); }
   else if (res === 'weapon') { const w = unowned[0]; netEv('loot', 'gun', 0, WEAPON_ORDER.indexOf(w.id)); floater(fx, fy, tr(w.id === 'shotgun' ? 'fFoundSg' : 'fFoundSmg'), '#ffb43a'); }
-  else if (res === 'nade') { const n = irnd(1, 2); netEv('loot', 'nade', n, 0); floater(fx, fy, tr('fNades', { n }), '#a8c46a'); }
-  else { netEv('loot', 'empty', 0, 0); floater(fx, fy, tr('fEmpty'), '#a99fbd'); }
+  else if (res === 'nade') { const n = irnd(1, 2); netEv('loot', 'nade', n, 0); mateFound('nade', n); }
+  else { netEv('loot', 'empty', 0, 0); mateFound('empty'); }
+}
+// what my partner just found in a house or pile: an alert over my head (P1 is the host, P2 the guest)
+function mateFound(kind, n = 0, wi = 0) {
+  if (!player) return;
+  const w = WEAPON_LIST[wi], p = NET.role === 'host' ? 'P2' : 'P1';
+  const [t, col] = kind === 'cash' ? ['+$' + n, '#ffb43a'] : kind === 'ammo' && w ? [tr(w.id === 'shotgun' ? 'fShells' : 'fRounds', { n }), '#e2bf62'] : kind === 'nade' ? [tr('fNades', { n }), '#a8c46a']
+    : kind === 'med' ? [tr('fHealth', { n }), '#7fd08a'] : kind === 'relic' ? [tr('fItems'), '#ffd45a'] : [null, '#a99fbd'];
+  floater(player.x, player.fy - 54, t ? tr('mateFound', { p, t }) : tr('mateEmpty', { p }), col, 2.2);
+  sfx('click');
 }
 // the bus goes once everyone still standing is on it
 function everyoneAboard() { const ps = livePlayers(); return ps.every(p => p.dead || p.inBus) && ps.some(p => p.inBus); }
@@ -5282,6 +5377,8 @@ function guestIn(P) {
     else if (type === 'flash') flashFx(+a[0], false);
     else if (type === 'spray') sprayFx(+a[0], +a[1] < 0 ? -1 : 1);
     else if (type === 'mb') miniNews(a);
+    else if (type === 'fnd') mateFound(String(a[0]), clamp(+a[1] || 0, 0, 999), clamp(+a[2] || 0, 0, 9));
+    else if (type === 'lz') { if (allyTur) { allyTur.face = +a[1] > +a[0] ? 1 : -1; allyTur.beam = { x0: +a[0], x1: +a[1], y: +a[2] || GROUND - TUR_Y, t: 0 }; } sfx('laser', 60); }
     else if (type === 'bn') guestBanner(e[0], a[0], a[1], a[2], a[3], a[4]);
   }
   if (cur && (P.st === 'won' || P.st === 'dead')) guestEnd(P.st === 'won');
@@ -5306,6 +5403,7 @@ function guestLoot(a) {
   const [kind, n, wi] = a, w = WEAPON_LIST[wi], fx = player.x, fy = player.fy - 40, k = clamp(+n || 0, 0, 99);
   if (kind === 'ammo' && w && w.id !== 'pistol') { const got = addAmmo(w.id, k); floater(fx, fy, tr(w.id === 'shotgun' ? 'fShells' : 'fRounds', { n: got }), '#e2bf62'); sfx('loot'); }
   else if (kind === 'relic') {}                    // the host threw the items out onto the sidewalk
+  else if (kind === 'cash') { floater(fx, fy, '+$' + k, '#ffb43a'); sfx('loot'); }      // (the cash itself came as its own news)
   else if (kind === 'gun' && w && w.id !== 'pistol') {
     save.owned[w.id] = true; addAmmo(w.id, AMMO_CAP[w.id]);
     if (G.state === 'play' && !player.dead) { player.weapon = w.id; player.reloadT = 0; player.mag[w.id] = Math.min(w.mag, save.ammo[w.id]); }
@@ -5725,7 +5823,7 @@ function update(dt) {
   if (G.state === 'pause' || G.state === 'boot') return;
   if (G.intro) { if (G.intro.pause || !G.banner) G.intro.t += dt; if (G.intro.pause) return; if (G.intro.t > 5.5) G.intro = null; }
   const guestView = NET.role === 'guest' && G.state !== 'title';
-  if (G.state === 'play') { updPlayer(dt); if (!guestView) updSpawns(dt); updBullets(dt); updNades(dt); updMinis(dt); updBleeds(dt); stats.t += dt; }
+  if (G.state === 'play') { updPlayer(dt); if (!guestView) updSpawns(dt); updBullets(dt); updNades(dt); updMinis(dt); updBleeds(dt); updTurret(dt); stats.t += dt; }
   else updBullets(dt);
   if (guestView) { tickGuestWorld(dt); updTraps(dt); }
   else {
@@ -6797,6 +6895,7 @@ function draw() {
   if (player && player.trapT > 0 && !player.hidden) drawTrap(Math.round(player.x - cam), player.fy + 1, 1, false);
   { const m = mate(); if (m && m.trapped && !m.hidden && !m.dead) drawTrap(Math.round(m.x - cam), m.fy + 1, 1, false); }
   drawBuddies(cam);
+  drawTurrets(cam);
   for (const z of zombies) if (z.type === 'flyer') drawFlyer(z, cam);
   drawAir(cam);
   drawExit(cam);
@@ -7099,6 +7198,10 @@ function shopItems(tab = null) {                      // tab: 'supply', 'armory'
       }
     }
   }
+  if (all || tab === 'armory') {
+    out.push({ head: tr('gadgets') });
+    out.push({ key: 'up_turret', icon: SPR.iconURL.turret, name: tr('u_turret'), desc: tr('ud_turret', { n: Math.round(TUR.dmg), s: Math.round(TUR.every * 10) / 10 }), lv: save.up.turret ? 1 : 0, max: 1, owned: !!save.up.turret, price: save.up.turret ? null : round5(TUR.price) });
+  }
   if (all || tab === 'training') {
     for (const k of ATTRS) {
       const T = TRN[k], lv = attrLv(k), per = k === 'health' ? Math.round(T.per) : Math.round(T.per * 100);
@@ -7135,6 +7238,7 @@ function buy(key) {
   const it = shopItems().find(i => i.key && i.key === key); if (!it || it.price === null || save.cash < it.price) return;
   save.cash -= it.price;
   if (key.startsWith('ammo_')) addAmmo(key.slice(5), AMMO_CAP[key.slice(5)] || 0);
+  else if (key === 'up_turret') save.up.turret = 1;
   else if (key === 'up_jacket' || key === 'up_shoes') { save.up[key.slice(3)] = 1; if (key === 'up_jacket' && player && G.state === 'play') player.hp += SUP.jacketHp; }
   else if (key === 'melee_up') save.meleeTier = 1;
   else if (key === 'nades') addNades(SUP.nadeCount);
@@ -7761,7 +7865,7 @@ try { if (hot && typeof hot.snapshot === 'function') hot.snapshot(() => ({ save 
 try {
   if (hot && typeof hot.ready === 'function') hot.ready(start); else start((hot && hot.data) || {});
 } catch (e) { console.error(e); start({}); }
-window.__porch = { relicOK, RELIC_ONLY, IT, get minis() { return minis; }, updZTraps, sprayed, stunZ, flashbang, healMe, buddyMul, lampMul, capOf, nightCfg, COOP, get cfg() { return cfg; }, ricochet, nadeR, relicSpent, addCash, get DEATH_LOSS() { return DEATH_LOSS; }, buildBuddyFrames, buildBearFrames, buildWolfFrames, get stands() { return stands; }, get traps() { return traps; }, updTraps, trapNews, statKind, zKind, exitKind, loopOf, streetOf, NADE_MAX, addNades, SIDES, ALPHA_DMG, alphaHp, bossHp, TRAP, STAND, get world() { return world; }, updStands, tickBuddy, get ammoBoxes() { return ammoBoxes; }, rollAmmoDrop, AMMO_DROP, CLIPS, magOf, gunSave, pauseCoopUI, views, offscreenX, spawnEdge, enterCoopSave, leaveCoopSave, coopStored, capNow, noiseHorde, get buddies() { return buddies; }, updBuddies, airVolley, get airShots() { return airShots; }, makeElite, COOP, ELITE, updSpitter, get spits() { return spits; }, spitAt, zArt, applyGunMods, SUP, ARM, TRN, capOf, strMul, get critBonus() { return critBonus(); }, renderShop, deathFx, CRIT_MUL, critChance, hurtZombie, get decals() { return decals; }, trashSlam, buildTrashFrames, get TRASH_ART() { return TRASH_ART; }, zLevel, zStats, headOf, hatFor, ZLV, get parts() { return parts; }, TUNING, MELEE, ZT, PT, BOSS_DMG, get RIFLE_FALL() { return RIFLE_FALL; }, bossHp, get NADE_R() { return NADE_R; }, get FLY_DMG() { return FLY_DMG; }, nadeDmg, nadeChargeStart, nadeChargeEnd, nadeMaxD, openIntro, closeIntro, checkIntros, nightCfg, unlocked, ROSTER, openSettings, cancelReload, roundsIn, getRevived, updRevive, get SOLO_SAVE() { return SOLO_SAVE; }, nadePlan, openShop, PRIMARIES, pickGun, openPick, ensureLoadout, gunFor, sticks, pollTouch, input, WEAP, fire, startReload, moveSpeed, normalizeSave, addAmmo, get fires() { return fires; }, RELICS, AMMO_CAP, has, grabRelic, dropRelics, pickRelicHouses, ignite, renderRelics, relicArt, get drops() { return drops; }, get nums() { return nums; }, shopItems, buy, fillPrice, houndWave, HOUND, buildHoundFrames, batHound, get bullets() { return bullets; }, skinOf, get WORN() { return WORN; }, get AF() { return AF; }, NET, get ally() { return ally; }, hostSnap, areaHit, get hostNades() { return hostNades; }, meleeHit, quickSwing, coopAlly, get stats() { return stats; }, get coins() { return coins; }, get K() { return K; }, noiseHorde, get spawnQ() { return spawnQ; }, spawnFlyer, NADE, get nades() { return nades; }, nadeCalc, throwNade, explode, TRACKS, G, get player() { return player; }, get zombies() { return zombies; }, get save() { return save; }, get boss() { return boss; }, get bus() { return bus; }, get props() { return props; }, get debris() { return debris; }, WX, startNight, startBoss, setWeather, houses: () => houses, dmgPlayer, spawnZombie, CE, makeTemplate, importSheet, get CUSTOM() { return CUSTOM; } };
+window.__porch = { finishSearch, mateFound, get floaters() { return floaters; }, get turret() { return turret; }, get allyTur() { return allyTur; }, TUR, updTurret, turretFire, COOP_EASE, coopMul, relicOK, RELIC_ONLY, IT, get minis() { return minis; }, updZTraps, sprayed, stunZ, flashbang, healMe, buddyMul, lampMul, capOf, nightCfg, COOP, get cfg() { return cfg; }, ricochet, nadeR, relicSpent, addCash, get DEATH_LOSS() { return DEATH_LOSS; }, buildBuddyFrames, buildBearFrames, buildWolfFrames, get stands() { return stands; }, get traps() { return traps; }, updTraps, trapNews, statKind, zKind, exitKind, loopOf, streetOf, NADE_MAX, addNades, SIDES, ALPHA_DMG, alphaHp, bossHp, TRAP, STAND, get world() { return world; }, updStands, tickBuddy, get ammoBoxes() { return ammoBoxes; }, rollAmmoDrop, AMMO_DROP, CLIPS, magOf, gunSave, pauseCoopUI, views, offscreenX, spawnEdge, enterCoopSave, leaveCoopSave, coopStored, capNow, noiseHorde, get buddies() { return buddies; }, updBuddies, airVolley, get airShots() { return airShots; }, makeElite, COOP, ELITE, updSpitter, get spits() { return spits; }, spitAt, zArt, applyGunMods, SUP, ARM, TRN, capOf, strMul, get critBonus() { return critBonus(); }, renderShop, deathFx, CRIT_MUL, critChance, hurtZombie, get decals() { return decals; }, trashSlam, buildTrashFrames, get TRASH_ART() { return TRASH_ART; }, zLevel, zStats, headOf, hatFor, ZLV, get parts() { return parts; }, TUNING, MELEE, ZT, PT, BOSS_DMG, get RIFLE_FALL() { return RIFLE_FALL; }, bossHp, get NADE_R() { return NADE_R; }, get FLY_DMG() { return FLY_DMG; }, nadeDmg, nadeChargeStart, nadeChargeEnd, nadeMaxD, openIntro, closeIntro, checkIntros, nightCfg, unlocked, ROSTER, openSettings, cancelReload, roundsIn, getRevived, updRevive, get SOLO_SAVE() { return SOLO_SAVE; }, nadePlan, openShop, PRIMARIES, pickGun, openPick, ensureLoadout, gunFor, sticks, pollTouch, input, WEAP, fire, startReload, moveSpeed, normalizeSave, addAmmo, get fires() { return fires; }, RELICS, AMMO_CAP, has, grabRelic, dropRelics, pickRelicHouses, ignite, renderRelics, relicArt, get drops() { return drops; }, get nums() { return nums; }, shopItems, buy, fillPrice, houndWave, HOUND, buildHoundFrames, batHound, get bullets() { return bullets; }, skinOf, get WORN() { return WORN; }, get AF() { return AF; }, NET, get ally() { return ally; }, hostSnap, areaHit, get hostNades() { return hostNades; }, meleeHit, quickSwing, coopAlly, get stats() { return stats; }, get coins() { return coins; }, get K() { return K; }, noiseHorde, get spawnQ() { return spawnQ; }, spawnFlyer, NADE, get nades() { return nades; }, nadeCalc, throwNade, explode, TRACKS, G, get player() { return player; }, get zombies() { return zombies; }, get save() { return save; }, get boss() { return boss; }, get bus() { return bus; }, get props() { return props; }, get debris() { return debris; }, WX, startNight, startBoss, setWeather, houses: () => houses, dmgPlayer, spawnZombie, CE, makeTemplate, importSheet, get CUSTOM() { return CUSTOM; } };
 })();
 </script>
 </body></html>
