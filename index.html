@@ -269,7 +269,7 @@ body{margin:0;background:var(--night);color:var(--ink);font-family:var(--body);o
       <p class="eyebrow" data-t="pickEyebrow">A new run</p>
       <h2 class="head" data-t="pickHead">Pick your gun</h2>
       <div class="gun-pick" id="pickBig"></div>
-      <p class="keys pick-note" data-t="pickNote">Your .38 revolver always comes along, on its own stick. You keep this gun until you are bitten.</p>
+      <p class="keys pick-note" data-t="pickNote">Your .38 revolver always comes along, on its own stick. You keep this gun until you are bitten, and your Armory upgrades go with whichever gun you pick.</p>
       <div class="row"><button class="link" id="pickBack" data-t="back">Back</button></div>
     </section>
 
@@ -473,7 +473,7 @@ const STR = {
     coopJoined: 'Connected. Waiting for the host to start the night…', coopLooking: 'Looking for the host…', coopNoHost: 'Nobody is hosting that code yet. Check it with your friend (still looking).',
     w_rifle: 'Bolt-Action Rifle', t_shotgun: 'SHOTGUN', t_smg: 'SMG', t_rifle: 'RIFLE', t_pistol: 'PISTOL',
     d_shotgun: 'Six pellets a blast. Knocks them back. Loud.', d_smg: 'Eleven rounds a second. Eats ammo.', d_rifle: 'Five rounds. Each one goes through every zombie in line, half the damage at each.',
-    pickEyebrow: 'A new run', pickHead: 'Pick your gun', pickNote: 'Your .38 revolver always comes along, on its own stick. You keep this gun until you are bitten.', nextGun: 'Gun for the next run', yourGun: 'Your gun',
+    pickEyebrow: 'A new run', pickHead: 'Pick your gun', pickNote: 'Your .38 revolver always comes along, on its own stick. You keep this gun until you are bitten, and your Armory upgrades go with whichever gun you pick.', nextGun: 'Gun for the next run', yourGun: 'Your gun',
     rifleAmmo: 'Rifle rounds', rifleFill: 'Fill up to {n} rounds',
     coopYouDownRv: 'HANG ON. YOUR PARTNER CAN GET YOU BACK UP', coopDownSub: 'STAND OVER THEM FOR 10 SECONDS TO REVIVE', reviving: 'REVIVING', gettingUp: 'GETTING UP', helpF: 'HELP',
     revived: 'BACK UP!', revivedSub: 'HALF HEALTH. NO MORE REVIVES TONIGHT', cashLost: 'Cash lost', coopWaitShort: 'Waiting for the host',
@@ -540,7 +540,7 @@ const STR = {
     bats: 'BATS', batsSub: 'THEY SWOOP DOWN. AIM THE RIGHT STICK UP', batsSubKey: 'THEY SWOOP DOWN. HOLD W WHILE FIRING',
     boss: 'THE DISPATCHER', bossSub: 'SWING THE BAT AS HE CHARGES TO STOP HIM', bossDown: 'DISPATCHER DOWN', bossDownSub: 'THE LAST BUS IS PULLING IN',
     staggered: 'STAGGERED', staggeredF: 'STAGGERED!', dazed: 'DAZED', reload: 'RELOAD', search: 'SEARCH', searchKey: 'E  SEARCH', searching: 'SEARCHING',
-    fShells: '+{n} SHELLS', fRounds: '+{n} ROUNDS', fHealth: '+{n} HEALTH', fFoundSg: 'FOUND A SHOTGUN', fFoundSmg: 'FOUND AN SMG', fEmpty: 'EMPTY', fNoAmmo: 'OUT OF AMMO', fNades: '+{n} GRENADES', fNoNades: 'NO GRENADES',
+    fShells: '+{n} SHELLS', fRounds: '+{n} ROUNDS', fAmmoFull: 'AMMO FULL', gunCarry: 'These upgrades go with whichever gun you pick after being bitten.', fHealth: '+{n} HEALTH', fFoundSg: 'FOUND A SHOTGUN', fFoundSmg: 'FOUND AN SMG', fEmpty: 'EMPTY', fNoAmmo: 'OUT OF AMMO', fNades: '+{n} GRENADES', fNoNades: 'NO GRENADES',
     nades: 'GRENADES', nadesSub: 'HOLD THE GRENADE BUTTON, LET GO TO THROW', nadesSubKey: 'HOLD G, LET GO TO THROW',
     nadeName: 'Grenades', nadeDesc: '+{n} grenades. Hold the grenade button to throw farther. Loud.',
   },
@@ -578,7 +578,7 @@ const STR = {
     coopJoined: '已连接，等待房主开始…', coopLooking: '正在寻找房主…', coopNoHost: '还没有人用这个代码创建游戏，请和朋友核对（仍在寻找）。',
     w_rifle: '栓动步枪', t_shotgun: '霰弹枪', t_smg: '冲锋枪', t_rifle: '步枪', t_pistol: '手枪',
     d_shotgun: '一枪六颗弹丸，能把它们轰退。声音很大。', d_smg: '每秒十一发，非常费子弹。', d_rifle: '五发子弹。每一枪都能穿透一整排僵尸，每穿过一个伤害减半。',
-    pickEyebrow: '新的一局', pickHead: '选择你的枪', pickNote: '.38 左轮手枪永远跟着你，用它自己的摇杆。这把枪会一直陪你，直到你被咬。', nextGun: '下一局的枪', yourGun: '你的枪',
+    pickEyebrow: '新的一局', pickHead: '选择你的枪', pickNote: '.38 左轮手枪永远跟着你，用它自己的摇杆。这把枪会一直陪你，直到你被咬。军械库的升级会跟着你选的任何一把枪。', nextGun: '下一局的枪', yourGun: '你的枪',
     rifleAmmo: '步枪子弹', rifleFill: '补满到 {n} 发',
     coopYouDownRv: '撑住，队友可以把你扶起来', coopDownSub: '站在队友身边 10 秒就能把他扶起来', reviving: '救援中', gettingUp: '正在起身', helpF: '救命',
     revived: '重新站起来了！', revivedSub: '一半生命。今晚不能再被救了', cashLost: '失去的现金', coopWaitShort: '等待房主',
@@ -643,7 +643,7 @@ const STR = {
     bats: '蝙蝠', batsSub: '它们会俯冲下来。右摇杆往上推射击', batsSubKey: '它们会俯冲下来。射击时按住 W',
     boss: '调度员', bossSub: '它冲锋时挥棒，就能拦住它', bossDown: '调度员倒下了', bossDownSub: '最后一班巴士进站了',
     staggered: '踉跄', staggeredF: '踉跄！', dazed: '撞晕了', reload: '换弹', search: '搜索', searchKey: 'E 搜索', searching: '搜索中',
-    fShells: '+{n} 霰弹', fRounds: '+{n} 子弹', fHealth: '+{n} 生命', fFoundSg: '找到霰弹枪', fFoundSmg: '找到冲锋枪', fEmpty: '空的', fNoAmmo: '没子弹了', fNades: '+{n} 手雷', fNoNades: '没有手雷',
+    fShells: '+{n} 霰弹', fRounds: '+{n} 子弹', fAmmoFull: '弹药已满', gunCarry: '被咬后换枪，这些升级也会跟着新枪。', fHealth: '+{n} 生命', fFoundSg: '找到霰弹枪', fFoundSmg: '找到冲锋枪', fEmpty: '空的', fNoAmmo: '没子弹了', fNades: '+{n} 手雷', fNoNades: '没有手雷',
     nades: '手雷', nadesSub: '按住手雷键，松手投出', nadesSubKey: '按住 G，松手投出',
     nadeName: '手雷', nadeDesc: '+{n} 枚手雷。按住手雷键越久扔得越远。很吵。',
   },
@@ -1515,7 +1515,10 @@ function sfx(n, gap = 0) {
 const SAVE_KEY = 'porchlight.save.v1';
 // the items found in the glimmering houses (see ITEMS below), and how much each gun's ammo you can carry
 const RELICS = ['bouncer', 'quickmag', 'kickback', 'vest', 'killfill', 'crowbar', 'onetwo', 'getaway', 'barbed', 'flare', 'collar', 'air'];
-const AMMO_CAP = { shotgun: Math.max(1, Math.round(tn('nights.ammoShotgun', 10))), smg: Math.max(1, Math.round(tn('nights.ammoSmg', 60))), rifle: Math.max(1, Math.round(tn('nights.ammoRifle', 10))) };   // two clips each; the revolver never runs out
+const CLIPS = Math.max(1, Math.round(tn('nights.clips', 3)));      // spare clips of your gun you can carry (the revolver never runs out)
+const AMMO_CAP = { shotgun: 0, smg: 0, rifle: 0 };                   // CLIPS x each gun's clip size, worked out in applyGunMods
+// some zombies leave a box of ammo for your gun
+const AMMO_DROP = { chance: clamp(tn('nights.ammoDrop', .07), 0, 1), clips: Math.max(.1, tn('nights.ammoDropClips', 1)), life: Math.max(2, tn('nights.ammoDropLife', 25)) };
 const START_NADES = Math.max(0, Math.round(tn('grenade.start', 3)));
 function freshSave() { return { v: 1, night: 1, cash: 0, owned: { pistol: true, melee: true, shotgun: false, smg: false }, meleeTier: 0, ammo: { shotgun: 0, smg: 0, rifle: 0 }, up: { jacket: 0, shoes: 0 }, gun: {}, attr: {}, mig: 2, best: 1, totalKills: 0, muted: false, escaped: false, grenades: START_NADES, relics: [], relicsNight: [], primary: null, runNew: false }; }
 function normalizeSave(s) {
@@ -1523,7 +1526,10 @@ function normalizeSave(s) {
   const o = { ...f, ...s, owned: { ...f.owned, ...(s.owned || {}) }, ammo: { ...f.ammo, ...(s.ammo || {}) }, up: { ...f.up, ...(s.up || {}) }, grenades: Number.isFinite(s.grenades) ? s.grenades : START_NADES, v: 1 };
   const su = s.up || {};
   o.up = { jacket: su.jacket > 0 ? 1 : 0, shoes: su.shoes > 0 ? 1 : 0 };
-  o.gun = {}; for (const id of WEAPON_ORDER) { const g = (s.gun && s.gun[id]) || {}; o.gun[id] = { lv: clamp(Math.floor(+g.lv || 0), 0, 50), att: Array.isArray(g.att) ? [...new Set(g.att.filter(a => ATTS.includes(a)))] : [] }; }
+  const ng = g => ({ lv: clamp(Math.floor(+(g && g.lv) || 0), 0, 50), att: g && Array.isArray(g.att) ? [...new Set(g.att.filter(a => ATTS.includes(a)))] : [] });
+  o.gun = {}; for (const id of WEAPON_ORDER) if (!SHARED_GUNS.includes(id)) o.gun[id] = ng(s.gun && s.gun[id]);
+  const olds = SHARED_GUNS.map(id => ng(s.gun && s.gun[id]));
+  o.gun.primary = s.gun && s.gun.primary ? ng(s.gun.primary) : { lv: Math.max(0, ...olds.map(g => g.lv)), att: [...new Set(olds.flatMap(g => g.att))] };
   o.attr = {}; for (const k of ATTRS) o.attr[k] = clamp(Math.floor(+(s.attr && s.attr[k]) || 0), 0, 50);
   if (!(s.mig >= 2)) {                               // an older save: Hollow Points, Quick Hands, the extra jacket and shoe levels and the nail bat are gone. Money back.
     const sum = (a, n) => a.slice(0, Math.max(0, n)).reduce((x, y) => x + y, 0);
@@ -1568,9 +1574,14 @@ const round5 = v => Math.max(5, Math.round(v / 5) * 5);
 // of its ammo you can carry) whenever they change.
 const CAP_BASE = { ...AMMO_CAP };
 WEAPON_LIST.forEach(w => { w.base = { dmg: w.dmg, cd: w.cd, mag: w.mag, reload: w.reload, life: w.life, spread: w.spread, crit: w.crit }; });
-const gunSave = (id, sv = save) => (sv.gun && sv.gun[id]) || { lv: 0, att: [] };
+// your gun's upgrades are one set that goes with whichever gun you pick (shotgun, SMG or rifle); the revolver has its own
+const SHARED_GUNS = ['shotgun', 'smg', 'rifle'];
+const gunKey = id => SHARED_GUNS.includes(id) ? 'primary' : id;
+const gunSave = (id, sv = save) => (sv.gun && sv.gun[gunKey(id)]) || { lv: 0, att: [] };
 const hasAtt = (id, a, sv = save) => gunSave(id, sv).att.includes(a);
-function capOf(id, sv = save) { return Math.max(1, Math.round(CAP_BASE[id] * (hasAtt(id, 'mag', sv) ? 1 + ARM.mag : 1))); }
+const magOf = (id, sv = save) => Math.max(1, Math.round(WEAP[id].base.mag * (hasAtt(id, 'mag', sv) ? 1 + ARM.mag : 1)));
+function capOf(id, sv = save) { return CLIPS * magOf(id, sv); }
+for (const id in CAP_BASE) AMMO_CAP[id] = capOf(id);
 function applyGunMods() {
   for (const w of WEAPON_LIST) {
     const b = w.base, g = gunSave(w.id), has = a => g.att.includes(a), lv = clamp(g.lv || 0, 0, ARM.lvMax);
@@ -1727,14 +1738,14 @@ function spawnEdge(side, type, ax = null) {
 
 function resetLevel(bossNight = false) {
   houses.forEach(h => { h.lit = h.litInit; h.searched = false; h.relic = false; });
-  drops = []; fires = []; nums = []; relicTook = new Set(); G.relicPop = null; G.onDrop = null;
+  drops = []; fires = []; nums = []; ammoBoxes = []; relicTook = new Set(); G.relicPop = null; G.onDrop = null;
   zombies = []; bullets = []; parts = []; decals = []; spits = []; buddies = []; airShots = []; airT.me = airT.ally = 0; coins = []; floaters = []; casings = []; spawnQ = []; props = []; debris = []; nades = []; NADE.on = false; G.boom = null;
   // on the depot night the bus isn't there yet: it pulls in once the boss is down
   bus = { x: bossNight ? BUS_X + 420 : BUS_X - 8, vx: 0, door: bossNight ? 0 : 1, leaving: false, arriving: false, t: 0, wheel: 0 };
   boss = null; G.arena = false; G.bossDone = false; G.gateT = 0; G.tips = {};
 }
 function useStreet(S) { if (world !== S) buildWorld(S); setWeather(S.weather); }
-// your gun for this run, and a fresh two clips for it at the start of a run (a new game, or after being bitten)
+// your gun for this run, and a full set of spare clips for it at the start of a run (a new game, or after being bitten)
 function ensureLoadout() {
   const p = PRIMARIES.includes(save.primary) ? save.primary : 'shotgun';
   const wrong = PRIMARIES.some(id => !!save.owned[id] !== (id === p));
@@ -2297,6 +2308,7 @@ function killZombie(z, dir) {
     for (const q of zombies) if (q !== z && !q.dead && q.x > ARENA_L) killZombie(q, Math.sign(q.x - z.x) || 1);
     return;
   }
+  rollAmmoDrop(z);
   if (z.type === 'flyer') {                          // it drops out of the sky; the coins fall with it
     z.vx = dir * 35; z.vy = -40; z.spin = 0; blood(z.x, z.y, dir, 8);
     coins.push({ x: z.x, y: z.y, vx: rnd(-25, 25), vy: rnd(-40, -10), v: irnd(...z.rew), t: 0, fy: z.fy });
@@ -3317,6 +3329,7 @@ function updMisc(dt) {
     }
     coins = coins.filter(c => !c.got && c.t < 14);
   }
+  updAmmoBoxes(dt);
   updSpits(dt);
   for (const p of parts) {
     p.t += dt;
@@ -3381,7 +3394,39 @@ function updMisc(dt) {
    ============================================================ */
 const RELIC_T = Math.max(.5, tn('items.collect', 4)), RELIC_R = 7, BARB_DPS = tn('items.barbed', 10), FIRE_R = 20, FIRE_LIFE = Math.max(.5, tn('items.flareLife', 3)), FIRE_TICK = tn('items.flareDmg', 6);
 const has = id => !!(save && save.relics && save.relics.includes(id));
-let drops = [], fires = [], nums = [], relicTook = new Set(), dropUid = 0, dropGroup = 0, shotSeq = 0;
+let drops = [], fires = [], nums = [], relicTook = new Set(), dropUid = 0, dropGroup = 0, shotSeq = 0, ammoBoxes = [];
+function rollAmmoDrop(z) {                           // once per zombie; the box is for your gun (in co-op each of you rolls your own)
+  if (!z || z.ammoRolled || z.type === 'boss') return;
+  z.ammoRolled = true;
+  if (!(Math.random() < AMMO_DROP.chance) || !PRIMARIES.includes(save.primary) || !save.owned[save.primary]) return;
+  const air = z.type === 'flyer';
+  ammoBoxes.push({ x: z.x, y: air ? z.y : z.fy - 14, vx: rnd(-22, 22), vy: air ? rnd(-30, -10) : rnd(-85, -60), fy: z.fy, t: 0, land: false, near: false });
+}
+function updAmmoBoxes(dt) {
+  const id = save.primary, p = player;
+  for (const a of ammoBoxes) {
+    a.t += dt;
+    if (!a.land) {
+      a.vy += 320 * dt; a.x += a.vx * dt; a.y += a.vy * dt;
+      if (a.y >= a.fy - 2 && a.vy > 0) { a.y = a.fy - 2; if (a.vy > 70) { a.vy *= -.3; a.vx *= .5; } else { a.vy = 0; a.vx = 0; a.land = true; } }
+    }
+    if (!p || !upright(p) || p.hidden || p.inBus || a.t < .4 || !PRIMARIES.includes(id) || !save.owned[id] || Math.abs(p.x - a.x) > 9 || Math.abs(p.fy - a.fy) > 12) { a.near = false; continue; }
+    if (ammoFull(id)) { if (!a.near) { a.near = true; floater(a.x, a.y - 10, tr('fAmmoFull'), '#b9ad94', .6); } continue; }
+    const n = addAmmo(id, Math.max(1, Math.round(AMMO_DROP.clips * WEAP[id].mag)));
+    a.got = true; floater(p.x, p.fy - 38, tr(id === 'shotgun' ? 'fShells' : 'fRounds', { n }), '#e2bf62', .8); sfx('loot');
+  }
+  ammoBoxes = ammoBoxes.filter(a => !a.got && a.t < AMMO_DROP.life);
+}
+function drawAmmoBoxes(cam) {                        // a little olive ammo can with a brass stripe
+  for (const a of ammoBoxes) {
+    if (a.t > AMMO_DROP.life - 3 && Math.floor(a.t * 8) % 2) continue;
+    const x = Math.round(a.x - cam) - 4, y = Math.round(a.y) - 5 + (a.land ? Math.round(Math.sin(a.t * 4) * .6) : 0);
+    ctx.fillStyle = '#1d2214'; ctx.fillRect(x, y + 1, 9, 6); ctx.fillRect(x + 3, y, 3, 1);
+    ctx.fillStyle = '#5c6b3a'; ctx.fillRect(x + 1, y + 2, 7, 4);
+    ctx.fillStyle = '#7f9150'; ctx.fillRect(x + 1, y + 2, 7, 1);
+    ctx.fillStyle = '#e2bf62'; ctx.fillRect(x + 2, y + 4, 5, 1);
+  }
+}
 
 // ---- the icons: 10x10 pixel art, outlined when drawn ----
 const RELIC_PAL = { k: '#0b0814', w: '#f3ead6', W: '#b7aec8', g: '#9aa3b5', G: '#5b6275', y: '#ffd45a', Y: '#d99a2e', r: '#e0434f', R: '#8e1f33', b: '#b07a44', B: '#6a4222', o: '#ff8a2a', v: '#8a9a52', V: '#56622e', c: '#7fe0ee', s: '#e8b48a' };
@@ -3711,7 +3756,7 @@ function drawRelicPop() {                            // just picked up: the item
    On claude.ai the page's `room` carries the snapshots; on the game's own website PeerJS does (a free
    public server introduces the two browsers, then they talk directly).
    ============================================================ */
-const GAME_BUILD = 49;                              // shown on the co-op screen, so two players can check they have the same game
+const GAME_BUILD = 50;                              // shown on the co-op screen, so two players can check they have the same game
 // on the game's own website: browsers may keep an old copy of the page for up to 10 minutes after an update,
 // so check for a newer upload when the game opens and load it straight away if there is one
 (function checkForUpdate() {
@@ -4073,7 +4118,7 @@ function guestHit(z, dmg, face, kb, stun, kind, crit = false, real = false) {
 }
 // down on my screen right away; the host will agree a moment later (if it doesn't, it gets back up)
 function predictKill(z, face, crit = false) {
-  z.dead = true; z.deadT = 0; z.fallDir = face; z.predDead = G.t; z.flash = 0; z.atk = false; hatOff(z, face); lidOff(z, face); deathFx(z, face, crit);
+  z.dead = true; z.deadT = 0; z.fallDir = face; z.predDead = G.t; z.flash = 0; z.atk = false; hatOff(z, face); lidOff(z, face); deathFx(z, face, crit); rollAmmoDrop(z);
   if (z.type === 'flyer') { z.vx = face * 35; z.vy = -40; z.spin = 0; z.landed = false; blood(z.x, z.y, face, 8); sfx('batdie'); }
   else { blood(z.x, z.fy - z.h / 2, face, z.type === 'brute' ? 16 : 10); sfx(z.type === 'hound' ? 'yelp' : 'zdie', 70); }
 }
@@ -4178,7 +4223,7 @@ function applyZombies(list, B) {
     z.hp = Math.max(0, (Number.isFinite(hp) ? hp : z.hp) - pendingOn(id));
     z.face = face ? 1 : -1;
     if ((fl & 1) && !z.dead) {
-      z.dead = true; z.deadT = 0; z.fallDir = (fl & 64) ? -1 : 1; hatOff(z, z.fallDir); lidOff(z, z.fallDir); deathFx(z, z.fallDir, !!(fl & 512));
+      z.dead = true; z.deadT = 0; z.fallDir = (fl & 64) ? -1 : 1; hatOff(z, z.fallDir); lidOff(z, z.fallDir); deathFx(z, z.fallDir, !!(fl & 512)); if (type !== 'boss') rollAmmoDrop(z);
       blood(z.x, type === 'flyer' ? z.y : z.fy - z.h / 2, z.fallDir, type === 'brute' ? 16 : 10); sfx(type === 'flyer' ? 'batdie' : type === 'hound' ? 'yelp' : 'zdie', 70);
       if (type === 'flyer') { z.vy = -40; z.vx = z.fallDir * 35; }
     }
@@ -5370,6 +5415,7 @@ function drawLighting(cam, sx, sy) {
   }
   if (boss && !boss.dead) L(boss.x, boss.fy - 30, 60, .45, bossPhase2(boss) ? 'rgba(255,60,60,.1)' : null);
   for (const c of coins) L(c.x, c.y, 10, .5, null);
+  for (const a of ammoBoxes) L(a.x, a.y - 2, 14, .55, 'rgba(226,191,98,.18)');
   ctx.imageSmoothingEnabled = false;
   ctx.drawImage(lcv, 0, 0, lw, lh, 0, 0, VW, VH);
   ctx.globalCompositeOperation = 'lighter';
@@ -5489,6 +5535,7 @@ function draw() {
     drawZombie(z, cam);
   }
   if (!pDrawn) { drawMate(cam); drawPlayer(cam); }
+  drawAmmoBoxes(cam);                                // on top of the body it came from
   drawBuddies(cam);
   for (const z of zombies) if (z.type === 'flyer') drawFlyer(z, cam);
   drawAir(cam);
@@ -5754,9 +5801,9 @@ function endNight(won) {
   else { renderGunPick($('pickDead'), false); $('retryBtn').textContent = tr(G.arena ? 'retryDepot' : 'retry'); $('deadSub').textContent = G.arena ? tr('deadSubBoss', { n, p: Math.round(100 - clamp(boss ? boss.hp / boss.maxHp : 1, 0, 1) * 100) }) : tr('deadSub', { n, p: Math.round(stats.far * 100), street: streetName(S) }); $('deadStats').innerHTML = statHTML(list); showScreen('sDead'); }
 }
 
-// topping up to two clips: priced by what's missing
+// topping up your spare clips: priced by what's missing
 function fillPrice(id) { const miss = (AMMO_CAP[id] || 0) - save.ammo[id]; return miss <= 0 ? null : Math.max(5, Math.ceil(miss * ({ shotgun: 3, smg: .45, rifle: 3.5 }[id] || 1))); }
-const gunRec = id => { if (!save.gun) save.gun = {}; return save.gun[id] || (save.gun[id] = { lv: 0, att: [] }); };
+const gunRec = id => { if (!save.gun) save.gun = {}; const k = gunKey(id); return save.gun[k] || (save.gun[k] = { lv: 0, att: [] }); };
 const attName = (a, id) => tr(STR.en['att_' + a + '_' + id] ? 'att_' + a + '_' + id : 'att_' + a);
 function shopItems(tab = null) {                      // tab: 'supply', 'armory' or 'training' (all of them if none)
   const out = [], all = !tab;
@@ -5773,6 +5820,7 @@ function shopItems(tab = null) {                      // tab: 'supply', 'armory'
       if (!id) continue;
       const g = gunSave(id);
       out.push({ head: tr('w_' + id) });
+      if (id !== 'pistol') out.push({ note: tr('gunCarry') });
       if (id !== 'pistol' && save.owned[id]) out.push({ key: 'ammo_' + id, icon: SPR.gunURL[id], name: tr({ shotgun: 'shells', smg: 'smgAmmo', rifle: 'rifleAmmo' }[id]), desc: tr({ shotgun: 'shellsFill', smg: 'roundsFill', rifle: 'rifleFill' }[id], { n: AMMO_CAP[id] }),
         have: tr('inPocketOf', { n: save.ammo[id], c: AMMO_CAP[id] }), price: fillPrice(id), full: ammoFull(id) });
       const lv = clamp(g.lv || 0, 0, ARM.lvMax);
@@ -5806,6 +5854,7 @@ function renderShop() {
   if (G.refund && tab === 'supply') html += `<div class="snote">${tr('refund', { n: G.refund })}</div>`;
   html += shopItems(tab).map(it => {
     if (it.head) return `<div class="ihead">${it.head}</div>`;
+    if (it.note) return `<div class="snote">${it.note}</div>`;
     const pips = it.max ? `<div class="pips" aria-label="Level ${it.lv} of ${it.max}">${Array.from({ length: it.max }, (_, i) => `<span class="pip${i < it.lv ? ' on' : ''}"></span>`).join('')}</div>` : it.fitted !== undefined ? '<span class="own"></span>' : `<span class="own">${it.have}</span>`;
     const btn = it.price === null ? `<button class="btn buy" disabled>${tr(it.fitted ? 'fitted' : it.owned ? 'owned' : it.full ? 'fullBtn' : 'maxed')}</button>` : `<button class="btn buy" data-buy="${it.key}" ${save.cash < it.price ? 'disabled' : ''}>$${it.price}</button>`;
     return `<div class="item"><img src="${it.icon}" alt=""><div class="nm">${it.name}</div><div class="ds">${it.desc}</div><div class="bot">${pips}${btn}</div></div>`;
@@ -5813,7 +5862,7 @@ function renderShop() {
   $('items').innerHTML = html;
 }
 function buy(key) {
-  const it = shopItems().find(i => i.key === key); if (!it || it.price === null || save.cash < it.price) return;
+  const it = shopItems().find(i => i.key && i.key === key); if (!it || it.price === null || save.cash < it.price) return;
   save.cash -= it.price;
   if (key.startsWith('ammo_')) addAmmo(key.slice(5), AMMO_CAP[key.slice(5)] || 0);
   else if (key === 'up_jacket' || key === 'up_shoes') { save.up[key.slice(3)] = 1; if (key === 'up_jacket' && player && G.state === 'play') player.hp += SUP.jacketHp; }
@@ -5850,7 +5899,7 @@ function renderGunPick(el, big) {
 }
 function pickGun(id) {
   if (!PRIMARIES.includes(id)) return;
-  if (id !== save.primary) { save.primary = id; save.runNew = true; }        // a different gun: it comes with its two clips
+  if (id !== save.primary) { save.primary = id; save.runNew = true; }        // a different gun: it comes with its spare clips (and your upgrades)
   persist(); syncControlText();
   ['pickDead', 'pickCoop'].forEach(k => renderGunPick($(k), false));
 }
@@ -6429,7 +6478,7 @@ setInterval(() => {
   try { netTick(dt); } catch (e) { console.error(e); }
 }, 200);
 function start(data) {
-  save = normalizeSave((data && data.save) || loadSave());
+  save = normalizeSave((data && data.save) || loadSave()); applyGunMods();
   applyLang(save.lang || (/^zh/i.test(navigator.language || '') ? 'zh' : 'en'));
   G.isTouch = matchMedia('(pointer: coarse)').matches;
   loadAtlas(() => loadCharAssets(() => {
@@ -6443,7 +6492,7 @@ try { if (hot && typeof hot.snapshot === 'function') hot.snapshot(() => ({ save 
 try {
   if (hot && typeof hot.ready === 'function') hot.ready(start); else start((hot && hot.data) || {});
 } catch (e) { console.error(e); start({}); }
-window.__porch = { pauseCoopUI, views, offscreenX, spawnEdge, enterCoopSave, leaveCoopSave, coopStored, capNow, noiseHorde, get buddies() { return buddies; }, updBuddies, airVolley, get airShots() { return airShots; }, makeElite, COOP, ELITE, updSpitter, get spits() { return spits; }, spitAt, zArt, applyGunMods, SUP, ARM, TRN, capOf, strMul, get critBonus() { return critBonus(); }, renderShop, deathFx, CRIT_MUL, critChance, hurtZombie, get decals() { return decals; }, trashSlam, buildTrashFrames, get TRASH_ART() { return TRASH_ART; }, zLevel, zStats, headOf, hatFor, ZLV, get parts() { return parts; }, TUNING, MELEE, ZT, PT, BOSS_DMG, get RIFLE_FALL() { return RIFLE_FALL; }, bossHp, get NADE_R() { return NADE_R; }, get FLY_DMG() { return FLY_DMG; }, nadeDmg, nadeChargeStart, nadeChargeEnd, nadeMaxD, openIntro, closeIntro, checkIntros, nightCfg, unlocked, ROSTER, openSettings, cancelReload, roundsIn, getRevived, updRevive, get SOLO_SAVE() { return SOLO_SAVE; }, nadePlan, openShop, PRIMARIES, pickGun, openPick, ensureLoadout, gunFor, sticks, pollTouch, input, WEAP, fire, startReload, moveSpeed, normalizeSave, addAmmo, get fires() { return fires; }, RELICS, AMMO_CAP, has, grabRelic, dropRelics, pickRelicHouses, ignite, renderRelics, relicArt, get drops() { return drops; }, get nums() { return nums; }, shopItems, buy, fillPrice, houndWave, HOUND, buildHoundFrames, batHound, get bullets() { return bullets; }, skinOf, get WORN() { return WORN; }, get AF() { return AF; }, NET, get ally() { return ally; }, hostSnap, areaHit, get hostNades() { return hostNades; }, meleeHit, quickSwing, coopAlly, get stats() { return stats; }, get coins() { return coins; }, get K() { return K; }, noiseHorde, get spawnQ() { return spawnQ; }, spawnFlyer, NADE, get nades() { return nades; }, nadeCalc, throwNade, explode, TRACKS, G, get player() { return player; }, get zombies() { return zombies; }, get save() { return save; }, get boss() { return boss; }, get bus() { return bus; }, get props() { return props; }, get debris() { return debris; }, WX, startNight, startBoss, setWeather, houses: () => houses, dmgPlayer, spawnZombie, CE, makeTemplate, importSheet, get CUSTOM() { return CUSTOM; } };
+window.__porch = { get ammoBoxes() { return ammoBoxes; }, rollAmmoDrop, AMMO_DROP, CLIPS, magOf, gunSave, pauseCoopUI, views, offscreenX, spawnEdge, enterCoopSave, leaveCoopSave, coopStored, capNow, noiseHorde, get buddies() { return buddies; }, updBuddies, airVolley, get airShots() { return airShots; }, makeElite, COOP, ELITE, updSpitter, get spits() { return spits; }, spitAt, zArt, applyGunMods, SUP, ARM, TRN, capOf, strMul, get critBonus() { return critBonus(); }, renderShop, deathFx, CRIT_MUL, critChance, hurtZombie, get decals() { return decals; }, trashSlam, buildTrashFrames, get TRASH_ART() { return TRASH_ART; }, zLevel, zStats, headOf, hatFor, ZLV, get parts() { return parts; }, TUNING, MELEE, ZT, PT, BOSS_DMG, get RIFLE_FALL() { return RIFLE_FALL; }, bossHp, get NADE_R() { return NADE_R; }, get FLY_DMG() { return FLY_DMG; }, nadeDmg, nadeChargeStart, nadeChargeEnd, nadeMaxD, openIntro, closeIntro, checkIntros, nightCfg, unlocked, ROSTER, openSettings, cancelReload, roundsIn, getRevived, updRevive, get SOLO_SAVE() { return SOLO_SAVE; }, nadePlan, openShop, PRIMARIES, pickGun, openPick, ensureLoadout, gunFor, sticks, pollTouch, input, WEAP, fire, startReload, moveSpeed, normalizeSave, addAmmo, get fires() { return fires; }, RELICS, AMMO_CAP, has, grabRelic, dropRelics, pickRelicHouses, ignite, renderRelics, relicArt, get drops() { return drops; }, get nums() { return nums; }, shopItems, buy, fillPrice, houndWave, HOUND, buildHoundFrames, batHound, get bullets() { return bullets; }, skinOf, get WORN() { return WORN; }, get AF() { return AF; }, NET, get ally() { return ally; }, hostSnap, areaHit, get hostNades() { return hostNades; }, meleeHit, quickSwing, coopAlly, get stats() { return stats; }, get coins() { return coins; }, get K() { return K; }, noiseHorde, get spawnQ() { return spawnQ; }, spawnFlyer, NADE, get nades() { return nades; }, nadeCalc, throwNade, explode, TRACKS, G, get player() { return player; }, get zombies() { return zombies; }, get save() { return save; }, get boss() { return boss; }, get bus() { return bus; }, get props() { return props; }, get debris() { return debris; }, WX, startNight, startBoss, setWeather, houses: () => houses, dmgPlayer, spawnZombie, CE, makeTemplate, importSheet, get CUSTOM() { return CUSTOM; } };
 })();
 </script>
 </body></html>
