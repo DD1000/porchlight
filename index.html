@@ -3040,7 +3040,7 @@ function killZombie(z, dir) {
     for (let i = 0; i < 16; i++) coins.push({ x: z.x + rnd(-10, 10), y: z.fy - 30, vx: rnd(-80, 80), vy: rnd(-150, -80), v: irnd(8, 14), t: 0, fy: z.fy + irnd(-3, 3) });
     G.bossDone = true; G.busT = 1.6;
     const bk = world && world.forest ? ['alphaDown', 'alphaDownSub'] : ['bossDown', 'bossDownTrail'];
-    setBanner(tr(bk[0]), tr(bk[1]), 3); netEv('bn', bk[0], bk[1], 3, 0, 'roar');
+    setBanner(tr(bk[0]), tr(bk[1]), 3); netBanner(bk[0], bk[1], 3, 0, 'roar');
     // with him gone, the ones he called in drop where they stand
     for (const q of zombies) if (q !== z && !q.dead && q.x > ARENA_L) killZombie(q, Math.sign(q.x - z.x) || 1);
     return;
@@ -3472,19 +3472,22 @@ function updAir(dt) {
     if ((airT[k] -= dt) <= 0) { airT[k] = AIR.every * rnd(.75, 1.25); airVolley(P); }
   }
 }
+// a gunner somewhere up there: a burst of SMG rounds at the SMG's rate, all raking in from the same side
+const AIR_V = 500, AIR_GAP = .088;
+const airFlight = (x0, y0, x1, y1) => Math.max(.08, Math.hypot(x1 - x0, y1 - y0) / AIR_V);
 function airVolley(P) {
   const near = zombies.filter(z => !z.dead && z.vaultT < 0 && Math.abs(z.x - P.x) < VW * .55).sort((p, q) => (p.idle - q.idle) || Math.random() - .5).slice(0, AIR.targets);
-  const list = []; let delay = .6;                      // (a beat of rotor noise first)
-  for (const z of near) for (let i = 0; i < AIR.shots; i++) { delay += rnd(.05, .13); list.push({ z, tx: z.x + rnd(-2, 2), ty: z.type === 'flyer' ? z.y : hitY(z) + rnd(0, 8), delay }); }
-  for (let i = 0; i < 7; i++) list.push({ z: null, tx: P.x + rnd(-VW * .45, VW * .45), ty: GROUND + irnd(-2, 5), delay: .6 + rnd(0, delay - .4) });
+  const list = [], side = Math.random() < .5 ? -1 : 1; let delay = .6;          // (a beat of rotor noise first)
+  for (const z of near) for (let i = 0; i < AIR.shots; i++) { delay += AIR_GAP * rnd(.85, 1.15); list.push({ z, tx: z.x + rnd(-2, 2), ty: z.type === 'flyer' ? z.y : hitY(z) + rnd(0, 8), delay }); }
+  for (let i = 0; i < 7; i++) list.push({ z: null, tx: P.x + rnd(-VW * .45, VW * .45), ty: GROUND + irnd(-2, 5), delay: .6 + rnd(0, Math.max(.2, delay - .4)) });
   const flat = [];
-  for (const q of list) { const x0 = q.tx + rnd(-70, 70); airShots.push({ x0, y0: -10, x1: q.tx, y1: q.ty, t: -q.delay, T: .1, z: q.z }); flat.push(r1(x0), r1(q.tx), r1(q.ty), r2(q.delay)); }
+  for (const q of list) { const x0 = q.tx + side * rnd(30, 55); airShots.push({ x0, y0: -10, x1: q.tx, y1: q.ty, t: -q.delay, T: airFlight(x0, -10, q.tx, q.ty), z: q.z }); flat.push(r1(x0), r1(q.tx), r1(q.ty), r2(q.delay)); }
   sfx('chopper'); netEv('air', ...flat);
 }
 function updAirShots(dt) {
   for (const s of airShots) {
     const was = s.t; s.t += dt;
-    if (was < 0 && s.t >= 0) sfx('airgun', 45);
+    if (was < 0 && s.t >= 0) sfx('smg', 40);
     if (s.t >= s.T && !s.done) {
       s.done = true;
       for (let i = 0; i < 3; i++) parts.push({ k: 'd', x: s.x1 + rnd(-2, 2), y: s.y1, vx: rnd(-25, 25), vy: rnd(-30, -8), life: rnd(.2, .4), t: 0 });
@@ -3498,13 +3501,13 @@ function updAirShots(dt) {
   }
   airShots = airShots.filter(s => !s.done || s.t < s.T + .06);
 }
-function drawAir(cam) {
+function drawAir(cam) {                              // each one drawn just like one of your own rounds in flight
   for (const s of airShots) {
-    if (s.t < 0) continue;
-    const k = Math.min(1, s.t / s.T), hx = s.x0 + (s.x1 - s.x0) * k - cam, hy = s.y0 + (s.y1 - s.y0) * k;
-    const dx = (s.x1 - s.x0), dy = (s.y1 - s.y0), L = Math.hypot(dx, dy) || 1, tail = 22;
-    ctx.strokeStyle = 'rgba(255,214,120,.8)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(hx - dx / L * tail, hy - dy / L * tail); ctx.lineTo(hx, hy); ctx.stroke();
-    ctx.fillStyle = '#fff3c4'; ctx.fillRect(Math.round(hx), Math.round(hy), 1, 1);
+    if (s.t < 0 || s.done) continue;
+    const k = Math.min(1, s.t / s.T), x = s.x0 + (s.x1 - s.x0) * k - cam, y = s.y0 + (s.y1 - s.y0) * k;
+    const L = Math.hypot(s.x1 - s.x0, s.y1 - s.y0) || 1, dx = (s.x1 - s.x0) / L, dy = (s.y1 - s.y0) / L;
+    ctx.fillStyle = '#ffb43a'; for (let q = 2; q <= 5; q++) ctx.fillRect(Math.round(x - dx * q), Math.round(y - dy * q), 1, 1);
+    ctx.fillStyle = '#fff3c4'; ctx.fillRect(Math.round(x), Math.round(y), 1, 1); ctx.fillRect(Math.round(x - dx), Math.round(y - dy), 1, 1);
   }
 }
 // only the two zombies nearest the player on each side can bite; the rest crowd in behind them
@@ -3543,7 +3546,7 @@ function startBoss(px = player.x) {
   boss.summons = [.68, .36];
   sfx('clang');
   const bk = alpha ? ['alphaB', 'alphaBSub'] : ['boss', 'bossSub'];
-  setBanner(tr(bk[0]), tr(bk[1]), 4); netEv('bn', bk[0], bk[1], 4, 0, alpha ? 'roar' : 'clang');
+  setBanner(tr(bk[0]), tr(bk[1]), 4); netBanner(bk[0], bk[1], 4, 0, alpha ? 'roar' : 'clang');
 }
 function bossPhase2(z) { return z.hp < z.maxHp * .5; }
 function updBoss(z, dt) {
@@ -3723,7 +3726,7 @@ function noiseHorde(src, chance, ax = null) {           // ax: where the noise w
   if (G.arena || !up.length || G.hordeCd > 0 || Math.random() >= chance) return false;
   G.hordeCd = HORDE_GAP;
   const sub = src === 'grenade' ? 'hordeSubBoom' : src === 'shotgun' ? 'hordeSubShotgun' : 'hordeSub';
-  setBanner(tr('horde'), tr(sub), 2, true); sfx('horde'); netEv('bn', 'horde', sub, 2, 1, 'horde');
+  setBanner(tr('horde'), tr(sub), 2, true); sfx('horde'); netBanner('horde', sub, 2, 1, 'horde');
   const p = clamp(Math.max(...up.map(q => q.x)) / (BUS_X + 2), 0, 1), n = Math.round((cfg.horde + Math.round(p * 3)) * coopMul('horde'));
   const at = ax ?? (player ? player.x : null);
   for (let i = 0; i < n; i++) spawnQ.push({ t: .4 + Math.floor(i / 2) * .45, side: Math.floor(i / 2) % 3 === 1 ? -1 : 1, horde: true, ax: at });
@@ -3746,7 +3749,7 @@ function houndWave() {
   G.houndDone = true;
   const n = Math.min(7, Math.round(Math.min(5, 2 + Math.floor((nightNo() - 1) / 2)) * coopMul('horde')));
   const hk = world && world.forest ? 'wolves' : 'hounds';
-  setBanner(tr(hk), tr(hk + 'Sub'), 3, true); sfx('howl'); netEv('bn', hk, hk + 'Sub', 3, 1, 'howl');
+  setBanner(tr(hk), tr(hk + 'Sub'), 3, true); sfx('howl'); netBanner(hk, hk + 'Sub', 3, 1, 'howl');
   for (let i = 0; i < n; i++) spawnQ.push({ t: 2.2 + i * .55, side: i % 3 === 2 ? -1 : 1, type: 'hound' });
 }
 function updHound(z, dt) {
@@ -4331,7 +4334,7 @@ function dropRelics(H) {
   picks.forEach((rid, i) => drops.push({ uid: ++dropUid, rid, g, x0: H.doorX, x: H.doorX, y: 116, tx: H.doorX + (picks.length > 1 ? (i ? 13 : -13) : 0), t: -i * .15, land: false, prog: 0 }));
   for (let i = 0; i < 16; i++) parts.push({ k: 'y', x: H.doorX + rnd(-6, 6), y: 104 + rnd(0, 16), vx: rnd(-50, 50), vy: rnd(-60, -10), life: rnd(.4, .8), t: 0 });
   setBanner(tr('relicDrop'), tr('relicDropSub'), 2.6); sfx('relicDrop'); addShake(1.5);
-  netEv('bn', 'relicDrop', 'relicDropSub', 2.6, 0, 'relicDrop');
+  netBanner('relicDrop', 'relicDropSub', 2.6, 0, 'relicDrop');
   return true;
 }
 function grabRelic(d) {
@@ -4518,7 +4521,7 @@ function drawRelicPop() {                            // just picked up: the item
    On claude.ai the page's `room` carries the snapshots; on the game's own website PeerJS does (a free
    public server introduces the two browsers, then they talk directly).
    ============================================================ */
-const GAME_BUILD = 51;                              // shown on the co-op screen, so two players can check they have the same game
+const GAME_BUILD = 52;                              // shown on the co-op screen, so two players can check they have the same game
 // on the game's own website: browsers may keep an old copy of the page for up to 10 minutes after an update,
 // so check for a newer upload when the game opens and load it straight away if there is one
 (function checkForUpdate() {
@@ -4568,6 +4571,12 @@ const inArea = (px, x, r, face) => Math.abs(px - x) < r && (!face || Math.sign(p
 function areaHit(x, r, dmg, kb, face = 0, dir = 0, kind = '') {
   if (upright(player) && !player.hidden && inArea(player.x, x, r, face)) { dmgPlayer(dmg, (dir || Math.sign(player.x - x) || 1) * kb); if (kind === 's') barbHit(boss, 15); }
   if (coopAlly()) netEv('atk', r1(x), r, dmg, kb, face, dir, kind);
+}
+// a banner for both screens: sent as news, and kept in the host's snapshot while it's up (so it can't go missing)
+function netBanner(key, sub, life, red, snd) { netEv('bn', key, sub, life, red ? 1 : 0, snd); NET.bn = { id: NET.seq, key, sub, life, red: red ? 1 : 0, snd, at: G.t }; }
+function guestBanner(id, key, sub, life, red, snd) {
+  if (!(id > (NET.bnSeen || 0)) || typeof key !== 'string') return;
+  NET.bnSeen = id; setBanner(tr(key), sub ? tr(sub) : '', Math.max(.8, +life || 2.5), !!red); if (typeof snd === 'string') sfx(snd);
 }
 function netEv(type, ...a) {                    // something that just happened, for the other screen
   if (!online()) return;
@@ -4649,6 +4658,7 @@ function testRoom(name) {
       if (m.q <= (lastQ.get(m.peer) || 0)) return; lastQ.set(m.peer, m.q);
       others.set(m.peer, Object.freeze({ peer: m.peer, isMe: false, sameTab: false, presence: m.p, updatedAt: Date.now() }));
     };
+    if (Math.random() < (window.__NET_LOSS || 0)) return;             // (tests: a lossy connection)
     const L = lag(); if (L > 0) setTimeout(go, L); else go();
   };
   const send = () => ch.postMessage({ peer: me, p: mine, q: ++sq });
@@ -4742,6 +4752,7 @@ function hostSnap() {
     b: live && boss ? [Math.round(boss.x), boss.fy, boss.face, boss.st, r2(boss.stT), boss.dir || 1, boss.run ? 1 : 0, Math.round(boss.dropY || 0), boss.dead ? 1 : 0, r1(boss.deadT || 0), boss.flash > 0 && !(G.t - (boss.allyFlashT ?? -9) < .1) ? 1 : 0, Math.round(boss.hp), boss.maxHp, r1(boss.anim || 0), bvx] : 0,
     bu: live && bus ? [Math.round(bus.x), r2(bus.door), bus.leaving ? 1 : 0, Math.round(bus.wheel || 0) % 1000, r1(bus.t || 0)] : 0,
     a: [G.arena ? 1 : 0, r2(G.gateT || 0), G.bossDone ? 1 : 0],
+    bn: live && NET.bn && G.t - NET.bn.at < NET.bn.life ? [NET.bn.id, NET.bn.key, NET.bn.sub, r1(NET.bn.life - (G.t - NET.bn.at)), NET.bn.red, NET.bn.snd] : 0,
     lit: houseMask(h => h.lit),
     rh: houseMask(h => h.relic),
     hs: stands.length ? stands.map(q => q.used ? 1 : 0).join('') : 0,
@@ -4903,6 +4914,7 @@ function guestIn(P) {
     applyZombies(Array.isArray(P.z) ? P.z : [], Array.isArray(P.b) ? P.b : null);
     if (Array.isArray(P.bu)) { bus.x = P.bu[0]; bus.door = P.bu[1]; bus.leaving = !!P.bu[2]; bus.wheel = P.bu[3]; bus.t = P.bu[4]; }
     if (Array.isArray(P.a)) { G.arena = !!P.a[0]; G.gateT = P.a[1]; G.bossDone = !!P.a[2]; }
+    if (Array.isArray(P.bn)) guestBanner(+P.bn[0], P.bn[1], P.bn[2], P.bn[3], P.bn[4], P.bn[5]);
     houses.forEach((h, i) => { const lit = inMask(P.lit, i); if (!lit) { if (h.lit) h.searched = true; h.lit = false; } else h.lit = !h.searched; h.relic = inMask(P.rh, i); });
     if (typeof P.hs === 'string') stands.forEach((q, i) => { q.used = P.hs[i] === '1'; });
     if (typeof P.tp === 'string') traps.forEach((q, i) => { const v = +P.tp[i] || 0; if (v && !q.st) q.st = v; });
@@ -4929,11 +4941,11 @@ function guestIn(P) {
     else if (type === 'boom') { explodeFx(+a[0], +a[1]); blastSelf(+a[0]); }
     else if (type === 'atk') guestAttacked(a);
     else if (type === 'trap') trapNews(a[0], +a[1]);
-    else if (type === 'air') for (let i = 0; i + 3 < a.length; i += 4) airShots.push({ x0: +a[i], y0: -10, x1: +a[i + 1], y1: +a[i + 2], t: -(+a[i + 3] || 0), T: .1, z: null });
+    else if (type === 'air') for (let i = 0; i + 3 < a.length; i += 4) airShots.push({ x0: +a[i], y0: -10, x1: +a[i + 1], y1: +a[i + 2], t: -(+a[i + 3] || 0), T: airFlight(+a[i], -10, +a[i + 1], +a[i + 2]), z: null });
     else if (type === 'spit' && a.length >= 6) spits.push({ x0: +a[0], y0: +a[1], tx: +a[2], ty: +a[3], T: clamp(+a[4] || .8, .2, 2), arc: +a[5] || 30, t: 0, x: +a[0], y: +a[1], cos: true });
     else if (type === 'rv') getRevived();
     else if (type === 'fire') ignite(+a[0], false);
-    else if (type === 'bn' && typeof a[0] === 'string') { setBanner(tr(a[0]), a[1] ? tr(a[1]) : '', a[2] || 2.5, !!a[3]); if (typeof a[4] === 'string') sfx(a[4]); }
+    else if (type === 'bn') guestBanner(e[0], a[0], a[1], a[2], a[3], a[4]);
   }
   if (cur && (P.st === 'won' || P.st === 'dead')) guestEnd(P.st === 'won');
 }
@@ -5116,6 +5128,7 @@ function netTick(dt) {
     if (m.peer !== NET.mateId) {                     // someone new (or the same friend after a reload): skip their backlog
       NET.mateId = m.peer; NET.lastP = null;
       NET.seen = (Array.isArray(m.presence.e) ? m.presence.e : []).reduce((s, e) => Math.max(s, (Array.isArray(e) && +e[0]) || 0), 0);
+      NET.bnSeen = Array.isArray(m.presence.bn) ? +m.presence.bn[0] - 1 : NET.seen;          // (a banner that's up right now still shows)
       if (NET.role === 'host') ally = null;
     }
     if (!NET.hadPartner) { NET.hadPartner = true; coopLobbyUI(); }
@@ -5177,7 +5190,7 @@ function leaveCoopSave() {
 }
 async function netLeave() {
   const room = NET.room;
-  Object.assign(NET, { role: 'solo', room: null, code: '', partner: null, lastP: null, hadPartner: false, mateId: null, seen: 0, out: [], seq: 0, hostRun: 0, rtt: 0, lead: 0, theirTs: 0, pend: [] });
+  Object.assign(NET, { role: 'solo', room: null, code: '', partner: null, lastP: null, hadPartner: false, mateId: null, seen: 0, bnSeen: 0, bn: null, out: [], seq: 0, hostRun: 0, rtt: 0, lead: 0, theirTs: 0, pend: [] });
   ally = null; hostNades = []; coopEndUI(false); wearOwn(); leaveCoopSave();
   if (room) try { await room.leave(); } catch (e) {}
 }
@@ -5218,7 +5231,7 @@ async function coopHost() {
   if (!NET.room) { $('coopStatus').textContent = coopErr(err); coopBusy = false; return; }
   coopBusy = false;
   if (G.screen !== 'sCoop') { const r = NET.room; NET.room = null; try { r.leave(); } catch (e) {} return; }
-  Object.assign(NET, { role: 'host', code, run: 0, seen: 0, out: [], seq: 0, hadPartner: false, mateId: null, t: 0, rate: NET.room.rate || 20, rtt: 0, lead: 0, theirTs: 0 });
+  Object.assign(NET, { role: 'host', code, run: 0, seen: 0, bnSeen: 0, bn: null, out: [], seq: 0, hadPartner: false, mateId: null, t: 0, rate: NET.room.rate || 20, rtt: 0, lead: 0, theirTs: 0 });
   enterCoopSave(code);
   $('coopCode').textContent = code; $('coopCode').hidden = false; $('coopPick').hidden = true;
   coopLobbyUI();
@@ -5234,7 +5247,7 @@ async function coopJoin() {
   try { NET.room = await netOpen(code, 'guest'); } catch (e) { $('coopStatus').textContent = coopErr(e); coopBusy = false; return; }
   coopBusy = false;
   if (G.screen !== 'sCoop') { const r = NET.room; NET.room = null; try { r.leave(); } catch (e) {} return; }
-  Object.assign(NET, { role: 'guest', code, seen: 0, out: [], seq: 0, hadPartner: false, mateId: null, hostRun: 0, t: 0, rate: NET.room.rate || 20, rtt: 0, lead: 0, theirTs: 0, pend: [] });
+  Object.assign(NET, { role: 'guest', code, seen: 0, bnSeen: 0, bn: null, out: [], seq: 0, hadPartner: false, mateId: null, hostRun: 0, t: 0, rate: NET.room.rate || 20, rtt: 0, lead: 0, theirTs: 0, pend: [] });
   enterCoopSave(code);
   $('coopCode').textContent = code; $('coopCode').hidden = false; $('coopPick').hidden = true;
   coopLobbyUI();
@@ -5366,7 +5379,7 @@ function update(dt) {
   G.t += dt;
   pollTouch(); readInput();
   if (G.state === 'pause' || G.state === 'boot') return;
-  if (G.intro) { G.intro.t += dt; if (G.intro.pause) return; if (G.intro.t > 5.5) G.intro = null; }
+  if (G.intro) { if (G.intro.pause || !G.banner) G.intro.t += dt; if (G.intro.pause) return; if (G.intro.t > 5.5) G.intro = null; }
   const guestView = NET.role === 'guest' && G.state !== 'title';
   if (G.state === 'play') { updPlayer(dt); if (!guestView) updSpawns(dt); updBullets(dt); updNades(dt); stats.t += dt; }
   else updBullets(dt);
@@ -6502,7 +6515,7 @@ function draw() {
   drawNums(cam);
   drawMateTag(cam);
   if (G.state === 'play' || G.state === 'pause') { drawHUD(); drawPing(); }
-  if (G.relicPop && (G.state === 'play' || G.state === 'pause')) drawRelicPop();
+  if (G.relicPop && (G.state === 'play' || G.state === 'pause') && !(G.banner && G.banner.red)) drawRelicPop();
   else if (G.banner && G.state === 'play') {
     const b = G.banner, vis = b.t < .25 ? Math.floor(b.t * 16) % 2 : 1;
     if (vis) {
@@ -6568,7 +6581,8 @@ function drawIntro() {
   const I = G.intro; if (!I) return;
   const t = I.type, k = smooth(Math.min(1, I.t / .22));
   const name = tr('iz_' + t), desc = tr('id_' + t), how = tr('ih_' + t);
-  if (!I.pause) {                                      // co-op: a strip across the top
+  if (!I.pause) {                                      // co-op: a strip across the top (out of the way while a banner is up)
+    if (G.banner) return;
     const a = clamp(Math.min(I.t / .2, (5.5 - I.t) / .5), 0, 1); if (a <= 0) return;
     const w = Math.min(VW - 36, 280), x0 = Math.round((VW - w) / 2), y0 = 24, h = 34;
     ctx.globalAlpha = a;
