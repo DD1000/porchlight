@@ -91,6 +91,25 @@ body{margin:0;background:var(--night);color:var(--ink);font-family:var(--body);o
 .set-row[aria-pressed="false"] b{color:var(--ink-dim)}
 .set-row:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 .set-note{margin-top:calc(var(--px)*-1);text-align:left}
+.tune-pass{width:9em;letter-spacing:.1em;text-transform:none}
+.tune-err{color:var(--blood)}
+#sTuning{justify-content:flex-start;gap:calc(var(--px)*2.5);overflow:hidden}
+.tune-top{display:flex;align-items:center;gap:calc(var(--px)*5);flex-wrap:wrap;justify-content:center}
+#sTuning .head{font-size:clamp(22px,calc(var(--px)*13),52px)}
+.tune-sec{font:600 clamp(12px,calc(var(--px)*4.6),17px)/1.2 var(--body);color:var(--ink);background:var(--panel);border:max(2px,calc(var(--px)*.8)) solid var(--line);padding:calc(var(--px)*2) calc(var(--px)*3);max-width:100%}
+.tune-note{margin:0;min-height:1em}
+.tune-list{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;width:min(100%,calc(var(--px)*230));text-align:left;-webkit-user-select:text;user-select:text;touch-action:pan-y}
+.tune-g{margin:calc(var(--px)*3) 0 calc(var(--px)*1.5);font:700 clamp(12px,calc(var(--px)*4.8),18px)/1.2 var(--body);color:var(--amber)}
+.tune-g small{display:block;font-weight:400;color:var(--ink-dim);font-size:.8em}
+.tune-row{display:flex;align-items:center;justify-content:space-between;gap:calc(var(--px)*3);padding:calc(var(--px)*1.5) 0;border-bottom:1px solid var(--line)}
+.tune-row .l{font:400 clamp(11px,calc(var(--px)*4),15px)/1.25 var(--body);color:var(--ink)}
+.tune-row .l small{display:block;color:var(--ink-dim);font-size:.82em}
+.tune-row.chg .l{color:var(--amber)}
+.tune-step{display:flex;align-items:center;gap:calc(var(--px)*1);flex:none}
+.tune-step button{-webkit-appearance:none;appearance:none;width:2em;height:2em;font:700 clamp(12px,calc(var(--px)*4.4),16px)/1 var(--body);color:var(--ink);background:var(--panel-2);border:max(2px,calc(var(--px)*.6)) solid var(--line);cursor:pointer}
+.tune-step input{width:5.2em;box-sizing:border-box;font:600 clamp(12px,calc(var(--px)*4.4),16px)/1 var(--body);text-align:center;color:var(--ink);background:var(--panel);border:max(2px,calc(var(--px)*.6)) solid var(--line);padding:calc(var(--px)*1.5) 0;-webkit-user-select:text;user-select:text}
+.tune-row.chg .tune-step input{border-color:var(--amber)}
+.tune-foot{flex:none}
 #app.intro #controls,#app.intro #bPause{visibility:hidden}
 #introTap{position:absolute;inset:0;z-index:6;margin:0;padding:0;border:0;background:transparent;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .gun-pick{display:flex;flex-wrap:wrap;justify-content:center;gap:calc(var(--px)*3)}
@@ -266,8 +285,25 @@ body{margin:0;background:var(--night);color:var(--ink);font-family:var(--body);o
         <button class="set-row" id="setIntros" aria-pressed="true"><span data-t="setIntros">Enemy intros</span><b id="setIntrosVal">On</b></button>
         <p class="keys set-note" data-t="setIntrosNote">A card that explains each new enemy the first time it shows up in a run.</p>
         <button class="set-row" id="setSound" aria-pressed="true"><span data-t="setSound">Sound</span><b id="setSoundVal">On</b></button>
+        <button class="set-row" id="setTuning"><span data-t="setTuning">Tuning</span><b id="setTuningVal">Locked</b></button>
+        <p class="keys set-note" data-t="setTuningNote">The game's balance numbers. Needs the password.</p>
       </div>
       <div class="row"><button class="btn" id="setBack" data-t="back">Back</button></div>
+    </section>
+
+    <section class="screen solid" id="sTunePass" hidden>
+      <h2 class="head" data-t="tuneHead">Tuning</h2>
+      <p class="keys" data-t="tunePassNote">Password</p>
+      <span class="coop-join"><input id="tunePass" class="coop-input tune-pass" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Password"><button class="btn ghost" id="tunePassGo" data-t="tuneOpen">Open</button></span>
+      <p class="keys tune-err" id="tunePassErr" data-t="tuneWrong" hidden>Wrong password</p>
+      <div class="row"><button class="link" id="tunePassBack" data-t="back">Back</button></div>
+    </section>
+
+    <section class="screen solid" id="sTuning" hidden>
+      <div class="tune-top"><h2 class="head" data-t="tuneHead">Tuning</h2><select id="tuneSec" class="tune-sec" aria-label="Section"></select></div>
+      <p class="keys tune-note" id="tuneNote"></p>
+      <div class="tune-list" id="tuneList"></div>
+      <div class="row tune-foot"><button class="btn" id="tuneSave" data-t="tuneSave">Save &amp; restart</button><button class="btn ghost" id="tuneUndo" data-t="tuneUndo">Undo changes</button><button class="link" id="tuneBack" data-t="back">Back</button></div>
     </section>
 
     <section class="screen solid" id="sPick" hidden>
@@ -504,6 +540,7 @@ const STR = {
     iz_trash: 'TRASH CANS', id_trash: "A skinny one hiding in a garbage can. It takes a lot of shooting to put down.", ih_trash: 'Keep your distance: up close it slams the can down on you. The bat and grenades knock it back.',
     iz_hound: 'HOUNDS', id_hound: 'The fastest thing on the street. After the howl they come as a pack and leap for your face.', ih_hound: "Bullets can't catch them. Swing the bat as one jumps and it drops.",
     iz_boss: 'THE DISPATCHER', id_boss: 'Whatever runs the depot now. He charges, swipes, slams the ground, throws cans and calls in help.', ih_boss: 'Swing the bat as he charges to stagger him, then unload. Get clear when he winds up a slam.',
+    setTuning: 'Tuning', setTuningNote: 'The game\'s balance numbers. Needs the password.', setLocked: 'Locked', setUnlocked: 'Open', tuneHead: 'Tuning', tunePassNote: 'Password', tuneOpen: 'Open', tuneWrong: 'Wrong password', tuneSave: 'Save &amp; restart', tuneUndo: 'Undo changes', tuneNote0: 'Changes stay on this device. Saving restarts the game (a night in progress starts over).', tuneNoteN: '{n} changed on this device. Saving restarts the game (a night in progress starts over).', tuneLv: 'level {n}', tuneDef: 'build: {v}',
     settings: 'Settings', setIntros: 'Enemy intros', setSound: 'Sound', setOn: 'On', setOff: 'Off', setIntrosNote: 'A card that explains each new enemy the first time it shows up in a run.',
     items: 'Items', noItems: 'No items yet. Search the houses with a glimmer in the windows.', tapItem: 'Tap an item to read what it does.',
     relicHouse: 'SOMETHING GLIMMERS', relicHouseSub: 'SEARCH THE HOUSE WITH THE GOLDEN WINDOWS', relicDrop: 'SOMETHING GREAT', relicDropSub: 'STAND ON IT TO COLLECT IT',
@@ -602,7 +639,7 @@ const STR = {
     r_watch: 'Pocket Watch', rd_watch: 'Once a night, when you drop under 25% health, the zombies near you move at half speed for 3 seconds.',
     r_lockpick: 'Lockpick', rd_lockpick: 'Each house or pile you search has a 20% chance to give you a second find.',
     r_coupon: 'Coupon Book', rd_coupon: 'Everything in the shop costs 10% less.',
-    r_moneybelt: 'Money Belt', rd_moneybelt: 'Getting bitten loses 60% of the night\'s cash instead of 80%.',
+    r_moneybelt: 'Money Belt', rd_moneybelt: 'Getting bitten loses 30% of the night\'s cash instead of 50%.',
     r_detector: 'Metal Detector', rd_detector: 'Houses and piles with ammo inside show a small blue glint.',
     r_treasure: 'Treasure Map', rd_treasure: 'One more glimmering house (with items) each night.',
     r_qmaster: 'Quartermaster\'s Badge', rd_qmaster: 'Ammo boxes give 50% more ammo.',
@@ -688,7 +725,7 @@ const STR = {
     bats: 'BATS', batsSub: 'THEY SWOOP DOWN. AIM THE RIGHT STICK UP', batsSubKey: 'THEY SWOOP DOWN. HOLD W WHILE FIRING',
     boss: 'THE DISPATCHER', bossSub: 'SWING THE BAT AS HE CHARGES TO STOP HIM', bossDown: 'DISPATCHER DOWN', bossDownSub: 'THE LAST BUS IS PULLING IN',
     staggered: 'STAGGERED', staggeredF: 'STAGGERED!', dazed: 'DAZED', reload: 'RELOAD', search: 'SEARCH', searchKey: 'E  SEARCH', searching: 'SEARCHING',
-    fShells: '+{n} SHELLS', fRounds: '+{n} ROUNDS', meters: '{n}M', readyBtn: "I'm ready", readyOn: 'Ready! (tap to cancel)', waitMate: 'Waiting for your partner', coopReadyHint: "Tap I'm ready when you're done shopping. The host starts the next night after that.", fItems: 'ITEMS!', mateFound: '{p} FOUND {t}', mateEmpty: '{p} FOUND NOTHING', gadgets: 'Gadgets', u_turret: 'Mini Turret', ud_turret: 'A little walking turret follows you. Every {s} seconds it fires a laser through every zombie in a line ({n} damage each).', adl_sight: '+{n}% crit chance a level', adl_hot: '+{n}% damage a level', adl_mag: '+{n}% clip size and ammo carried a level', adl_grip: 'Reloads {n}% faster a level', adl_barrel: '+{n}% range and a tighter spread a level', adl_trigger: 'Fires {n}% faster a level', adNow: 'now {n}%', armRefund: 'The Armory changed: every upgrade now has ten levels. You got ${n} back for what you had bought, to spend again.', fNadesFull: 'GRENADES FULL', nadesFull: 'Full ({n} max)', trapped: 'TRAPPED!', trappedSub: 'SWING THE BAT TO PRY IT OPEN', trapFreeF: 'FREE!', trapOffF: 'SNAP!', alphaB: 'THE ALPHA', alphaBSub: 'SWING THE BAT AS IT CHARGES TO STOP IT',
+    fShells: '+{n} SHELLS', fRounds: '+{n} ROUNDS', meters: '{n}M', readyBtn: "I'm ready", readyOn: 'Ready! (tap to cancel)', waitMate: 'Waiting for your partner', coopReadyHint: "Tap I'm ready when you're done shopping. The host starts the next night after that.", fItems: 'ITEMS!', mateFound: '{p} FOUND {t}', mateEmpty: '{p} FOUND NOTHING', gadgets: 'Gadgets', u_turret: 'Mini Turret', ud_turret: 'A little walking turret follows you and shoots a revolver at nearby zombies: {m} shots, then it reloads. Your items work on its shots.', u_turret2: 'Heavy Turret', ud_turret2: 'A bigger walking turret that fires your main gun at half your rate and reloads like you do. It loads from your ammo. Your items work on its shots.', adl_sight: '+{n}% crit chance a level', adl_hot: '+{n}% damage a level', adl_mag: '+{n}% clip size and ammo carried a level', adl_grip: 'Reloads {n}% faster a level', adl_barrel: '+{n}% range and a tighter spread a level', adl_trigger: 'Fires {n}% faster a level', adNow: 'now {n}%', armRefund: 'The Armory changed: every upgrade now has ten levels. You got ${n} back for what you had bought, to spend again.', fNadesFull: 'GRENADES FULL', nadesFull: 'Full ({n} max)', trapped: 'TRAPPED!', trappedSub: 'SWING THE BAT TO PRY IT OPEN', trapFreeF: 'FREE!', trapOffF: 'SNAP!', alphaB: 'THE ALPHA', alphaBSub: 'SWING THE BAT AS IT CHARGES TO STOP IT',
     iz_ranger: 'RANGERS', id_ranger: 'The park service never left. Slow and stubborn, and there are a lot of them out here.', ih_ranger: 'Same as the walkers: keep your distance and keep shooting.',
     iz_hunter: 'HUNTERS', id_hunter: 'Still up in their tree stands, waiting. When you walk under one he drops down on you.', ih_hunter: 'Watch the stands up in the trees. Step back as one drops, then shoot.',
     iz_bear: 'ZOMBIE BEARS', id_bear: 'Rotting grizzlies. Hard to put down, and a swipe takes a big piece of your health.', ih_bear: 'Never let one reach you. Grenades and steady fire from range. They do not burst when they drop.',
@@ -758,6 +795,7 @@ const STR = {
     iz_trash: '垃圾桶', id_trash: '一个瘦子躲在垃圾桶里，要打很多枪才倒。', ih_trash: '保持距离：靠近了它会用桶砸你。球棒和手雷能把它击退。',
     iz_hound: '猎犬', id_hound: '街上最快的东西。嚎叫之后成群扑来，直扑你的脸。', ih_hound: '子弹追不上它们。它扑过来时挥棒，就能打倒它。',
     iz_boss: '调度员', id_boss: '如今占据车站的东西。会冲锋、横扫、砸地、扔垃圾桶、召唤帮手。', ih_boss: '它冲锋时挥棒让它踉跄，然后猛烈开火。它蓄力砸地时赶紧躲开。',
+    setTuning: '调参', setTuningNote: '游戏的平衡数值，需要密码。', setLocked: '已锁', setUnlocked: '已开', tuneHead: '调参', tunePassNote: '密码', tuneOpen: '打开', tuneWrong: '密码错误', tuneSave: '保存并重启', tuneUndo: '撤销改动', tuneNote0: '改动只保存在这台设备上。保存会重启游戏（进行中的这一晚会重新开始）。', tuneNoteN: '这台设备上改了 {n} 项。保存会重启游戏（进行中的这一晚会重新开始）。', tuneLv: '第 {n} 级', tuneDef: '版本值：{v}',
     settings: '设置', setIntros: '敌人介绍', setSound: '声音', setOn: '开', setOff: '关', setIntrosNote: '每一局里新敌人第一次出现时，弹出一张介绍卡片。',
     items: '道具', noItems: '还没有道具。去搜索窗户在闪光的房子。', tapItem: '点一个道具查看它的效果。',
     relicHouse: '有东西在闪光', relicHouseSub: '搜索窗户发金光的房子', relicDrop: '好东西', relicDropSub: '站在上面就能收集',
@@ -856,7 +894,7 @@ const STR = {
     r_watch: '怀表', rd_watch: '每晚一次，生命低于 25% 时，你身边的僵尸 3 秒内只有一半速度。',
     r_lockpick: '开锁器', rd_lockpick: '每搜一栋房子或一堆树枝，有 20% 几率再找到一样东西。',
     r_coupon: '优惠券本', rd_coupon: '商店里所有东西便宜 10%。',
-    r_moneybelt: '钱腰带', rd_moneybelt: '被咬时只损失当晚 60% 的钱，而不是 80%。',
+    r_moneybelt: '钱腰带', rd_moneybelt: '被咬时只损失当晚 30% 的钱，而不是 50%。',
     r_detector: '金属探测器', rd_detector: '有弹药的房子和树枝堆会闪一点蓝光。',
     r_treasure: '藏宝图', rd_treasure: '每晚多一栋发金光（有道具）的房子。',
     r_qmaster: '军需官徽章', rd_qmaster: '弹药箱多给 50% 弹药。',
@@ -940,7 +978,7 @@ const STR = {
     bats: '蝙蝠', batsSub: '它们会俯冲下来。右摇杆往上推射击', batsSubKey: '它们会俯冲下来。射击时按住 W',
     boss: '调度员', bossSub: '它冲锋时挥棒，就能拦住它', bossDown: '调度员倒下了', bossDownSub: '最后一班巴士进站了',
     staggered: '踉跄', staggeredF: '踉跄！', dazed: '撞晕了', reload: '换弹', search: '搜索', searchKey: 'E 搜索', searching: '搜索中',
-    fShells: '+{n} 霰弹', fRounds: '+{n} 子弹', meters: '{n}米', readyBtn: '我准备好了', readyOn: '已准备！（点一下取消）', waitMate: '等待队友准备', coopReadyHint: '买完东西后点“我准备好了”，房主之后才能开始下一晚。', fItems: '道具！', mateFound: '{p} 找到 {t}', mateEmpty: '{p} 什么也没找到', gadgets: '装备', u_turret: '迷你炮塔', ud_turret: '一个会走路的小炮塔跟着你。每 {s} 秒发射一道激光，穿透一排僵尸（每只 {n} 点伤害）。', adl_sight: '每级暴击率 +{n}%', adl_hot: '每级伤害 +{n}%', adl_mag: '每级弹匣和携弹量 +{n}%', adl_grip: '每级换弹快 {n}%', adl_barrel: '每级射程 +{n}%，散布更紧', adl_trigger: '每级射速快 {n}%', adNow: '现在 {n}%', armRefund: '军械库改了：每项升级现在有十级。之前买的东西退还你 ${n}，可以重新花。', fNadesFull: '手雷满了', nadesFull: '已满（最多 {n} 个）', trapped: '被夹住了！', trappedSub: '挥棒撬开它', trapFreeF: '挣脱了！', trapOffF: '咔嚓！', alphaB: '头熊', alphaBSub: '它冲过来时挥棒拦住它',
+    fShells: '+{n} 霰弹', fRounds: '+{n} 子弹', meters: '{n}米', readyBtn: '我准备好了', readyOn: '已准备！（点一下取消）', waitMate: '等待队友准备', coopReadyHint: '买完东西后点“我准备好了”，房主之后才能开始下一晚。', fItems: '道具！', mateFound: '{p} 找到 {t}', mateEmpty: '{p} 什么也没找到', gadgets: '装备', u_turret: '迷你炮塔', ud_turret: '一个会走路的小炮塔跟着你，用左轮打附近的僵尸：打 {m} 发后换弹。你的道具效果对它的子弹也有效。', u_turret2: '重型炮塔', ud_turret2: '一个更大的走路炮塔，用你的主武器开火，射速是你的一半，也要换弹。它用你的弹药。你的道具效果对它的子弹也有效。', adl_sight: '每级暴击率 +{n}%', adl_hot: '每级伤害 +{n}%', adl_mag: '每级弹匣和携弹量 +{n}%', adl_grip: '每级换弹快 {n}%', adl_barrel: '每级射程 +{n}%，散布更紧', adl_trigger: '每级射速快 {n}%', adNow: '现在 {n}%', armRefund: '军械库改了：每项升级现在有十级。之前买的东西退还你 ${n}，可以重新花。', fNadesFull: '手雷满了', nadesFull: '已满（最多 {n} 个）', trapped: '被夹住了！', trappedSub: '挥棒撬开它', trapFreeF: '挣脱了！', trapOffF: '咔嚓！', alphaB: '头熊', alphaBSub: '它冲过来时挥棒拦住它',
     iz_ranger: '护林员', id_ranger: '护林员一直没离开。又慢又固执，这里到处都是。', ih_ranger: '跟行尸一样：保持距离，一直开枪。',
     iz_hunter: '猎人', id_hunter: '还守在树上的狩猎台里。你从下面经过，他就跳下来扑你。', ih_hunter: '留意树上的狩猎台。他跳下来时后退，再开枪。',
     iz_bear: '僵尸熊', id_bear: '腐烂的灰熊。很难打倒，一爪就能拍掉你一大截血。', ih_bear: '千万别让它靠近。远处用手雷和持续火力。它们倒下时不会爆开。',
@@ -1104,7 +1142,13 @@ const Z_WALK = ['walk_01', 'walk_02', 'walk_03', 'walk_02'];
 
 // ---- gameplay tuning: written in at build time from the Porchlight Tuning page. Anything missing here keeps the
 // default written beside it in the code below.
-const TUNING = /*TUNING*/{"grenade":{"charge":2},"enemies":{"runner":{"hp":12,"spdMax":57,"cashMin":1}}}/*END TUNING*/;
+const TUNING_BUILD = /*TUNING*/{"grenade":{"charge":2},"enemies":{"runner":{"hp":12,"spdMax":57,"cashMin":1}}}/*END TUNING*/;
+// ...and whatever was changed in Settings > Tuning on this device (it goes on top of the build's numbers)
+const TUNE_KEY = 'porchlight.tune.v1';
+const TUNE_LOCAL = (() => { try { const o = JSON.parse(localStorage.getItem(TUNE_KEY) || 'null'); return o && typeof o === 'object' && !Array.isArray(o) ? o : {}; } catch (e) { return {}; } })();
+const tuneMerge = (a, b) => { const o = { ...(a && typeof a === 'object' ? a : {}) }; for (const k in b) o[k] = b[k] && typeof b[k] === 'object' && !Array.isArray(b[k]) ? tuneMerge(o[k], b[k]) : b[k]; return o; };
+const TUNING = tuneMerge(TUNING_BUILD, TUNE_LOCAL);
+const TUNE_SCHEMA = /*TSCHEMA*/[{"id":"weapons","t":"Guns","g":[{"id":"pistol","t":".38 Revolver","n":"secondary · never runs out","f":[{"k":"dmg","l":"Damage","d":12,"s":0.5,"min":0,"max":999,"i":false,"h":""},{"k":"crit","l":"Crit chance","d":0.06,"s":0.01,"min":0,"max":1,"i":false,"h":"0.06 = 6%"},{"k":"cd","l":"Time between shots","d":0.3,"s":0.01,"min":0.03,"max":5,"i":false,"h":"sec"},{"k":"mag","l":"Clip size","d":6,"s":1,"min":1,"max":200,"i":true,"h":""},{"k":"reload","l":"Reload time","d":1.05,"s":0.05,"min":0.1,"max":10,"i":false,"h":"sec"},{"k":"speed","l":"Bullet speed","d":470,"s":10,"min":20,"max":3000,"i":false,"h":"units/sec"},{"k":"life","l":"Bullet flight time","d":0.7,"s":0.05,"min":0.02,"max":3,"i":false,"h":"sec · sets range"},{"k":"spread","l":"Spread","d":0.015,"s":0.005,"min":0,"max":0.5,"i":false,"h":""},{"k":"kb","l":"Knockback","d":24,"s":1,"min":0,"max":500,"i":false,"h":""}],"kind":"gun"},{"id":"shotgun","t":"Pump Shotgun","n":"primary","f":[{"k":"dmg","l":"Damage per pellet","d":8,"s":0.5,"min":0,"max":999,"i":false,"h":""},{"k":"crit","l":"Crit chance","d":0.03,"s":0.01,"min":0,"max":1,"i":false,"h":"0.06 = 6% · each pellet rolls"},{"k":"pellets","l":"Pellets per shot","d":6,"s":1,"min":1,"max":20,"i":true,"h":""},{"k":"cd","l":"Time between shots","d":0.8,"s":0.01,"min":0.03,"max":5,"i":false,"h":"sec"},{"k":"mag","l":"Clip size","d":5,"s":1,"min":1,"max":200,"i":true,"h":""},{"k":"reload","l":"Reload time","d":1.5,"s":0.05,"min":0.1,"max":10,"i":false,"h":"sec"},{"k":"speed","l":"Bullet speed","d":400,"s":10,"min":20,"max":3000,"i":false,"h":"units/sec"},{"k":"life","l":"Bullet flight time","d":0.3,"s":0.05,"min":0.02,"max":3,"i":false,"h":"sec · sets range"},{"k":"spread","l":"Spread","d":0.075,"s":0.005,"min":0,"max":0.5,"i":false,"h":""},{"k":"kb","l":"Knockback","d":75,"s":1,"min":0,"max":500,"i":false,"h":""}],"kind":"gun"},{"id":"smg","t":"Chopper SMG","n":"primary","f":[{"k":"dmg","l":"Damage","d":6.5,"s":0.5,"min":0,"max":999,"i":false,"h":""},{"k":"crit","l":"Crit chance","d":0.04,"s":0.01,"min":0,"max":1,"i":false,"h":"0.06 = 6%"},{"k":"cd","l":"Time between shots","d":0.088,"s":0.01,"min":0.03,"max":5,"i":false,"h":"sec"},{"k":"mag","l":"Clip size","d":30,"s":1,"min":1,"max":200,"i":true,"h":""},{"k":"reload","l":"Reload time","d":1.3,"s":0.05,"min":0.1,"max":10,"i":false,"h":"sec"},{"k":"speed","l":"Bullet speed","d":500,"s":10,"min":20,"max":3000,"i":false,"h":"units/sec"},{"k":"life","l":"Bullet flight time","d":0.55,"s":0.05,"min":0.02,"max":3,"i":false,"h":"sec · sets range"},{"k":"spread","l":"Spread","d":0.045,"s":0.005,"min":0,"max":0.5,"i":false,"h":""},{"k":"kb","l":"Knockback","d":12,"s":1,"min":0,"max":500,"i":false,"h":""}],"kind":"gun"},{"id":"rifle","t":"Bolt-Action Rifle","n":"primary · pierces","f":[{"k":"dmg","l":"Damage","d":30,"s":0.5,"min":0,"max":999,"i":false,"h":""},{"k":"crit","l":"Crit chance","d":0.15,"s":0.01,"min":0,"max":1,"i":false,"h":"0.06 = 6%"},{"k":"cd","l":"Time between shots","d":0.9,"s":0.01,"min":0.03,"max":5,"i":false,"h":"sec"},{"k":"mag","l":"Clip size","d":5,"s":1,"min":1,"max":200,"i":true,"h":""},{"k":"reload","l":"Reload time","d":1.9,"s":0.05,"min":0.1,"max":10,"i":false,"h":"sec"},{"k":"speed","l":"Bullet speed","d":900,"s":10,"min":20,"max":3000,"i":false,"h":"units/sec"},{"k":"life","l":"Bullet flight time","d":0.6,"s":0.05,"min":0.02,"max":3,"i":false,"h":"sec · sets range"},{"k":"spread","l":"Spread","d":0.004,"s":0.005,"min":0,"max":0.5,"i":false,"h":""},{"k":"kb","l":"Knockback","d":40,"s":1,"min":0,"max":500,"i":false,"h":""},{"k":"falloff","l":"Damage kept per zombie pierced","d":0.5,"s":0.05,"min":0,"max":1,"i":false,"h":"0.5 = half"}],"kind":"gun"},{"id":"crits","t":"Critical hits","n":"all weapons","f":[{"k":"mul","l":"Crit damage multiplier","d":2,"s":0.1,"min":1,"max":10,"i":false,"h":"2 = double damage"}]}]},{"id":"melee","t":"Melee","g":[{"id":"bat","t":"Baseball Bat","kind":"melee","f":[{"k":"dmg","l":"Damage","d":13,"s":1,"min":0,"max":999,"i":false,"h":""},{"k":"crit","l":"Crit chance","d":0.06,"s":0.01,"min":0,"max":1,"i":false,"h":"0.06 = 6%"},{"k":"cd","l":"Swing cooldown","d":0.5,"s":0.01,"min":0.1,"max":3,"i":false,"h":"sec"},{"k":"reach","l":"Reach","d":22,"s":1,"min":5,"max":80,"i":false,"h":""},{"k":"kb","l":"Knockback","d":105,"s":5,"min":0,"max":600,"i":false,"h":""},{"k":"stun","l":"Stun time","d":0.45,"s":0.05,"min":0,"max":3,"i":false,"h":"sec"},{"k":"max","l":"Zombies hit per swing","d":3,"s":1,"min":1,"max":12,"i":true,"h":""}]},{"id":"axe","t":"Fire Axe","kind":"melee","f":[{"k":"dmg","l":"Damage","d":34,"s":1,"min":0,"max":999,"i":false,"h":""},{"k":"crit","l":"Crit chance","d":0.1,"s":0.01,"min":0,"max":1,"i":false,"h":"0.06 = 6%"},{"k":"cd","l":"Swing cooldown","d":0.62,"s":0.01,"min":0.1,"max":3,"i":false,"h":"sec"},{"k":"reach","l":"Reach","d":25,"s":1,"min":5,"max":80,"i":false,"h":""},{"k":"kb","l":"Knockback","d":135,"s":5,"min":0,"max":600,"i":false,"h":""},{"k":"stun","l":"Stun time","d":0.55,"s":0.05,"min":0,"max":3,"i":false,"h":"sec"},{"k":"max","l":"Zombies hit per swing","d":4,"s":1,"min":1,"max":12,"i":true,"h":""}]}]},{"id":"grenade","t":"Grenade","g":[{"id":null,"t":"Grenade","f":[{"k":"dmax","l":"Damage at the centre","d":110,"s":1,"min":0,"max":999,"i":false,"h":""},{"k":"dmin","l":"Damage at the edge","d":25,"s":1,"min":0,"max":999,"i":false,"h":""},{"k":"radius","l":"Blast radius","d":46,"s":1,"min":5,"max":200,"i":false,"h":""},{"k":"kb","l":"Knockback","d":170,"s":5,"min":0,"max":600,"i":false,"h":""},{"k":"fuse","l":"Fuse","d":3,"s":0.1,"min":0.2,"max":10,"i":false,"h":"sec after the throw"},{"k":"charge","l":"Time to full throw","d":1.1,"s":0.05,"min":0.1,"max":5,"i":false,"h":"sec held"},{"k":"range","l":"Longest throw","d":0.75,"s":0.05,"min":0.1,"max":1.5,"i":false,"h":"fraction of the screen"},{"k":"self","l":"Damage to you at the centre","d":35,"s":1,"min":0,"max":200,"i":false,"h":""},{"k":"start","l":"Grenades every night starts with","d":3,"s":1,"min":0,"max":20,"i":true,"h":"at least"},{"k":"max","l":"Most grenades you can carry","d":5,"s":1,"min":1,"max":50,"i":true,"h":""}]}]},{"id":"enemies","t":"Enemies","n":"Level 1 is nights 1–5 (the town), level 2 is nights 6–10 (the forest), level 3 is night 11 on. Each level up is a little bigger, and in town it wears a helmet (a hard hat, then an army helmet). Rangers, bears, wolves and hunters live in the forest, so you first meet them at level 2.","g":[{"id":"walker","t":"Walker","n":"street 1","f":[{"k":"hp","l":"Health","d":26,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":1},{"k":"spdMin","l":"Speed (slowest)","d":13,"s":1,"min":1,"max":400,"i":false,"h":"","lv":1},{"k":"spdMax","l":"Speed (fastest)","d":19,"s":1,"min":1,"max":400,"i":false,"h":"","lv":1},{"k":"dps","l":"Bite damage","d":10,"s":1,"min":0,"max":200,"i":false,"h":"per sec while grabbing","lv":1},{"k":"kbRes","l":"Knockback resist","d":0,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":1},{"k":"cashMin","l":"Cash drop (min)","d":1,"s":1,"min":0,"max":999,"i":true,"h":"","lv":1},{"k":"cashMax","l":"Cash drop (max)","d":3,"s":1,"min":0,"max":999,"i":true,"h":"","lv":1},{"k":"size","l":"Size","d":1,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":1},{"k":"L2.hp","l":"Health","d":47,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":2},{"k":"L2.spdMin","l":"Speed (slowest)","d":14,"s":1,"min":1,"max":400,"i":false,"h":"","lv":2},{"k":"L2.spdMax","l":"Speed (fastest)","d":21,"s":1,"min":1,"max":400,"i":false,"h":"","lv":2},{"k":"L2.dps","l":"Bite damage","d":13,"s":1,"min":0,"max":200,"i":false,"h":"per sec while grabbing","lv":2},{"k":"L2.kbRes","l":"Knockback resist","d":0.1,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":2},{"k":"L2.cashMin","l":"Cash drop (min)","d":2,"s":1,"min":0,"max":999,"i":true,"h":"","lv":2},{"k":"L2.cashMax","l":"Cash drop (max)","d":4,"s":1,"min":0,"max":999,"i":true,"h":"","lv":2},{"k":"L2.size","l":"Size","d":1.1,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":2},{"k":"L3.hp","l":"Health","d":68,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":3},{"k":"L3.spdMin","l":"Speed (slowest)","d":16,"s":1,"min":1,"max":400,"i":false,"h":"","lv":3},{"k":"L3.spdMax","l":"Speed (fastest)","d":23,"s":1,"min":1,"max":400,"i":false,"h":"","lv":3},{"k":"L3.dps","l":"Bite damage","d":16,"s":1,"min":0,"max":200,"i":false,"h":"per sec while grabbing","lv":3},{"k":"L3.kbRes","l":"Knockback resist","d":0.2,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":3},{"k":"L3.cashMin","l":"Cash drop (min)","d":2,"s":1,"min":0,"max":999,"i":true,"h":"","lv":3},{"k":"L3.cashMax","l":"Cash drop (max)","d":6,"s":1,"min":0,"max":999,"i":true,"h":"","lv":3},{"k":"L3.size","l":"Size","d":1.2,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":3}],"kind":"foe","levels":3},{"id":"runner","t":"Runner","n":"street 2","f":[{"k":"hp","l":"Health","d":16,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":1},{"k":"spdMin","l":"Speed (slowest)","d":44,"s":1,"min":1,"max":400,"i":false,"h":"","lv":1},{"k":"spdMax","l":"Speed (fastest)","d":54,"s":1,"min":1,"max":400,"i":false,"h":"","lv":1},{"k":"dps","l":"Bite damage","d":8,"s":1,"min":0,"max":200,"i":false,"h":"per sec while grabbing","lv":1},{"k":"kbRes","l":"Knockback resist","d":0,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":1},{"k":"cashMin","l":"Cash drop (min)","d":2,"s":1,"min":0,"max":999,"i":true,"h":"","lv":1},{"k":"cashMax","l":"Cash drop (max)","d":4,"s":1,"min":0,"max":999,"i":true,"h":"","lv":1},{"k":"size","l":"Size","d":1,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":1},{"k":"L2.hp","l":"Health","d":29,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":2},{"k":"L2.spdMin","l":"Speed (slowest)","d":48,"s":1,"min":1,"max":400,"i":false,"h":"","lv":2},{"k":"L2.spdMax","l":"Speed (fastest)","d":59,"s":1,"min":1,"max":400,"i":false,"h":"","lv":2},{"k":"L2.dps","l":"Bite damage","d":10,"s":1,"min":0,"max":200,"i":false,"h":"per sec while grabbing","lv":2},{"k":"L2.kbRes","l":"Knockback resist","d":0.1,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":2},{"k":"L2.cashMin","l":"Cash drop (min)","d":3,"s":1,"min":0,"max":999,"i":true,"h":"","lv":2},{"k":"L2.cashMax","l":"Cash drop (max)","d":6,"s":1,"min":0,"max":999,"i":true,"h":"","lv":2},{"k":"L2.size","l":"Size","d":1.1,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":2},{"k":"L3.hp","l":"Health","d":42,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":3},{"k":"L3.spdMin","l":"Speed (slowest)","d":53,"s":1,"min":1,"max":400,"i":false,"h":"","lv":3},{"k":"L3.spdMax","l":"Speed (fastest)","d":65,"s":1,"min":1,"max":400,"i":false,"h":"","lv":3},{"k":"L3.dps","l":"Bite damage","d":13,"s":1,"min":0,"max":200,"i":false,"h":"per sec while grabbing","lv":3},{"k":"L3.kbRes","l":"Knockback resist","d":0.2,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":3},{"k":"L3.cashMin","l":"Cash drop (min)","d":4,"s":1,"min":0,"max":999,"i":true,"h":"","lv":3},{"k":"L3.cashMax","l":"Cash drop (max)","d":8,"s":1,"min":0,"max":999,"i":true,"h":"","lv":3},{"k":"L3.size","l":"Size","d":1.2,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":3}],"kind":"foe","levels":3},{"id":"flyer","t":"Bat","n":"street 2","f":[{"k":"hp","l":"Health","d":14,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":1},{"k":"spdMin","l":"Speed (slowest)","d":55,"s":1,"min":1,"max":400,"i":false,"h":"","lv":1},{"k":"spdMax","l":"Speed (fastest)","d":70,"s":1,"min":1,"max":400,"i":false,"h":"","lv":1},{"k":"swoop","l":"Swoop damage","d":9,"s":1,"min":0,"max":200,"i":false,"h":"","lv":1},{"k":"kbRes","l":"Knockback resist","d":0.3,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":1},{"k":"cashMin","l":"Cash drop (min)","d":2,"s":1,"min":0,"max":999,"i":true,"h":"","lv":1},{"k":"cashMax","l":"Cash drop (max)","d":4,"s":1,"min":0,"max":999,"i":true,"h":"","lv":1},{"k":"size","l":"Size","d":1,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":1},{"k":"L2.hp","l":"Health","d":25,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":2},{"k":"L2.spdMin","l":"Speed (slowest)","d":61,"s":1,"min":1,"max":400,"i":false,"h":"","lv":2},{"k":"L2.spdMax","l":"Speed (fastest)","d":77,"s":1,"min":1,"max":400,"i":false,"h":"","lv":2},{"k":"L2.swoop","l":"Swoop damage","d":12,"s":1,"min":0,"max":200,"i":false,"h":"","lv":2},{"k":"L2.kbRes","l":"Knockback resist","d":0.4,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":2},{"k":"L2.cashMin","l":"Cash drop (min)","d":3,"s":1,"min":0,"max":999,"i":true,"h":"","lv":2},{"k":"L2.cashMax","l":"Cash drop (max)","d":6,"s":1,"min":0,"max":999,"i":true,"h":"","lv":2},{"k":"L2.size","l":"Size","d":1.1,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":2},{"k":"L3.hp","l":"Health","d":36,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":3},{"k":"L3.spdMin","l":"Speed (slowest)","d":66,"s":1,"min":1,"max":400,"i":false,"h":"","lv":3},{"k":"L3.spdMax","l":"Speed (fastest)","d":84,"s":1,"min":1,"max":400,"i":false,"h":"","lv":3},{"k":"L3.swoop","l":"Swoop damage","d":14,"s":1,"min":0,"max":200,"i":false,"h":"","lv":3},{"k":"L3.kbRes","l":"Knockback resist","d":0.5,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":3},{"k":"L3.cashMin","l":"Cash drop (min)","d":4,"s":1,"min":0,"max":999,"i":true,"h":"","lv":3},{"k":"L3.cashMax","l":"Cash drop (max)","d":8,"s":1,"min":0,"max":999,"i":true,"h":"","lv":3},{"k":"L3.size","l":"Size","d":1.2,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":3}],"kind":"foe","levels":3},{"id":"crawler","t":"Crawler","n":"street 3 · bullets fly over it","f":[{"k":"hp","l":"Health","d":14,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":1},{"k":"spdMin","l":"Speed (slowest)","d":16,"s":1,"min":1,"max":400,"i":false,"h":"","lv":1},{"k":"spdMax","l":"Speed (fastest)","d":22,"s":1,"min":1,"max":400,"i":false,"h":"","lv":1},{"k":"dps","l":"Bite damage","d":8,"s":1,"min":0,"max":200,"i":false,"h":"per sec while grabbing","lv":1},{"k":"kbRes","l":"Knockback resist","d":0.15,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":1},{"k":"cashMin","l":"Cash drop (min)","d":2,"s":1,"min":0,"max":999,"i":true,"h":"","lv":1},{"k":"cashMax","l":"Cash drop (max)","d":4,"s":1,"min":0,"max":999,"i":true,"h":"","lv":1},{"k":"size","l":"Size","d":1,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":1},{"k":"L2.hp","l":"Health","d":25,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":2},{"k":"L2.spdMin","l":"Speed (slowest)","d":18,"s":1,"min":1,"max":400,"i":false,"h":"","lv":2},{"k":"L2.spdMax","l":"Speed (fastest)","d":24,"s":1,"min":1,"max":400,"i":false,"h":"","lv":2},{"k":"L2.dps","l":"Bite damage","d":10,"s":1,"min":0,"max":200,"i":false,"h":"per sec while grabbing","lv":2},{"k":"L2.kbRes","l":"Knockback resist","d":0.25,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":2},{"k":"L2.cashMin","l":"Cash drop (min)","d":3,"s":1,"min":0,"max":999,"i":true,"h":"","lv":2},{"k":"L2.cashMax","l":"Cash drop (max)","d":6,"s":1,"min":0,"max":999,"i":true,"h":"","lv":2},{"k":"L2.size","l":"Size","d":1.1,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":2},{"k":"L3.hp","l":"Health","d":36,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":3},{"k":"L3.spdMin","l":"Speed (slowest)","d":19,"s":1,"min":1,"max":400,"i":false,"h":"","lv":3},{"k":"L3.spdMax","l":"Speed (fastest)","d":26,"s":1,"min":1,"max":400,"i":false,"h":"","lv":3},{"k":"L3.dps","l":"Bite damage","d":13,"s":1,"min":0,"max":200,"i":false,"h":"per sec while grabbing","lv":3},{"k":"L3.kbRes","l":"Knockback resist","d":0.35,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":3},{"k":"L3.cashMin","l":"Cash drop (min)","d":4,"s":1,"min":0,"max":999,"i":true,"h":"","lv":3},{"k":"L3.cashMax","l":"Cash drop (max)","d":8,"s":1,"min":0,"max":999,"i":true,"h":"","lv":3},{"k":"L3.size","l":"Size","d":1.2,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":3}],"kind":"foe","levels":3},{"id":"brute","t":"Brute","n":"street 3 · bursts when it dies","f":[{"k":"hp","l":"Health","d":85,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":1},{"k":"spdMin","l":"Speed (slowest)","d":9,"s":1,"min":1,"max":400,"i":false,"h":"","lv":1},{"k":"spdMax","l":"Speed (fastest)","d":12,"s":1,"min":1,"max":400,"i":false,"h":"","lv":1},{"k":"dps","l":"Bite damage","d":16,"s":1,"min":0,"max":200,"i":false,"h":"per sec while grabbing","lv":1},{"k":"boom","l":"Death blast damage","d":12,"s":1,"min":0,"max":200,"i":false,"h":"to you, if you are close","lv":1},{"k":"boomR","l":"Death blast radius","d":24,"s":1,"min":0,"max":120,"i":false,"h":"","lv":1},{"k":"kbRes","l":"Knockback resist","d":0.6,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":1},{"k":"cashMin","l":"Cash drop (min)","d":8,"s":1,"min":0,"max":999,"i":true,"h":"","lv":1},{"k":"cashMax","l":"Cash drop (max)","d":12,"s":1,"min":0,"max":999,"i":true,"h":"","lv":1},{"k":"size","l":"Size","d":1,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":1},{"k":"L2.hp","l":"Health","d":153,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":2},{"k":"L2.spdMin","l":"Speed (slowest)","d":10,"s":1,"min":1,"max":400,"i":false,"h":"","lv":2},{"k":"L2.spdMax","l":"Speed (fastest)","d":13,"s":1,"min":1,"max":400,"i":false,"h":"","lv":2},{"k":"L2.dps","l":"Bite damage","d":21,"s":1,"min":0,"max":200,"i":false,"h":"per sec while grabbing","lv":2},{"k":"L2.boom","l":"Death blast damage","d":16,"s":1,"min":0,"max":200,"i":false,"h":"to you, if you are close","lv":2},{"k":"L2.boomR","l":"Death blast radius","d":24,"s":1,"min":0,"max":120,"i":false,"h":"","lv":2},{"k":"L2.kbRes","l":"Knockback resist","d":0.7,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":2},{"k":"L2.cashMin","l":"Cash drop (min)","d":12,"s":1,"min":0,"max":999,"i":true,"h":"","lv":2},{"k":"L2.cashMax","l":"Cash drop (max)","d":18,"s":1,"min":0,"max":999,"i":true,"h":"","lv":2},{"k":"L2.size","l":"Size","d":1.1,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":2},{"k":"L3.hp","l":"Health","d":221,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":3},{"k":"L3.spdMin","l":"Speed (slowest)","d":11,"s":1,"min":1,"max":400,"i":false,"h":"","lv":3},{"k":"L3.spdMax","l":"Speed (fastest)","d":14,"s":1,"min":1,"max":400,"i":false,"h":"","lv":3},{"k":"L3.dps","l":"Bite damage","d":26,"s":1,"min":0,"max":200,"i":false,"h":"per sec while grabbing","lv":3},{"k":"L3.boom","l":"Death blast damage","d":19,"s":1,"min":0,"max":200,"i":false,"h":"to you, if you are close","lv":3},{"k":"L3.boomR","l":"Death blast radius","d":24,"s":1,"min":0,"max":120,"i":false,"h":"","lv":3},{"k":"L3.kbRes","l":"Knockback resist","d":0.8,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":3},{"k":"L3.cashMin","l":"Cash drop (min)","d":16,"s":1,"min":0,"max":999,"i":true,"h":"","lv":3},{"k":"L3.cashMax","l":"Cash drop (max)","d":24,"s":1,"min":0,"max":999,"i":true,"h":"","lv":3},{"k":"L3.size","l":"Size","d":1.2,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":3}],"kind":"foe","levels":3},{"id":"hound","t":"Hound","n":"street 4","f":[{"k":"hp","l":"Health","d":12,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":1},{"k":"spdMin","l":"Speed (slowest)","d":118,"s":1,"min":1,"max":400,"i":false,"h":"","lv":1},{"k":"spdMax","l":"Speed (fastest)","d":132,"s":1,"min":1,"max":400,"i":false,"h":"","lv":1},{"k":"leap","l":"Leap damage","d":16,"s":1,"min":0,"max":200,"i":false,"h":"","lv":1},{"k":"kbRes","l":"Knockback resist","d":0.1,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":1},{"k":"cashMin","l":"Cash drop (min)","d":3,"s":1,"min":0,"max":999,"i":true,"h":"","lv":1},{"k":"cashMax","l":"Cash drop (max)","d":6,"s":1,"min":0,"max":999,"i":true,"h":"","lv":1},{"k":"size","l":"Size","d":1,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":1},{"k":"L2.hp","l":"Health","d":22,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":2},{"k":"L2.spdMin","l":"Speed (slowest)","d":130,"s":1,"min":1,"max":400,"i":false,"h":"","lv":2},{"k":"L2.spdMax","l":"Speed (fastest)","d":145,"s":1,"min":1,"max":400,"i":false,"h":"","lv":2},{"k":"L2.leap","l":"Leap damage","d":21,"s":1,"min":0,"max":200,"i":false,"h":"","lv":2},{"k":"L2.kbRes","l":"Knockback resist","d":0.2,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":2},{"k":"L2.cashMin","l":"Cash drop (min)","d":4,"s":1,"min":0,"max":999,"i":true,"h":"","lv":2},{"k":"L2.cashMax","l":"Cash drop (max)","d":9,"s":1,"min":0,"max":999,"i":true,"h":"","lv":2},{"k":"L2.size","l":"Size","d":1.1,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":2},{"k":"L3.hp","l":"Health","d":31,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":3},{"k":"L3.spdMin","l":"Speed (slowest)","d":142,"s":1,"min":1,"max":400,"i":false,"h":"","lv":3},{"k":"L3.spdMax","l":"Speed (fastest)","d":158,"s":1,"min":1,"max":400,"i":false,"h":"","lv":3},{"k":"L3.leap","l":"Leap damage","d":26,"s":1,"min":0,"max":200,"i":false,"h":"","lv":3},{"k":"L3.kbRes","l":"Knockback resist","d":0.3,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":3},{"k":"L3.cashMin","l":"Cash drop (min)","d":6,"s":1,"min":0,"max":999,"i":true,"h":"","lv":3},{"k":"L3.cashMax","l":"Cash drop (max)","d":12,"s":1,"min":0,"max":999,"i":true,"h":"","lv":3},{"k":"L3.size","l":"Size","d":1.2,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":3}],"kind":"foe","levels":3},{"id":"spitter","t":"Spitter","n":"the forest on · spits from the edge of the screen","f":[{"k":"hp","l":"Health","d":30,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":1},{"k":"spdMin","l":"Speed (slowest)","d":62,"s":1,"min":1,"max":400,"i":false,"h":"","lv":1},{"k":"spdMax","l":"Speed (fastest)","d":70,"s":1,"min":1,"max":400,"i":false,"h":"","lv":1},{"k":"spit","l":"Spit damage","d":10,"s":1,"min":0,"max":200,"i":false,"h":"where the glob lands","lv":1},{"k":"spits","l":"Spits before it is winded","d":3,"s":1,"min":1,"max":12,"i":true,"h":"","lv":1},{"k":"tired","l":"Winded for","d":4.5,"s":0.5,"min":0.5,"max":20,"i":false,"h":"sec · it can't get away","lv":1},{"k":"kbRes","l":"Knockback resist","d":0.1,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":1},{"k":"cashMin","l":"Cash drop (min)","d":4,"s":1,"min":0,"max":999,"i":true,"h":"","lv":1},{"k":"cashMax","l":"Cash drop (max)","d":7,"s":1,"min":0,"max":999,"i":true,"h":"","lv":1},{"k":"size","l":"Size","d":1,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":1},{"k":"L2.hp","l":"Health","d":54,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":2},{"k":"L2.spdMin","l":"Speed (slowest)","d":68,"s":1,"min":1,"max":400,"i":false,"h":"","lv":2},{"k":"L2.spdMax","l":"Speed (fastest)","d":77,"s":1,"min":1,"max":400,"i":false,"h":"","lv":2},{"k":"L2.spit","l":"Spit damage","d":13,"s":1,"min":0,"max":200,"i":false,"h":"where the glob lands","lv":2},{"k":"L2.spits","l":"Spits before it is winded","d":3,"s":1,"min":1,"max":12,"i":true,"h":"","lv":2},{"k":"L2.tired","l":"Winded for","d":4.5,"s":0.5,"min":0.5,"max":20,"i":false,"h":"sec · it can't get away","lv":2},{"k":"L2.kbRes","l":"Knockback resist","d":0.2,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":2},{"k":"L2.cashMin","l":"Cash drop (min)","d":6,"s":1,"min":0,"max":999,"i":true,"h":"","lv":2},{"k":"L2.cashMax","l":"Cash drop (max)","d":10,"s":1,"min":0,"max":999,"i":true,"h":"","lv":2},{"k":"L2.size","l":"Size","d":1.1,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":2},{"k":"L3.hp","l":"Health","d":78,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":3},{"k":"L3.spdMin","l":"Speed (slowest)","d":74,"s":1,"min":1,"max":400,"i":false,"h":"","lv":3},{"k":"L3.spdMax","l":"Speed (fastest)","d":84,"s":1,"min":1,"max":400,"i":false,"h":"","lv":3},{"k":"L3.spit","l":"Spit damage","d":16,"s":1,"min":0,"max":200,"i":false,"h":"where the glob lands","lv":3},{"k":"L3.spits","l":"Spits before it is winded","d":3,"s":1,"min":1,"max":12,"i":true,"h":"","lv":3},{"k":"L3.tired","l":"Winded for","d":4.5,"s":0.5,"min":0.5,"max":20,"i":false,"h":"sec · it can't get away","lv":3},{"k":"L3.kbRes","l":"Knockback resist","d":0.3,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":3},{"k":"L3.cashMin","l":"Cash drop (min)","d":8,"s":1,"min":0,"max":999,"i":true,"h":"","lv":3},{"k":"L3.cashMax","l":"Cash drop (max)","d":14,"s":1,"min":0,"max":999,"i":true,"h":"","lv":3},{"k":"L3.size","l":"Size","d":1.2,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":3}],"kind":"foe","levels":3},{"id":"trash","t":"Trash Can","n":"street 5 · slams the can on you · not in the forest","f":[{"k":"hp","l":"Health","d":120,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":1},{"k":"spdMin","l":"Speed (slowest)","d":11,"s":1,"min":1,"max":400,"i":false,"h":"","lv":1},{"k":"spdMax","l":"Speed (fastest)","d":15,"s":1,"min":1,"max":400,"i":false,"h":"","lv":1},{"k":"slam","l":"Slam damage","d":14,"s":1,"min":0,"max":200,"i":false,"h":"each time the can comes down","lv":1},{"k":"kbRes","l":"Knockback resist","d":0.45,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":1},{"k":"cashMin","l":"Cash drop (min)","d":5,"s":1,"min":0,"max":999,"i":true,"h":"","lv":1},{"k":"cashMax","l":"Cash drop (max)","d":9,"s":1,"min":0,"max":999,"i":true,"h":"","lv":1},{"k":"size","l":"Size","d":1,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":1},{"k":"L2.hp","l":"Health","d":216,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":2},{"k":"L2.spdMin","l":"Speed (slowest)","d":12,"s":1,"min":1,"max":400,"i":false,"h":"","lv":2},{"k":"L2.spdMax","l":"Speed (fastest)","d":16,"s":1,"min":1,"max":400,"i":false,"h":"","lv":2},{"k":"L2.slam","l":"Slam damage","d":18,"s":1,"min":0,"max":200,"i":false,"h":"each time the can comes down","lv":2},{"k":"L2.kbRes","l":"Knockback resist","d":0.55,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":2},{"k":"L2.cashMin","l":"Cash drop (min)","d":8,"s":1,"min":0,"max":999,"i":true,"h":"","lv":2},{"k":"L2.cashMax","l":"Cash drop (max)","d":14,"s":1,"min":0,"max":999,"i":true,"h":"","lv":2},{"k":"L2.size","l":"Size","d":1.1,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":2},{"k":"L3.hp","l":"Health","d":312,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":3},{"k":"L3.spdMin","l":"Speed (slowest)","d":13,"s":1,"min":1,"max":400,"i":false,"h":"","lv":3},{"k":"L3.spdMax","l":"Speed (fastest)","d":18,"s":1,"min":1,"max":400,"i":false,"h":"","lv":3},{"k":"L3.slam","l":"Slam damage","d":22,"s":1,"min":0,"max":200,"i":false,"h":"each time the can comes down","lv":3},{"k":"L3.kbRes","l":"Knockback resist","d":0.65,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":3},{"k":"L3.cashMin","l":"Cash drop (min)","d":10,"s":1,"min":0,"max":999,"i":true,"h":"","lv":3},{"k":"L3.cashMax","l":"Cash drop (max)","d":18,"s":1,"min":0,"max":999,"i":true,"h":"","lv":3},{"k":"L3.size","l":"Size","d":1.2,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":3}],"kind":"foe","levels":3},{"id":"ranger","t":"Ranger","n":"forest · the walkers (and runners) out there","f":[{"k":"hp","l":"Health","d":28,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":1},{"k":"spdMin","l":"Speed (slowest)","d":13,"s":1,"min":1,"max":400,"i":false,"h":"","lv":1},{"k":"spdMax","l":"Speed (fastest)","d":19,"s":1,"min":1,"max":400,"i":false,"h":"","lv":1},{"k":"dps","l":"Bite damage","d":11,"s":1,"min":0,"max":200,"i":false,"h":"per sec while grabbing","lv":1},{"k":"kbRes","l":"Knockback resist","d":0.05,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":1},{"k":"cashMin","l":"Cash drop (min)","d":1,"s":1,"min":0,"max":999,"i":true,"h":"","lv":1},{"k":"cashMax","l":"Cash drop (max)","d":3,"s":1,"min":0,"max":999,"i":true,"h":"","lv":1},{"k":"size","l":"Size","d":1,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":1},{"k":"L2.hp","l":"Health","d":50,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":2},{"k":"L2.spdMin","l":"Speed (slowest)","d":14,"s":1,"min":1,"max":400,"i":false,"h":"","lv":2},{"k":"L2.spdMax","l":"Speed (fastest)","d":21,"s":1,"min":1,"max":400,"i":false,"h":"","lv":2},{"k":"L2.dps","l":"Bite damage","d":14,"s":1,"min":0,"max":200,"i":false,"h":"per sec while grabbing","lv":2},{"k":"L2.kbRes","l":"Knockback resist","d":0.15,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":2},{"k":"L2.cashMin","l":"Cash drop (min)","d":2,"s":1,"min":0,"max":999,"i":true,"h":"","lv":2},{"k":"L2.cashMax","l":"Cash drop (max)","d":4,"s":1,"min":0,"max":999,"i":true,"h":"","lv":2},{"k":"L2.size","l":"Size","d":1.1,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":2},{"k":"L3.hp","l":"Health","d":73,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":3},{"k":"L3.spdMin","l":"Speed (slowest)","d":16,"s":1,"min":1,"max":400,"i":false,"h":"","lv":3},{"k":"L3.spdMax","l":"Speed (fastest)","d":23,"s":1,"min":1,"max":400,"i":false,"h":"","lv":3},{"k":"L3.dps","l":"Bite damage","d":18,"s":1,"min":0,"max":200,"i":false,"h":"per sec while grabbing","lv":3},{"k":"L3.kbRes","l":"Knockback resist","d":0.25,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":3},{"k":"L3.cashMin","l":"Cash drop (min)","d":2,"s":1,"min":0,"max":999,"i":true,"h":"","lv":3},{"k":"L3.cashMax","l":"Cash drop (max)","d":6,"s":1,"min":0,"max":999,"i":true,"h":"","lv":3},{"k":"L3.size","l":"Size","d":1.2,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":3}],"kind":"foe","levels":3},{"id":"hunter","t":"Hunter","n":"forest · drops out of a tree stand","f":[{"k":"hp","l":"Health","d":32,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":1},{"k":"spdMin","l":"Speed (slowest)","d":18,"s":1,"min":1,"max":400,"i":false,"h":"","lv":1},{"k":"spdMax","l":"Speed (fastest)","d":24,"s":1,"min":1,"max":400,"i":false,"h":"","lv":1},{"k":"dps","l":"Bite damage","d":12,"s":1,"min":0,"max":200,"i":false,"h":"per sec while grabbing","lv":1},{"k":"land","l":"Landing damage","d":12,"s":1,"min":0,"max":200,"i":false,"h":"if he lands on you","lv":1},{"k":"kbRes","l":"Knockback resist","d":0.1,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":1},{"k":"cashMin","l":"Cash drop (min)","d":3,"s":1,"min":0,"max":999,"i":true,"h":"","lv":1},{"k":"cashMax","l":"Cash drop (max)","d":6,"s":1,"min":0,"max":999,"i":true,"h":"","lv":1},{"k":"size","l":"Size","d":1,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":1},{"k":"L2.hp","l":"Health","d":58,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":2},{"k":"L2.spdMin","l":"Speed (slowest)","d":20,"s":1,"min":1,"max":400,"i":false,"h":"","lv":2},{"k":"L2.spdMax","l":"Speed (fastest)","d":26,"s":1,"min":1,"max":400,"i":false,"h":"","lv":2},{"k":"L2.dps","l":"Bite damage","d":16,"s":1,"min":0,"max":200,"i":false,"h":"per sec while grabbing","lv":2},{"k":"L2.land","l":"Landing damage","d":16,"s":1,"min":0,"max":200,"i":false,"h":"if he lands on you","lv":2},{"k":"L2.kbRes","l":"Knockback resist","d":0.2,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":2},{"k":"L2.cashMin","l":"Cash drop (min)","d":4,"s":1,"min":0,"max":999,"i":true,"h":"","lv":2},{"k":"L2.cashMax","l":"Cash drop (max)","d":9,"s":1,"min":0,"max":999,"i":true,"h":"","lv":2},{"k":"L2.size","l":"Size","d":1.1,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":2},{"k":"L3.hp","l":"Health","d":83,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":3},{"k":"L3.spdMin","l":"Speed (slowest)","d":22,"s":1,"min":1,"max":400,"i":false,"h":"","lv":3},{"k":"L3.spdMax","l":"Speed (fastest)","d":29,"s":1,"min":1,"max":400,"i":false,"h":"","lv":3},{"k":"L3.dps","l":"Bite damage","d":19,"s":1,"min":0,"max":200,"i":false,"h":"per sec while grabbing","lv":3},{"k":"L3.land","l":"Landing damage","d":19,"s":1,"min":0,"max":200,"i":false,"h":"if he lands on you","lv":3},{"k":"L3.kbRes","l":"Knockback resist","d":0.3,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":3},{"k":"L3.cashMin","l":"Cash drop (min)","d":6,"s":1,"min":0,"max":999,"i":true,"h":"","lv":3},{"k":"L3.cashMax","l":"Cash drop (max)","d":12,"s":1,"min":0,"max":999,"i":true,"h":"","lv":3},{"k":"L3.size","l":"Size","d":1.2,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":3}],"kind":"foe","levels":3},{"id":"bear","t":"Zombie Bear","n":"forest · the brutes out there · no death blast","f":[{"k":"hp","l":"Health","d":170,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":1},{"k":"spdMin","l":"Speed (slowest)","d":10,"s":1,"min":1,"max":400,"i":false,"h":"","lv":1},{"k":"spdMax","l":"Speed (fastest)","d":14,"s":1,"min":1,"max":400,"i":false,"h":"","lv":1},{"k":"dps","l":"Bite damage","d":30,"s":1,"min":0,"max":200,"i":false,"h":"per sec while grabbing","lv":1},{"k":"kbRes","l":"Knockback resist","d":0.7,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":1},{"k":"cashMin","l":"Cash drop (min)","d":12,"s":1,"min":0,"max":999,"i":true,"h":"","lv":1},{"k":"cashMax","l":"Cash drop (max)","d":18,"s":1,"min":0,"max":999,"i":true,"h":"","lv":1},{"k":"size","l":"Size","d":1,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":1},{"k":"L2.hp","l":"Health","d":306,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":2},{"k":"L2.spdMin","l":"Speed (slowest)","d":11,"s":1,"min":1,"max":400,"i":false,"h":"","lv":2},{"k":"L2.spdMax","l":"Speed (fastest)","d":15,"s":1,"min":1,"max":400,"i":false,"h":"","lv":2},{"k":"L2.dps","l":"Bite damage","d":39,"s":1,"min":0,"max":200,"i":false,"h":"per sec while grabbing","lv":2},{"k":"L2.kbRes","l":"Knockback resist","d":0.8,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":2},{"k":"L2.cashMin","l":"Cash drop (min)","d":18,"s":1,"min":0,"max":999,"i":true,"h":"","lv":2},{"k":"L2.cashMax","l":"Cash drop (max)","d":27,"s":1,"min":0,"max":999,"i":true,"h":"","lv":2},{"k":"L2.size","l":"Size","d":1.1,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":2},{"k":"L3.hp","l":"Health","d":442,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":3},{"k":"L3.spdMin","l":"Speed (slowest)","d":12,"s":1,"min":1,"max":400,"i":false,"h":"","lv":3},{"k":"L3.spdMax","l":"Speed (fastest)","d":17,"s":1,"min":1,"max":400,"i":false,"h":"","lv":3},{"k":"L3.dps","l":"Bite damage","d":48,"s":1,"min":0,"max":200,"i":false,"h":"per sec while grabbing","lv":3},{"k":"L3.kbRes","l":"Knockback resist","d":0.9,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":3},{"k":"L3.cashMin","l":"Cash drop (min)","d":24,"s":1,"min":0,"max":999,"i":true,"h":"","lv":3},{"k":"L3.cashMax","l":"Cash drop (max)","d":36,"s":1,"min":0,"max":999,"i":true,"h":"","lv":3},{"k":"L3.size","l":"Size","d":1.2,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":3}],"kind":"foe","levels":3},{"id":"wolf","t":"Wolf","n":"forest · the hound packs out there","f":[{"k":"hp","l":"Health","d":13,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":1},{"k":"spdMin","l":"Speed (slowest)","d":124,"s":1,"min":1,"max":400,"i":false,"h":"","lv":1},{"k":"spdMax","l":"Speed (fastest)","d":138,"s":1,"min":1,"max":400,"i":false,"h":"","lv":1},{"k":"leap","l":"Leap damage","d":18,"s":1,"min":0,"max":200,"i":false,"h":"","lv":1},{"k":"kbRes","l":"Knockback resist","d":0.1,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":1},{"k":"cashMin","l":"Cash drop (min)","d":3,"s":1,"min":0,"max":999,"i":true,"h":"","lv":1},{"k":"cashMax","l":"Cash drop (max)","d":6,"s":1,"min":0,"max":999,"i":true,"h":"","lv":1},{"k":"size","l":"Size","d":1,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":1},{"k":"L2.hp","l":"Health","d":23,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":2},{"k":"L2.spdMin","l":"Speed (slowest)","d":136,"s":1,"min":1,"max":400,"i":false,"h":"","lv":2},{"k":"L2.spdMax","l":"Speed (fastest)","d":152,"s":1,"min":1,"max":400,"i":false,"h":"","lv":2},{"k":"L2.leap","l":"Leap damage","d":23,"s":1,"min":0,"max":200,"i":false,"h":"","lv":2},{"k":"L2.kbRes","l":"Knockback resist","d":0.2,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":2},{"k":"L2.cashMin","l":"Cash drop (min)","d":4,"s":1,"min":0,"max":999,"i":true,"h":"","lv":2},{"k":"L2.cashMax","l":"Cash drop (max)","d":9,"s":1,"min":0,"max":999,"i":true,"h":"","lv":2},{"k":"L2.size","l":"Size","d":1.1,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":2},{"k":"L3.hp","l":"Health","d":34,"s":1,"min":1,"max":9999,"i":false,"h":"first night of the level","lv":3},{"k":"L3.spdMin","l":"Speed (slowest)","d":149,"s":1,"min":1,"max":400,"i":false,"h":"","lv":3},{"k":"L3.spdMax","l":"Speed (fastest)","d":166,"s":1,"min":1,"max":400,"i":false,"h":"","lv":3},{"k":"L3.leap","l":"Leap damage","d":29,"s":1,"min":0,"max":200,"i":false,"h":"","lv":3},{"k":"L3.kbRes","l":"Knockback resist","d":0.3,"s":0.05,"min":0,"max":1,"i":false,"h":"0 = none · 1 = immovable","lv":3},{"k":"L3.cashMin","l":"Cash drop (min)","d":6,"s":1,"min":0,"max":999,"i":true,"h":"","lv":3},{"k":"L3.cashMax","l":"Cash drop (max)","d":12,"s":1,"min":0,"max":999,"i":true,"h":"","lv":3},{"k":"L3.size","l":"Size","d":1.2,"s":0.05,"min":0.5,"max":2,"i":false,"h":"1 = normal · also the hitbox","lv":3}],"kind":"foe","levels":3}]},{"id":"boss","t":"Boss","g":[{"id":null,"t":"The Dispatcher","f":[{"k":"hp","l":"Health (first fight)","d":1300,"s":10,"min":1,"max":99999,"i":false,"h":""},{"k":"growth","l":"Extra health each loop","d":0.45,"s":0.05,"min":0,"max":5,"i":false,"h":"0.45 = +45%"},{"k":"speed","l":"Walk speed","d":15,"s":1,"min":1,"max":200,"i":false,"h":""},{"k":"drop","l":"Landing damage","d":10,"s":1,"min":0,"max":200,"i":false,"h":""},{"k":"swipe","l":"Swipe damage","d":16,"s":1,"min":0,"max":200,"i":false,"h":""},{"k":"slam","l":"Slam damage","d":22,"s":1,"min":0,"max":200,"i":false,"h":""},{"k":"charge","l":"Charge damage","d":30,"s":1,"min":0,"max":200,"i":false,"h":""},{"k":"can","l":"Thrown can damage","d":18,"s":1,"min":0,"max":200,"i":false,"h":""}]}]},{"id":"alpha","t":"Forest boss","g":[{"id":null,"t":"The Alpha","n":"night 10, 20, 30 · the ranger station","f":[{"k":"hp","l":"Health (first fight)","d":1900,"s":10,"min":1,"max":99999,"i":false,"h":""},{"k":"growth","l":"Extra health each time","d":0.45,"s":0.05,"min":0,"max":5,"i":false,"h":"0.45 = +45%"},{"k":"speed","l":"Walk speed","d":18,"s":1,"min":1,"max":200,"i":false,"h":""},{"k":"drop","l":"Landing damage","d":14,"s":1,"min":0,"max":200,"i":false,"h":""},{"k":"swipe","l":"Swipe damage","d":24,"s":1,"min":0,"max":200,"i":false,"h":""},{"k":"slam","l":"Slam damage","d":28,"s":1,"min":0,"max":200,"i":false,"h":""},{"k":"charge","l":"Charge damage","d":36,"s":1,"min":0,"max":200,"i":false,"h":""},{"k":"log","l":"Thrown log damage","d":22,"s":1,"min":0,"max":200,"i":false,"h":""}]}]},{"id":"forest","t":"Forest","g":[{"id":null,"t":"Traps and tree stands","f":[{"k":"traps","l":"Bear traps on each trail","d":12,"s":1,"min":0,"max":60,"i":true,"h":"half as many on the ranger station night"},{"k":"trapDmg","l":"Bear trap damage","d":18,"s":1,"min":0,"max":200,"i":false,"h":""},{"k":"trapHold","l":"Bear trap holds you for","d":2.5,"s":0.1,"min":0,"max":10,"i":false,"h":"sec · a bat swing pries it open"},{"k":"standOcc","l":"Tree stands with a hunter in them","d":0.45,"s":0.05,"min":0,"max":1,"i":false,"h":"0.45 = 45%"},{"k":"standNear","l":"Hunter drops when you are this close","d":70,"s":5,"min":10,"max":300,"i":false,"h":""}]}]},{"id":"player","t":"Player","g":[{"id":null,"t":"Player","f":[{"k":"hp","l":"Health","d":100,"s":5,"min":1,"max":999,"i":false,"h":""},{"k":"speed","l":"Walk speed","d":58,"s":1,"min":10,"max":300,"i":false,"h":""},{"k":"medkit","l":"Medkit heals","d":35,"s":1,"min":0,"max":999,"i":false,"h":""},{"k":"regen","l":"Health back while unhurt","d":1,"s":0.5,"min":0,"max":100,"i":false,"h":"0 = off"},{"k":"regenEvery","l":"...every","d":10,"s":0.5,"min":0.5,"max":120,"i":false,"h":"sec without getting hurt"}]}]},{"id":"nights","t":"Nights & ammo","g":[{"id":null,"t":"Nights","f":[{"k":"hpGrowth","l":"Zombie health added per night","d":0.18,"s":0.01,"min":0,"max":2,"i":false,"h":"0.18 = +18% · starts over at each new enemy level"},{"k":"spawnGrowth","l":"Spawn speed-up per night","d":0.09,"s":0.01,"min":0,"max":0.5,"i":false,"h":"0.09 = 9% quicker"},{"k":"n5hp","l":"Night 5: zombie health x","d":0.9,"s":0.02,"min":0.1,"max":3,"i":false,"h":"0.9 = 10% less than the usual night-5 health"},{"k":"n5cap","l":"Night 5: most awake at once x","d":0.88,"s":0.02,"min":0.1,"max":3,"i":false,"h":"0.88 = 12% fewer"},{"k":"n5horde","l":"Night 5: horde size x","d":0.88,"s":0.02,"min":0.1,"max":3,"i":false,"h":"0.88 = 12% smaller"},{"k":"clips","l":"Spare clips you can carry","d":3,"s":1,"min":1,"max":20,"i":true,"h":"of your gun, on top of the one loaded · follows the gun’s clip size · the revolver never runs out"},{"k":"deathLoss","l":"Cash lost when you are bitten","d":0.5,"s":0.05,"min":0,"max":1,"i":false,"h":"0.5 = 50% of the cash you picked up that night · earlier nights are safe · solo and co-op · Money Belt: 20 points less"},{"k":"sides","l":"Zombies coming in from the sides","d":1.2,"s":0.05,"min":0.1,"max":5,"i":false,"h":"1.2 = 20% more (how often and how many at once) · hordes and sleepers not included"},{"k":"ammoDrop","l":"Zombies that drop ammo","d":0.0385,"s":0.0005,"min":0,"max":1,"i":false,"h":"0.0385 = 3.85% of kills · in co-op each player gets their own"},{"k":"ammoDropClips","l":"Ammo in a drop","d":1,"s":0.25,"min":0.25,"max":5,"i":false,"h":"in clips of your gun: 1 = one clip"},{"k":"ammoDropLife","l":"Ammo drop stays on the ground","d":25,"s":1,"min":3,"max":120,"i":false,"h":"sec"},{"k":"hordeGap","l":"Breather between gunshot hordes","d":35,"s":1,"min":0,"max":600,"i":false,"h":"sec · counted from when a horde starts · no new horde until it runs out"}]}]},{"id":"coop","t":"Co-op","n":"Extra enemies when two of you are playing (1 = the same as solo).","g":[{"id":null,"t":"Two players","f":[{"k":"spawn","l":"Zombies arrive faster","d":1.5,"s":0.05,"min":0.2,"max":5,"i":false,"h":"1.5 = 50% more often"},{"k":"cap","l":"More on screen at once","d":1.5,"s":0.05,"min":0.2,"max":5,"i":false,"h":"1.5 = 50% more"},{"k":"hp","l":"Zombie health","d":1.3,"s":0.05,"min":0.1,"max":5,"i":false,"h":"1.3 = +30%"},{"k":"idle","l":"More asleep along the street","d":1.4,"s":0.05,"min":0,"max":5,"i":false,"h":""},{"k":"horde","l":"Bigger hordes and hound packs","d":2,"s":0.05,"min":0,"max":5,"i":false,"h":"2 = twice as many"},{"k":"ammo","l":"Ammo boxes drop more often","d":1.24,"s":0.01,"min":0,"max":5,"i":false,"h":"1.24 = 24% more often than solo"},{"k":"easeFrom","l":"Easier from night","d":3,"s":1,"min":1,"max":99,"i":true,"h":"the three below apply from this night on"},{"k":"easeHp","l":"From then: health x","d":0.8,"s":0.01,"min":0,"max":2,"i":false,"h":"0.8 = 20% less than the co-op health above"},{"k":"easeSpawn","l":"From then: walk-ins x","d":0.88,"s":0.01,"min":0.05,"max":2,"i":false,"h":"0.88 = 12% fewer"},{"k":"easeCap","l":"From then: most awake at once x","d":0.88,"s":0.01,"min":0.05,"max":2,"i":false,"h":"0.88 = 12% fewer"}]}]},{"id":"elites","t":"Elites","n":"Violet, glowing, a health bar over their heads. Any kind of zombie can be one.","g":[{"id":null,"t":"Elites","f":[{"k":"solo","l":"Chance each zombie is an elite (solo)","d":0.024,"s":0.002,"min":0,"max":1,"i":false,"h":"0.024 = 2.4%"},{"k":"coop","l":"Chance each zombie is an elite (co-op)","d":0.09,"s":0.01,"min":0,"max":1,"i":false,"h":"0.09 = 9%"},{"k":"from","l":"First night they appear","d":3,"s":1,"min":1,"max":50,"i":true,"h":""},{"k":"hp","l":"Health multiplier","d":6,"s":0.5,"min":1,"max":50,"i":false,"h":"6 = six times"},{"k":"dmg","l":"Damage multiplier","d":1.5,"s":0.1,"min":0,"max":10,"i":false,"h":""},{"k":"kbRes","l":"Extra knockback resist","d":0.3,"s":0.05,"min":0,"max":1,"i":false,"h":""},{"k":"size","l":"Size","d":1.15,"s":0.05,"min":0.5,"max":2,"i":false,"h":""},{"k":"cash","l":"Cash multiplier","d":5,"s":0.5,"min":0,"max":50,"i":false,"h":""}]}]},{"id":"legend","t":"Gold legendaries","n":"Gold, the toughest thing on the street, and they drop an item (one each in co-op). Each horde rolls for one; every miss raises the chance until one comes, then it starts over.","g":[{"id":null,"t":"Gold legendaries","f":[{"k":"chance","l":"Starting chance per horde","d":0.02,"s":0.005,"min":0,"max":1,"i":false,"h":"0.02 = 2%"},{"k":"solo3","l":"Solo, night 3: health x","d":0.7,"s":0.05,"min":0.05,"max":5,"i":false,"h":"0.7 = 30% less"},{"k":"step","l":"Added after each horde without one","d":0.03,"s":0.005,"min":0,"max":1,"i":false,"h":"0.03 = +3% a horde"},{"k":"hp","l":"Health multiplier (on top of an elite)","d":3,"s":0.25,"min":1,"max":50,"i":false,"h":"3 = three times an elite"},{"k":"dmg","l":"Damage multiplier (on top of an elite)","d":1.4,"s":0.1,"min":0,"max":10,"i":false,"h":""},{"k":"size","l":"Size (on top of an elite)","d":1.15,"s":0.05,"min":0.5,"max":2,"i":false,"h":""},{"k":"cash","l":"Cash multiplier (on top of an elite)","d":3,"s":0.5,"min":0,"max":50,"i":false,"h":""}]}]},{"id":"drop","t":"Supply drops","n":"Some nights a green flare marks a spot on the street. Stand in its circle until the bar fills while zombies come from both sides; then a crate drops an item (one each in co-op).","g":[{"id":null,"t":"Supply drop","f":[{"k":"chance","l":"Chance of one each night","d":0.2,"s":0.05,"min":0,"max":1,"i":false,"h":"0.2 = 20%"},{"k":"hold","l":"Seconds in the circle to fill the bar","d":5,"s":0.5,"min":0.5,"max":60,"i":false,"h":""},{"k":"zombies","l":"Zombies from each side","d":5,"s":1,"min":0,"max":50,"i":true,"h":"co-op: 50% more"},{"k":"elites","l":"Elites from each side","d":1,"s":1,"min":0,"max":10,"i":true,"h":""}]}]},{"id":"supply","t":"Supply","n":"Bought between nights. Lost when you get bitten.","g":[{"id":"nades","t":"Grenades","f":[{"k":"price","l":"Price","d":45,"s":5,"min":0,"max":9999,"i":false,"h":""},{"k":"count","l":"Grenades per purchase","d":3,"s":1,"min":1,"max":20,"i":true,"h":""}]},{"id":"jacket","t":"Canvas Jacket","f":[{"k":"hp","l":"Extra health","d":25,"s":1,"min":0,"max":500,"i":false,"h":""},{"k":"price","l":"Price","d":100,"s":5,"min":0,"max":9999,"i":false,"h":""}]},{"id":"shoes","t":"Trail Runners","f":[{"k":"speed","l":"Extra walking speed","d":0.1,"s":0.01,"min":0,"max":2,"i":false,"h":"0.1 = +10%"},{"k":"price","l":"Price","d":90,"s":5,"min":0,"max":9999,"i":false,"h":""}]},{"id":"axe","t":"Fire Axe","n":"replaces the bat","f":[{"k":"price","l":"Price","d":200,"s":5,"min":0,"max":9999,"i":false,"h":""}]}]},{"id":"armory","t":"Armory","n":"Yours for good. Your gun’s upgrades go with whichever gun you pick; the revolver has its own.","g":[{"id":null,"t":"All upgrades","f":[{"k":"levels","l":"Levels in each upgrade","d":10,"s":1,"min":1,"max":30,"i":true,"h":""}]},{"id":"sight","t":"Red Dot Sight / Scope","f":[{"k":"per","l":"Extra crit chance per level","d":0.015,"s":0.005,"min":0,"max":1,"i":false,"h":"0.015 = +1.5%"},{"k":"price","l":"First level price","d":90,"s":5,"min":0,"max":99999,"i":false,"h":""},{"k":"growth","l":"Price growth per level","d":1.25,"s":0.05,"min":1,"max":5,"i":false,"h":"1.25 = each level costs 25% more"}]},{"id":"hot","t":"Hot Loads","f":[{"k":"per","l":"Extra damage per level","d":0.05,"s":0.01,"min":0,"max":3,"i":false,"h":"0.05 = +5%"},{"k":"price","l":"First level price","d":100,"s":5,"min":0,"max":99999,"i":false,"h":""},{"k":"growth","l":"Price growth per level","d":1.25,"s":0.05,"min":1,"max":5,"i":false,"h":"1.25 = each level costs 25% more"}]},{"id":"mag","t":"Extended Mag","f":[{"k":"per","l":"Bigger clip and ammo carried per level","d":0.1,"s":0.01,"min":0,"max":5,"i":false,"h":"0.1 = +10%"},{"k":"price","l":"First level price","d":80,"s":5,"min":0,"max":99999,"i":false,"h":""},{"k":"growth","l":"Price growth per level","d":1.25,"s":0.05,"min":1,"max":5,"i":false,"h":"1.25 = each level costs 25% more"}]},{"id":"grip","t":"Speed Grip / Speedloader","f":[{"k":"per","l":"Faster reload per level","d":0.04,"s":0.01,"min":0,"max":0.5,"i":false,"h":"0.04 = 4% faster"},{"k":"price","l":"First level price","d":80,"s":5,"min":0,"max":99999,"i":false,"h":""},{"k":"growth","l":"Price growth per level","d":1.25,"s":0.05,"min":1,"max":5,"i":false,"h":"1.25 = each level costs 25% more"}]},{"id":"barrel","t":"Long Barrel / Choke","f":[{"k":"per","l":"More range, tighter spread per level","d":0.05,"s":0.01,"min":0,"max":3,"i":false,"h":"0.05 = +5%"},{"k":"price","l":"First level price","d":70,"s":5,"min":0,"max":99999,"i":false,"h":""},{"k":"growth","l":"Price growth per level","d":1.25,"s":0.05,"min":1,"max":5,"i":false,"h":"1.25 = each level costs 25% more"}]},{"id":"trigger","t":"Hair Trigger","f":[{"k":"per","l":"Faster firing per level","d":0.03,"s":0.01,"min":0,"max":3,"i":false,"h":"0.03 = 3% faster"},{"k":"price","l":"First level price","d":100,"s":5,"min":0,"max":99999,"i":false,"h":""},{"k":"growth","l":"Price growth per level","d":1.25,"s":0.05,"min":1,"max":5,"i":false,"h":"1.25 = each level costs 25% more"}]},{"id":"turret","t":"Mini Turret (gadget)","n":"fires your revolver (with its upgrades); your items work on its shots","f":[{"k":"price","l":"Price","d":150,"s":5,"min":0,"max":99999,"i":false,"h":""},{"k":"mag","l":"Shots before it reloads","d":10,"s":1,"min":1,"max":100,"i":true,"h":""},{"k":"reload","l":"Reload time","d":1.6,"s":0.1,"min":0.2,"max":20,"i":false,"h":"sec"},{"k":"slow","l":"Time between shots x","d":1,"s":0.1,"min":0.2,"max":10,"i":false,"h":"1 = as fast as your revolver · 2 = half as fast"},{"k":"range","l":"Reach","d":200,"s":10,"min":20,"max":800,"i":false,"h":"px"}]},{"id":"turret2","t":"Heavy Turret (gadget)","n":"fires your main gun and reloads like it does, loading from your ammo; your items work on its shots","f":[{"k":"price","l":"Price","d":300,"s":5,"min":0,"max":99999,"i":false,"h":""},{"k":"slow","l":"Time between shots x","d":2,"s":0.1,"min":0.2,"max":10,"i":false,"h":"2 = half as fast as you"},{"k":"range","l":"Reach","d":220,"s":10,"min":20,"max":800,"i":false,"h":"px · never past what your gun reaches"}]}]},{"id":"training","t":"Training","n":"Small permanent steps for your character.","g":[{"id":"health","t":"Health","f":[{"k":"per","l":"Max health per level","d":5,"s":1,"min":0,"max":100,"i":false,"h":""},{"k":"max","l":"Levels","d":10,"s":1,"min":0,"max":50,"i":true,"h":""},{"k":"price","l":"First level price","d":45,"s":5,"min":0,"max":99999,"i":false,"h":""},{"k":"growth","l":"Price growth per level","d":1.15,"s":0.05,"min":1,"max":5,"i":false,"h":""}]},{"id":"agility","t":"Agility","f":[{"k":"per","l":"Walking speed per level","d":0.03,"s":0.01,"min":0,"max":1,"i":false,"h":"0.03 = +3%"},{"k":"max","l":"Levels","d":10,"s":1,"min":0,"max":50,"i":true,"h":""},{"k":"price","l":"First level price","d":45,"s":5,"min":0,"max":99999,"i":false,"h":""},{"k":"growth","l":"Price growth per level","d":1.15,"s":0.05,"min":1,"max":5,"i":false,"h":""}]},{"id":"strength","t":"Strength","f":[{"k":"per","l":"Knockback per level","d":0.1,"s":0.01,"min":0,"max":2,"i":false,"h":"0.1 = +10%"},{"k":"max","l":"Levels","d":10,"s":1,"min":0,"max":50,"i":true,"h":""},{"k":"price","l":"First level price","d":45,"s":5,"min":0,"max":99999,"i":false,"h":""},{"k":"growth","l":"Price growth per level","d":1.15,"s":0.05,"min":1,"max":5,"i":false,"h":""}]},{"id":"precision","t":"Precision","f":[{"k":"per","l":"Crit chance per level","d":0.02,"s":0.01,"min":0,"max":1,"i":false,"h":"0.02 = +2%"},{"k":"max","l":"Levels","d":10,"s":1,"min":0,"max":50,"i":true,"h":""},{"k":"price","l":"First level price","d":45,"s":5,"min":0,"max":99999,"i":false,"h":""},{"k":"growth","l":"Price growth per level","d":1.15,"s":0.05,"min":1,"max":5,"i":false,"h":""}]}]},{"id":"items","t":"Items & co-op","g":[{"id":null,"t":"Items","f":[{"k":"collect","l":"Time to pick up an item","d":2,"s":0.5,"min":0.5,"max":30,"i":false,"h":"sec"},{"k":"barbed","l":"Barbed Jacket damage","d":10,"s":1,"min":0,"max":200,"i":false,"h":"per sec"},{"k":"flareDmg","l":"Road Flare fire damage","d":6,"s":1,"min":0,"max":200,"i":false,"h":"per tick"},{"k":"flareLife","l":"Road Flare fire lasts","d":3,"s":0.5,"min":0.5,"max":20,"i":false,"h":"sec"},{"k":"revive","l":"Co-op revive time","d":10,"s":0.5,"min":1,"max":60,"i":false,"h":"sec"},{"k":"reviveClear","l":"Co-op revive: zombies turned to mist within","d":120,"s":10,"min":0,"max":1000,"i":false,"h":"px from either player · 0 = off · bosses and gold legendaries are thrown back instead"},{"k":"collarDps","l":"Dog Collar: dog bite damage","d":4,"s":0.5,"min":0,"max":100,"i":false,"h":"per sec, on the zombie it holds"},{"k":"airEvery","l":"Air Support: seconds between volleys","d":20,"s":1,"min":5,"max":300,"i":false,"h":"give or take a quarter"},{"k":"airTargets","l":"Air Support: zombies targeted","d":3,"s":1,"min":1,"max":20,"i":true,"h":""},{"k":"airShots","l":"Air Support: rounds per zombie","d":2,"s":1,"min":1,"max":20,"i":true,"h":""},{"k":"airDmg","l":"Air Support: damage per round","d":12,"s":1,"min":0,"max":500,"i":false,"h":""}]},{"id":null,"t":"The newer items","f":[{"k":"medic","l":"Medic Pouch: health found x","d":1.5,"s":0.05,"min":0,"max":5,"i":false,"h":"1.5 = 50% more"},{"k":"leech","l":"Leech Charm: health per kill","d":1,"s":0.5,"min":0,"max":50,"i":false,"h":""},{"k":"secondWind","l":"Second Wind: health per second, for 3 sec","d":10,"s":1,"min":0,"max":100,"i":false,"h":""},{"k":"adrenaline","l":"Adrenaline Shot: speed after a hit, for 2 sec","d":1.5,"s":0.05,"min":1,"max":5,"i":false,"h":"1.5 = 50% faster"},{"k":"lastRound","l":"Last Round: damage x","d":3,"s":0.25,"min":1,"max":20,"i":false,"h":""},{"k":"tracerEvery","l":"Tracer Rounds: every Nth shot burns","d":5,"s":1,"min":1,"max":50,"i":true,"h":"the SMG: 3 times as many"},{"k":"silencer","l":"Oil-Filter Silencer: horde chance x","d":0.5,"s":0.05,"min":0,"max":1,"i":false,"h":"0.5 = half as likely"},{"k":"scavenger","l":"Scavenger's Bag: search speed x","d":1.4,"s":0.05,"min":0.1,"max":5,"i":false,"h":""},{"k":"magnet","l":"Magnet: coin pull reach","d":95,"s":5,"min":44,"max":400,"i":false,"h":"without it 44"},{"k":"tipjar","l":"Tip Jar: coin value x","d":1.25,"s":0.05,"min":0,"max":5,"i":false,"h":""},{"k":"bleedDps","l":"Spiked Knuckles: bleed damage","d":4,"s":0.5,"min":0,"max":100,"i":false,"h":"per sec, for 3 sec"},{"k":"buddy","l":"Buddy System: damage x when close","d":1.1,"s":0.05,"min":1,"max":5,"i":false,"h":"1.1 = 10% more"},{"k":"lastStand","l":"Last Stand: damage x while your partner is down","d":1.18,"s":0.01,"min":1,"max":5,"i":false,"h":"1.18 = 18% more"},{"k":"gasR","l":"Gas Can: fire patch half-width","d":32,"s":2,"min":4,"max":200,"i":false,"h":"px"},{"k":"gasLife","l":"Gas Can: fire lasts","d":5,"s":0.5,"min":0.5,"max":60,"i":false,"h":"sec"},{"k":"gasDmg","l":"Gas Can: fire damage","d":8,"s":1,"min":0,"max":500,"i":false,"h":"every half second, to each zombie in it"},{"k":"racEvery","l":"Raccoon Pal: seconds between finds","d":45,"s":1,"min":5,"max":600,"i":false,"h":""},{"k":"racAmmoGap","l":"Raccoon Pal: at least this long between ammo boxes","d":30,"s":1,"min":5,"max":600,"i":false,"h":"sec · it brings one when your gun is down to a clip or less"},{"k":"apRifle","l":"Armor-Piercing Rounds: rifle damage kept through each zombie","d":1,"s":0.05,"min":0.5,"max":1,"i":false,"h":"1 = none lost · without the item the rifle keeps 0.5"},{"k":"molR","l":"Molotov: fire patch half-width","d":30,"s":2,"min":4,"max":200,"i":false,"h":"px · Blast Gloves: 25% wider"},{"k":"molLife","l":"Molotov: fire lasts","d":6,"s":0.5,"min":0.5,"max":60,"i":false,"h":"sec"},{"k":"molDmg","l":"Molotov: fire damage","d":8,"s":1,"min":0,"max":500,"i":false,"h":"every half second, to each zombie in it"}]}]}]/*END TSCHEMA*/;     // (the tuning page's list of numbers, written in at build time)
 const tn = (path, def) => { let o = TUNING; for (const k of path.split('.')) { if (!o || typeof o !== 'object') return def; o = o[k]; } return typeof o === 'number' && Number.isFinite(o) ? o : def; };
 const TUNE_INT = { mag: 1, pellets: 1, max: 1 }, TUNE_MIN = { cd: .03, reload: .1, speed: 20, life: .02, mag: 1, pellets: 1, max: 1 };
 function tuneObj(o, t, keys) {           // copy the tuned numbers onto a weapon / swing / zombie entry
@@ -1184,7 +1228,8 @@ function buildSprites() {
     at_health: [['.rr.rr.', 'rrrrrrr', 'rrrWrrr', 'rrWWWrr', '.rrWrr.', '..rrr..', '...r...'], { r: '#d0435a', W: '#ffd0d8' }],
     at_agility: [['a...a...', '.a...a..', '..a...a.', '...a...a', '..a...a.', '.a...a..', 'a...a...'], { a: '#7fe0ee' }],
     at_strength: [['ss......ss', 'ss......ss', 'ssbbbbbbss', 'ss......ss', 'ss......ss'], { s: '#8e97a4', b: '#c9d0da' }],
-    turret: [['..........', '.GGGGGG...', '.GggggG...', '.GgrrgGccc', '.GggggG...', '.GGGGGG...', '..G..G....', '.GG..GG...'], { G: '#5f6774', g: '#c9d0da', r: '#ff3a4a', c: '#7fe0ee' }],
+    turret: [['..........', '.GGGGGG...', '.GggggG...', '.GgrrgGGGG', '.GggggG...', '.GGGGGG...', '..G..G....', '.GG..GG...'], { G: '#5f6774', g: '#c9d0da', r: '#ff3a4a' }],
+    turret2: [['............', '.VVVVVVVV...', '.VvvvvvvVkkk', '.VvrrvvvVkkk', '.VvvvvvvV...', '.VyByByBV...', '..V..V..V...', '.VV.VV.VV...'], { V: '#3f4a22', v: '#7d8c45', k: '#8e97a4', r: '#ff3a4a', y: '#ffd45a', B: '#1b1206' }],
     at_precision: [['....r....', '..rrrrr..', '.r..r..r.', '.r.....r.', 'rrr.R.rrr', '.r.....r.', '.r..r..r.', '..rrrrr..', '....r....'], { r: '#ff5a6a', R: '#ffffff' }],
   };
   SPR.nade = makeSprite(['..rr...', '.r.ll..', '..lLl..', '.ggggg.', 'gGggggg', 'gGgdggg', 'ggggggg', '.ggggg.'], { g: '#56652e', G: '#7d8c45', d: '#3a4520', l: '#8a8f9a', L: '#c8ccd6', r: '#b8bcc6' });
@@ -2472,30 +2517,31 @@ function sfx(n, gap = 0) {
    ============================================================ */
 const SAVE_KEY = 'porchlight.save.v1';
 // the items found in the glimmering houses (see ITEMS below), and how much each gun's ammo you can carry
-const RELICS = [   // (27 cut, then 15, then 13 more; see CUT_RELICS)
+const RELICS = [   // (cut over time; see CUT_RELICS)
   'quickmag', 'killfill', 'crowbar', 'getaway', 'barbed', 'flare', 'collar', 'air', 'wind2', 'adren', 'medic', 'leech', 'lastround', 'tracer',
   'silencer', 'bandolier', 'cluster', 'gloves', 'griptape', 'knuckles', 'scavenger', 'magnet', 'tipjar', 'buddy', 'canteen', 'bandage', 'mjacket',
   'bloodbag', 'painkill', 'ninelives', 'rocker', 'undertaker', 'poncho', 'hollow', 'brass', 'doubletap', 'apround', 'speedload', 'pointblank',
   'longshot', 'nailbat', 'homerun', 'wideswing', 'windmill', 'baton', 'cleanup', 'pouch', 'firebomb', 'concuss', 'pincoll', 'gascan', 'retreat',
-  'skates', 'tailwind', 'trailrun', 'lockpick', 'coupon', 'moneybelt', 'treasure', 'qmaster', 'bounty', 'penny', 'pawn', 'salvager', 'nvg',
-  'huntmap', 'trapspot', 'radio', 'siren', 'stetho', 'crow', 'raccoon', 'rccar', 'owl', 'scarecrow', 'goose', 'bark', 'bearbell', 'huntbounty',
-  'badge', 'tagteam', 'stretcher', 'rally', 'ammopouch', 'backtoback', 'laststand', 'finders'];
+  'skates', 'tailwind', 'trailrun', 'lockpick', 'coupon', 'moneybelt', 'treasure', 'qmaster', 'bounty', 'penny', 'pawn', 'salvager', 'huntmap',
+  'trapspot', 'radio', 'siren', 'stetho', 'crow', 'raccoon', 'rccar', 'owl', 'scarecrow', 'goose', 'bark', 'bearbell', 'huntbounty', 'badge',
+  'tagteam', 'stretcher', 'rally', 'ammopouch', 'backtoback', 'laststand', 'finders'];
 // no longer in the game: taken out of saves when they load or a night starts
-const CUT_RELICS = ['oldman', 'radioop', 'fireflies', 'resin', 'pelt', 'antler', 'keys', 'tooth', 'flood', 'crossfire', 'mirror', 'whistle', 'carepkg', 'pitcher', 'tripwire', 'beeper', 'openroad', 'greased', 'panic', 'dice', 'ironboots', 'watch', 'detector', 'flaregun', 'compass', 'notebook', 'bell', 'treats', 'bouncer', 'kickback', 'vest', 'onetwo', 'rabbit', 'deadman', 'ricochet', 'sticky', 'cologne', 'headlamp', 'binocs', 'flashbang', 'bearspray', 'trapkit', 'snowshoes', 'walkie', 'scarf', 'salts', 'batglove', 'rebar', 'shoulder', 'shortfuse', 'nailbomb', 'buckshot', 'slugs', 'dragon', 'knockdown'];
+const CUT_RELICS = ['nvg', 'oldman', 'radioop', 'fireflies', 'resin', 'pelt', 'antler', 'keys', 'tooth', 'flood', 'crossfire', 'mirror', 'whistle', 'carepkg', 'pitcher', 'tripwire', 'beeper', 'openroad', 'greased', 'panic', 'dice', 'ironboots', 'watch', 'detector', 'flaregun', 'compass', 'notebook', 'bell', 'treats', 'bouncer', 'kickback', 'vest', 'onetwo', 'rabbit', 'deadman', 'ricochet', 'sticky', 'cologne', 'headlamp', 'binocs', 'flashbang', 'bearspray', 'trapkit', 'snowshoes', 'walkie', 'scarf', 'salts', 'batglove', 'rebar', 'shoulder', 'shortfuse', 'nailbomb', 'buckshot', 'slugs', 'dragon', 'knockdown'];
 const CLIPS = Math.max(1, Math.round(tn('nights.clips', 3)));      // spare clips of your gun you can carry (the revolver never runs out)
 const AMMO_CAP = { shotgun: 0, smg: 0, rifle: 0 };                   // CLIPS x each gun's clip size, worked out in applyGunMods
 // some zombies leave a box of ammo for your gun
 const AMMO_DROP = { chance: clamp(tn('nights.ammoDrop', .0385), 0, 1), clips: Math.max(.1, tn('nights.ammoDropClips', 1)), life: Math.max(2, tn('nights.ammoDropLife', 25)) };
 const START_NADES = Math.max(0, Math.round(tn('grenade.start', 3)));
-const DEATH_LOSS = clamp(tn('nights.deathLoss', .8), 0, 1);                           // bitten: this much of the night's cash is lost (0.8 = 80%)
+const DEATH_LOSS = clamp(tn('nights.deathLoss', .5), 0, 1);                           // bitten: this much of the night's cash is lost (0.5 = 50%)
+const BELT_LOSS = () => Math.max(0, DEATH_LOSS - .2);                                  // Money Belt: 20 points less
 const NADE_MAX = Math.max(1, Math.round(tn('grenade.max', 5)));                    // the most you can carry
 const addNades = n => { const b = save.grenades || 0; save.grenades = Math.min(Math.max(b, nadeMax()), b + n); return save.grenades - b; };
-function freshSave() { return { v: 1, night: 1, cash: 0, owned: { pistol: true, melee: true, shotgun: false, smg: false }, meleeTier: 0, ammo: { shotgun: 0, smg: 0, rifle: 0 }, up: { jacket: 0, shoes: 0, turret: 0 }, gun: {}, attr: {}, mig: 3, best: 1, totalKills: 0, muted: false, escaped: false, grenades: START_NADES, relics: [], relicsNight: [], primary: null, runNew: false }; }
+function freshSave() { return { v: 1, night: 1, cash: 0, owned: { pistol: true, melee: true, shotgun: false, smg: false }, meleeTier: 0, ammo: { shotgun: 0, smg: 0, rifle: 0 }, up: { jacket: 0, shoes: 0, turret: 0, turret2: 0 }, gun: {}, attr: {}, mig: 3, best: 1, totalKills: 0, muted: false, escaped: false, grenades: START_NADES, relics: [], relicsNight: [], primary: null, runNew: false }; }
 function normalizeSave(s) {
   const f = freshSave(); if (!s || typeof s !== 'object') return f;
   const o = { ...f, ...s, owned: { ...f.owned, ...(s.owned || {}) }, ammo: { ...f.ammo, ...(s.ammo || {}) }, up: { ...f.up, ...(s.up || {}) }, grenades: Number.isFinite(s.grenades) ? Math.min(NADE_MAX + 2, s.grenades) : START_NADES, v: 1 };
   const su = s.up || {};
-  o.up = { jacket: su.jacket > 0 ? 1 : 0, shoes: su.shoes > 0 ? 1 : 0, turret: su.turret > 0 ? 1 : 0 };
+  o.up = { jacket: su.jacket > 0 ? 1 : 0, shoes: su.shoes > 0 ? 1 : 0, turret: su.turret > 0 ? 1 : 0, turret2: su.turret2 > 0 ? 1 : 0 };
   const ng = g => { const u = {}; for (const a of ATTS) u[a] = clamp(Math.floor(+(g && g.up && g.up[a]) || 0), 0, 50); return { up: u }; };
   if (!(s.mig >= 3)) {                               // the old Armory (a gun level, and attachments bought once): money back for all of it
     const old = g => ({ lv: clamp(Math.floor(+(g && g.lv) || 0), 0, 50), att: g && Array.isArray(g.att) ? [...new Set(g.att.filter(a => ATTS.includes(a)))] : [] });
@@ -2533,13 +2579,16 @@ const COOP = { spawn: Math.max(.2, tn('coop.spawn', 1.5)), cap: Math.max(.2, tn(
 const COOP_EASE = { from: Math.max(1, Math.round(tn('coop.easeFrom', 3))), hp: Math.max(0, tn('coop.easeHp', .8)), spawn: Math.max(.05, tn('coop.easeSpawn', .88)), cap: Math.max(.05, tn('coop.easeCap', .88)) };
 const coopMul = k => NET.role === 'host' ? COOP[k] * (nightNo() >= COOP_EASE.from && COOP_EASE[k] !== undefined && k !== 'from' ? COOP_EASE[k] : 1) : 1;
 // elites: any kind of zombie can turn up as one. Violet, glowing, a health bar, very hard to put down.
-const ELITE = { solo: tn('elites.solo', .03), coop: tn('elites.coop', .09), from: tn('elites.from', 3), hp: Math.max(1, tn('elites.hp', 6)), dmg: Math.max(0, tn('elites.dmg', 1.5)),
+const ELITE = { solo: tn('elites.solo', .024), coop: tn('elites.coop', .09), from: tn('elites.from', 3), hp: Math.max(1, tn('elites.hp', 6)), dmg: Math.max(0, tn('elites.dmg', 1.5)),
   kbRes: tn('elites.kbRes', .3), size: Math.max(.5, tn('elites.size', 1.15)), cash: Math.max(0, tn('elites.cash', 5)) };
 const SUP = { nadePrice: tn('supply.nades.price', 45), nadeCount: Math.max(1, Math.round(tn('supply.nades.count', 3))), jacketHp: tn('supply.jacket.hp', 25), jacketPrice: tn('supply.jacket.price', 100),
   shoes: tn('supply.shoes.speed', .1), shoesPrice: tn('supply.shoes.price', 90), axePrice: tn('supply.axe.price', 200) };
 const ATTS = ['sight', 'hot', 'mag', 'grip', 'barrel', 'trigger'];
 // the Mini Turret (Armory): walks after you, a laser through every zombie in a line every few seconds
-const TUR = { price: Math.max(0, tn('armory.turret.price', 150)), dmg: Math.max(0, tn('armory.turret.dmg', 6)), every: Math.max(.5, tn('armory.turret.every', 5)), range: Math.max(20, tn('armory.turret.range', 200)) };
+const TUR = { price: Math.max(0, tn('armory.turret.price', 150)), mag: Math.max(1, Math.round(tn('armory.turret.mag', 10))), reload: Math.max(.2, tn('armory.turret.reload', 1.6)),
+  slow: Math.max(.2, tn('armory.turret.slow', 1)), range: Math.max(20, tn('armory.turret.range', 200)) };
+// the Heavy Turret (Armory): your main gun, at half your rate (slow 2), loading from your ammo
+const TUR2 = { price: Math.max(0, tn('armory.turret2.price', 300)), slow: Math.max(.2, tn('armory.turret2.slow', 2)), range: Math.max(20, tn('armory.turret2.range', 220)) };
 // the Armory: each upgrade has ARM_LV levels; each level adds 'per' (0.05 = 5%) and costs price x growth^level
 const ARM_LV = Math.max(1, Math.round(tn('armory.levels', 10)));
 const ARM = {};
@@ -2601,8 +2650,12 @@ const reloadMul = () => has('speedload') ? 2 : 1;          // Speed Loader
 // everything out, harder each time.
 const ROSTER = { walker: 1, runner: 2, flyer: 2, crawler: 3, brute: 3, hound: 4, spitter: 6, trash: 5 };     // (spitters: first seen in the forest)
 const unlocked = (t, n) => n > STREETS.length || n >= (ROSTER[t] || 1);
+// night 5 (Main St, with the Dispatcher at the end) is eased a little: less health, fewer awake at once, smaller hordes
+const N5 = { hp: Math.max(.1, tn('nights.n5hp', .9)), cap: Math.max(.1, tn('nights.n5cap', .88)), horde: Math.max(.1, tn('nights.n5horde', .88)) };
 function nightCfg(n) {
-  return { hpMul: 1 + (n - 1 - (zLevel(n) - 1) * STREETS.length) * tn('nights.hpGrowth', .18), spawnMul: Math.max(.45, 1 - (n - 1) * tn('nights.spawnGrowth', .09)), idle: (12 + n * 3) * STREET_X, horde: 5 + n * 2, cap: 11 + n * 2,
+  const e5 = n === 5;
+  return { hpMul: (1 + (n - 1 - (zLevel(n) - 1) * STREETS.length) * tn('nights.hpGrowth', .18)) * (e5 ? N5.hp : 1), spawnMul: Math.max(.45, 1 - (n - 1) * tn('nights.spawnGrowth', .09)), idle: (12 + n * 3) * STREET_X,
+    horde: (5 + n * 2) * (e5 ? N5.horde : 1), cap: (11 + n * 2) * (e5 ? N5.cap : 1),
     runner: unlocked('runner', n) ? Math.min(.35, .1 + (n - 1) * .05) : 0,
     brute: unlocked('brute', n) ? Math.max(.05, Math.min(.25, -.03 + (n - 1) * .045)) : 0,
     crawler: unlocked('crawler', n) ? Math.min(.2, .12 + Math.max(0, n - 3) * .02) : 0,
@@ -2705,7 +2758,7 @@ function spawnZombie(x, type, idle = false, look = null) {
 }
 // LEGENDARIES: gold, huge, the toughest thing on the street. Each horde might bring one: a small chance that grows
 // with every horde that comes without one, and starts small again once one has turned up. It drops items.
-const LEG = { chance: clamp(tn('legend.chance', .02), 0, 1), step: clamp(tn('legend.step', .03), 0, 1), hp: Math.max(1, tn('legend.hp', 3)), dmg: Math.max(0, tn('legend.dmg', 1.4)), size: Math.max(1, tn('legend.size', 1.15)), cash: Math.max(0, tn('legend.cash', 3)) };
+const LEG = { chance: clamp(tn('legend.chance', .02), 0, 1), step: clamp(tn('legend.step', .03), 0, 1), hp: Math.max(1, tn('legend.hp', 3)), dmg: Math.max(0, tn('legend.dmg', 1.4)), size: Math.max(1, tn('legend.size', 1.15)), cash: Math.max(0, tn('legend.cash', 3)), solo3: Math.max(.05, tn('legend.solo3', .7)) };
 function legendRoll(at, warn = 0) {                    // (host) a horde just started
   if (G.arena) return;
   const p = clamp(save.legendP ?? LEG.chance, 0, 1);
@@ -2719,7 +2772,7 @@ function legendRoll(at, warn = 0) {                    // (host) a horde just st
 function makeLegend(z) {
   if (!z.elite) makeElite(z);
   z.legend = true; z.idle = false;
-  z.hp *= LEG.hp; z.maxHp = z.hp;
+  z.hp *= LEG.hp * (!online() && nightNo() === 3 ? LEG.solo3 : 1); z.maxHp = z.hp;      // (solo, night 3: a softer one)
   z.dps *= LEG.dmg; for (const k of ['swoop', 'leap', 'slam', 'spit']) if (z[k] != null) z[k] *= LEG.dmg;
   z.boom = 0;                                          // (a gold brute doesn't burst)
   z.kbRes = Math.min(.95, (z.kbRes || 0) + .2);
@@ -2774,7 +2827,7 @@ function resetLevel(bossNight = false) {
   houses.forEach(h => { h.lit = h.litInit; h.searched = false; h.relic = false; h.ammoHint = Math.random() < .22; });
   NF = {};
   drops = []; fires = []; nums = []; ammoBoxes = []; relicTook = new Set(); G.relicPop = null; G.onDrop = null;
-  zombies = []; bullets = []; parts = []; minis = []; turret = null; allyTur = null; flaresUp = []; scarecrows = []; oldMen = []; shotLines = []; rcs = []; goose = null; allyGoose = null; crowsIn = []; raccoons = []; G.racNext = null; G.racAmmoAt = -999; SD = null; SDg = null; G.siren = null; G.bell = null; decals = []; spits = []; buddies = []; airShots = []; airT.me = airT.ally = 0; coins = []; floaters = []; casings = []; spawnQ = []; props = []; debris = []; nades = []; NADE.on = false; G.boom = null;
+  zombies = []; bullets = []; parts = []; minis = []; turretStow(); turret = null; turret2 = null; allyTur = null; allyTur2 = null; flaresUp = []; scarecrows = []; oldMen = []; shotLines = []; rcs = []; goose = null; allyGoose = null; crowsIn = []; raccoons = []; G.racNext = null; G.racAmmoAt = -999; SD = null; SDg = null; G.siren = null; G.bell = null; decals = []; spits = []; buddies = []; airShots = []; airT.me = airT.ally = 0; coins = []; floaters = []; casings = []; spawnQ = []; props = []; debris = []; nades = []; NADE.on = false; G.boom = null;
   // on the depot night the bus isn't there yet: it pulls in once the boss is down
   const trail = bossNight && exitKind() === 'trail';           // Main St: out the back gate of the depot, into the woods
   bus = { x: bossNight && !trail ? BUS_X + 420 : BUS_X - 8, vx: 0, door: bossNight ? 0 : 1, leaving: false, arriving: false, t: 0, wheel: 0 };
@@ -3212,6 +3265,16 @@ function muzzle() {
   const dx = (g.mx - g.gx) / A * sc, dy = (g.my - g.gy) / A * sc;
   return { x: h.x + player.face * (dx * Math.cos(a) - dy * Math.sin(a)), y: h.y + dx * Math.sin(a) + dy * Math.cos(a) };
 }
+function gunBullets(w, x, y, face, el, o) {           // (the turrets) o: from (where it's fired from), n (its shot count), last (Last Round)
+  const ce = Math.cos(el), se = Math.sin(el), sid = ++shotSeq;
+  const S = { tr: has('tracer') && o.n % (IT.tracer * (w.id === 'smg' ? 3 : 1)) === 0, lit: false, rico: false };
+  const dm = dmgMul() * (o.last ? IT.last : 1) * buddyMul(), thru = has('apround') ? 1 : 0, thruMul = has('apround') ? .5 : 1;
+  for (let i = 0; i < w.pellets; i++) {
+    const sp = w.speed * rnd(.92, 1.05), dv = w.speed * w.spread * rnd(-1, 1);
+    bullets.push({ x, y: y + rnd(-.5, .5), px: x, px0: o.from, py: y, vx: face * (sp * ce + dv * se), vy: -sp * se + dv * ce, life: w.life * rnd(.85, 1.1), dmg: w.dmg * dm, kb: w.kb * strMul(), face,
+      low: w.id === 'shotgun', sid, pierce: !!w.pierce, ap: w.pierce && has('apround'), rifle: w.id === 'rifle', crit: critChance(w), S, big: o.last, thru, thruMul, from: o.from });
+  }
+}
 function fire() {
   if (!WEAP[player.weapon]) player.weapon = 'pistol';
   let w = WEAP[player.weapon];
@@ -3563,10 +3626,10 @@ function updPlayer(dt) {
   if ((dir || input.fire) && player.searching) cancelSearch();
   let moving = false, spd = moveSpeed();
   if (dir && has('walkie')) { const m = mate(); if (m && m.dead && Math.sign(m.x - player.x) === dir) spd *= IT.walkie; }     // Walkie-Talkie: on my way
-  // keyboard / button fire plants his feet; with the shooting stick he can keep walking (slower), backing up
-  // if he walks away from where he's shooting. Mid-swing the arrows only turn him around.
-  const runGun = input.stick && player.swingT < 0;
-  const planted = (input.fire && !runGun) || player.swingT >= 0;
+  // firing never plants his feet (shooting stick, keyboard or button): he keeps walking, a bit slower, backing up
+  // if he walks away from where he's shooting (the stick). Mid-swing the arrows only turn him around.
+  const runGun = input.fire && player.swingT < 0;
+  const planted = player.swingT >= 0;
   if (dir && !planted && player.porchT < .5 && !(player.trapT > 0)) {
     const bz = zombies.find(z => !z.dead && z.vaultT < 0 && z.type !== 'boss' && z.type !== 'flyer' && z.type !== 'hound' && Math.sign(z.x - player.x) === dir && Math.abs(z.x - player.x) < z.half + 9);   // you can duck past the boss's legs
     let blocked = !!bz;
@@ -3873,76 +3936,142 @@ function buildBuddyFrames() {                      // golden fur, white chest, f
   };
   return { f, W, H, cx: CX, gy: GY };
 }
-// ---- THE MINI TURRET: a knee-high walking gun on two little legs. It trots along behind you and every few seconds
-//      fires a laser along the ground at the nearest awake zombie, through every zombie in that line. Its hits are
-//      yours (in co-op each of you runs your own; your partner sees yours walk and fire). ----
-let turret = null, allyTur = null;
-const TUR_Y = 9;                                       // how far above the ground the beam runs
-function turretFollow(T, P, dt) {
-  const want = P.x - (P.face || 1) * 16, dx = want - T.x;
-  if (Math.abs(dx) > 1.5) { const v = Math.min(Math.abs(dx), (55 + Math.abs(dx) * 2.2) * dt); T.x += Math.sign(dx) * v; T.anim += v * .35; T.moving = true; if (!T.beam || T.beam.t > .25) T.face = Math.sign(dx); }
+// ---- THE TURRETS: little walking guns that trot along behind you and shoot the nearest awake zombie with real
+//      bullets, so everything your items do to your shots they do to theirs. The Mini Turret fires a revolver (10 shots,
+//      then it reloads); the Heavy Turret fires your main gun at half your rate, loading from your own ammo.
+//      In co-op each of you runs your own; your partner sees yours walk and shoot. ----
+let turret = null, turret2 = null, allyTur = null, allyTur2 = null;
+const TUR_Y = 9, TUR2_Y = 11;                           // how high their barrels are
+function turretFollow(T, P, dt, back) {
+  const want = P.x - (P.face || 1) * back, dx = want - T.x;
+  if (Math.abs(dx) > 1.5) { const v = Math.min(Math.abs(dx), (55 + Math.abs(dx) * 2.2) * dt); T.x += Math.sign(dx) * v; T.anim += v * .35; T.moving = true; if (!(T.aimT > 0)) T.face = Math.sign(dx); }
   else T.moving = false;
-  if (T.beam) { T.beam.t += dt; if (T.beam.t > .3) T.beam = null; }
+  T.aimT = Math.max(0, (T.aimT || 0) - dt); T.flash = Math.max(0, (T.flash || 0) - dt);
+}
+const turGun = heavy => heavy ? WEAP[myGun()] : WEAP.pistol;
+const heavySpare = id => Math.max(0, (save.ammo[id] || 0) - ((player && player.mag[id]) || 0));     // rounds not already in my own gun
+function turretLoad(T, heavy) {
+  const w = turGun(heavy); if (!w) return;
+  if (!heavy) { T.mag = TUR.mag; return; }
+  if (T.gun !== w.id) { T.gun = w.id; T.mag = 0; }
+  const k = Math.min(w.mag - T.mag, heavySpare(w.id)); if (k <= 0) return;
+  save.ammo[w.id] -= k; T.mag += k;                                    // (they're in its gun now)
+}
+function turretStow() {                                 // (the night's over) rounds still in the Heavy Turret go back in my pockets
+  if (turret2 && turret2.gun && turret2.mag > 0) save.ammo[turret2.gun] = (save.ammo[turret2.gun] || 0) + turret2.mag;
+  if (turret2) turret2.mag = 0;
+}
+function turretTick(T, dt, heavy) {
+  if (T.reloadT > 0) { T.reloadT -= dt; if (T.reloadT <= 0) { turretLoad(T, heavy); sfx('reload2', 150); } return; }
+  T.cd -= dt;
+  if (T.cd > 0 || player.dead || player.inBus || player.hidden) return;
+  const w = turGun(heavy); if (!w) return;
+  if (heavy && T.gun !== w.id) { T.gun = w.id; T.mag = 0; }
+  if (T.mag <= 0) {                                      // empty: reload (the Heavy Turret needs spare ammo for that)
+    if (heavy && heavySpare(w.id) <= 0) { T.cd = .5; T.dry = true; return; }
+    T.dry = false; T.reloadT = heavy ? w.reload : TUR.reload; T.reloadDur = T.reloadT; return;
+  }
+  const R = Math.min(heavy ? TUR2.range : TUR.range, w.speed * w.life * .9);
+  let best = null, bd = R;
+  for (const z of zombies) {
+    if (z.dead || z.idle || z.type === 'flyer' || z.type === 'hound' || z.vaultT >= 0 || (z.type === 'boss' && z.st === 'drop')) continue;
+    const d = Math.abs(z.x - T.x); if (d < bd) { bd = d; best = z; }
+  }
+  if (!best) return;
+  const dir = Math.sign(best.x - T.x) || T.face;
+  T.face = dir; T.aimT = .6; T.flash = .06; T.mag--; T.n = (T.n || 0) + 1; T.cd = w.cd * (heavy ? TUR2.slow : TUR.slow);
+  const x = T.x + dir * (heavy ? 11 : 9), y = GROUND - (heavy ? TUR2_Y : TUR_Y);
+  gunBullets(w, x, y, dir, 0, { from: T.x, n: T.n, last: T.mag === 0 && has('lastround') });
+  for (let i = 0; i < 2; i++) parts.push({ k: 's', x: x + dir * 2, y, vx: dir * rnd(5, 20), vy: rnd(-10, -2), life: rnd(.3, .5), t: 0 });
+  sfx(w.id, 60);
+  const wi = WEAPON_ORDER.indexOf(w.id);
+  if (NET.role === 'guest') netEv('tsh', heavy ? 1 : 0, wi, r1(x), r1(y), dir);
+  else { noiseHorde(w.id, (w.noise || 0) * (has('silencer') ? IT.quiet : 1), x); if (coopAlly()) netEv('tsh', heavy ? 1 : 0, wi, r1(x), r1(y), dir); }
+  if (T.mag <= 0) T.cd = 0;                              // (straight into the reload)
 }
 function updTurret(dt) {
-  if (!player || !save.up.turret || G.state !== 'play') { turret = null; }
+  const on = player && G.state === 'play';
+  if (!on || !save.up.turret) turret = null;
   else {
-    if (!turret) turret = { x: player.x - player.face * 16, face: player.face, anim: 0, cd: 2, beam: null, moving: false };
-    const T = turret; turretFollow(T, player, dt);
-    T.cd -= dt;
-    if (T.cd <= 0 && !player.dead && !player.inBus && !player.hidden) {
-      let best = null, bd = TUR.range;
-      for (const z of zombies) {
-        if (z.dead || z.idle || z.type === 'flyer' || z.vaultT >= 0 || (z.type === 'boss' && z.st === 'drop')) continue;
-        const d = Math.abs(z.x - T.x); if (d < bd) { bd = d; best = z; }
-      }
-      if (best) turretFire(T, Math.sign(best.x - T.x) || T.face);
-    }
+    if (!turret) { turret = { x: player.x - player.face * 16, face: player.face, anim: 0, cd: 1, mag: 0, moving: false }; turretLoad(turret, false); }
+    turretFollow(turret, player, dt, 16); turretTick(turret, dt, false);
   }
-  const m = mate();                                      // my partner's turret: it walks here too (their screen fires it)
-  if (m && m.hasTurret && m.x > -900 && G.state === 'play') { if (!allyTur) allyTur = { x: m.x - (m.face || 1) * 16, face: m.face || 1, anim: 0, beam: null, moving: false }; turretFollow(allyTur, m, dt); }
-  else allyTur = null;
-}
-function turretFire(T, dir) {
-  T.face = dir; T.cd = TUR.every;
-  const x0 = T.x + dir * 6, y = GROUND - TUR_Y, x1 = x0 + dir * TUR.range;
-  T.beam = { x0, x1, y, t: 0 };
-  for (const z of zombies) {
-    if (z.dead || z.type === 'flyer' || z.vaultT >= 0 || (z.type === 'boss' && z.st === 'drop')) continue;
-    const ahead = (z.x - x0) * dir; if (ahead < -z.half || ahead > TUR.range + z.half) continue;
-    if (y < z.fy - z.h - 2 || y > z.fy + 1) continue;
-    for (let i = 0; i < 3; i++) parts.push({ k: 'l', x: z.x + rnd(-2, 2), y: y + rnd(-2, 2), vx: rnd(-30, 30), vy: rnd(-40, 0), life: rnd(.2, .35), t: 0 });
-    sideDmg(z, TUR.dmg, 7);
+  if (!on || !save.up.turret2 || !myGun()) { if (turret2) turretStow(); turret2 = null; }
+  else {
+    if (!turret2) { turret2 = { x: player.x - player.face * 30, face: player.face, anim: 0, cd: 1.2, mag: 0, moving: false }; turretLoad(turret2, true); }
+    turretFollow(turret2, player, dt, 30); turretTick(turret2, dt, true);
   }
-  sfx('laser'); netEv('lz', r1(x0), r1(x1), y);
+  const m = mate(), live = m && m.x > -900 && G.state === 'play';      // my partner's: they walk here too (their screen fires them)
+  if (live && m.hasTurret) { if (!allyTur) allyTur = { x: m.x - (m.face || 1) * 16, face: m.face || 1, anim: 0, moving: false }; turretFollow(allyTur, m, dt, 16); } else allyTur = null;
+  if (live && m.hasTurret2) { if (!allyTur2) allyTur2 = { x: m.x - (m.face || 1) * 30, face: m.face || 1, anim: 0, moving: false }; turretFollow(allyTur2, m, dt, 30); } else allyTur2 = null;
 }
-function drawTurretBot(T, cam, mine) {
+function turretShotFx(a) {                              // my partner's turret fired: its tracers and the bang (their screen decides the hits)
+  const heavy = +a[0] === 1, w = WEAP[WEAPON_ORDER[+a[1]]], x = +a[2], y = +a[3], face = +a[4] < 0 ? -1 : 1;
+  if (!w || !Number.isFinite(x) || !Number.isFinite(y)) return;
+  for (let i = 0; i < w.pellets; i++) {
+    const sp = w.speed * rnd(.92, 1.05), dv = w.speed * w.spread * rnd(-1, 1);
+    bullets.push({ x, y: y + rnd(-.5, .5), px: x, py: y, vx: face * sp, vy: dv, life: w.life * rnd(.85, 1.1), dmg: 0, kb: 0, face, low: w.id === 'shotgun', own: 2, ox: x, cos: true, pierce: !!w.pierce, rifle: w.id === 'rifle' });
+  }
+  const T = heavy ? allyTur2 : allyTur; if (T) { T.face = face; T.aimT = .6; T.flash = .06; }
+  sfx(w.id, 40);
+  if (NET.role !== 'guest') noiseHorde(w.id, (w.noise || 0) * (hasA('silencer') ? IT.quiet : 1), x);
+}
+function drawTurretBot(T, cam, mine) {                  // the Mini Turret: grey, on two little legs
   const x = Math.round(T.x - cam), y = GROUND + 1, f = T.face || 1;
   if (x < -20 || x > VW + 20) return;
-  const step = T.moving ? Math.floor(T.anim) % 2 : 0, charge = mine && T.cd !== undefined && T.cd < .6;
+  const step = T.moving ? Math.floor(T.anim) % 2 : 0;
   ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(x - 4, y, 9, 1);
   ctx.fillStyle = '#0b0814'; ctx.fillRect(x - 3, y - 6, 3, 6); ctx.fillRect(x + 1, y - 6, 3, 6);                  // legs
   ctx.fillStyle = '#5f6774'; ctx.fillRect(x - 2, y - 5 - (step ? 1 : 0), 1, 4); ctx.fillRect(x + 2, y - 5 - (step ? 0 : 1), 1, 4);
   ctx.fillStyle = '#3a3546'; ctx.fillRect(x - 3, y - 1 - (step ? 1 : 0), 2, 1); ctx.fillRect(x + 2, y - 1 - (step ? 0 : 1), 2, 1);
   const by = y - 13 + (T.moving && step ? 1 : 0);
-  ctx.fillStyle = '#0b0814'; ctx.fillRect(x - 5, by - 1, 11, 8); ctx.fillRect(f > 0 ? x + 5 : x - 9, by + 2, 5, 3);   // body and barrel
+  ctx.fillStyle = '#0b0814'; ctx.fillRect(x - 5, by - 1, 11, 8); ctx.fillRect(f > 0 ? x + 5 : x - 10, by + 2, 6, 3);   // body and the revolver barrel
   ctx.fillStyle = '#8e97a4'; ctx.fillRect(x - 4, by, 9, 6);
   ctx.fillStyle = '#c9d0da'; ctx.fillRect(x - 4, by, 9, 1);
-  ctx.fillStyle = '#5f6774'; ctx.fillRect(x - 4, by + 5, 9, 1); ctx.fillRect(f > 0 ? x + 5 : x - 8, by + 3, 3, 1);
-  ctx.fillStyle = charge && Math.floor(G.t * 16) % 2 ? '#fff3c4' : '#ff3a4a'; ctx.fillRect(x + f * 2 - (f > 0 ? 0 : 1), by + 2, 2, 2);   // its eye
-  if (charge) { ctx.fillStyle = '#7fe0ee'; ctx.fillRect(f > 0 ? x + 8 : x - 9, by + 3, 1, 1); }
-  if (T.beam) {                                          // the laser
-    const b = T.beam, a = clamp(1 - b.t / .3, 0, 1), x0 = Math.round(b.x0 - cam), x1 = Math.round(b.x1 - cam), lo = Math.min(x0, x1), w = Math.abs(x1 - x0);
-    ctx.globalAlpha = a * .45; ctx.fillStyle = '#7fe0ee'; ctx.fillRect(lo, b.y - 2, w, 5);
-    ctx.globalAlpha = a; ctx.fillStyle = '#7fe0ee'; ctx.fillRect(lo, b.y - 1, w, 3);
-    ctx.fillStyle = '#ffffff'; ctx.fillRect(lo, b.y, w, 1);
-    ctx.globalAlpha = 1;
+  ctx.fillStyle = '#5f6774'; ctx.fillRect(x - 4, by + 5, 9, 1); ctx.fillRect(f > 0 ? x + 5 : x - 9, by + 3, 4, 1);
+  ctx.fillStyle = '#ff3a4a'; ctx.fillRect(x + f * 2 - (f > 0 ? 0 : 1), by + 2, 2, 2);                                // its eye
+  turretFlash(T, x + f * 11, by + 3, f);
+  if (mine) turretReloadBar(T, x, by - 4);
+}
+function drawTurretBot2(T, cam, mine) {                 // the Heavy Turret: olive, bigger, on three legs, with a long barrel
+  const x = Math.round(T.x - cam), y = GROUND + 1, f = T.face || 1;
+  if (x < -24 || x > VW + 24) return;
+  const step = T.moving ? Math.floor(T.anim) % 3 : 0;
+  ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(x - 7, y, 15, 1);
+  for (let i = 0; i < 3; i++) {                          // three legs, taking turns
+    const lx = x - 6 + i * 5, up = T.moving && step === i ? 1 : 0;
+    ctx.fillStyle = '#0b0814'; ctx.fillRect(lx - 1, y - 7 - up, 3, 7);
+    ctx.fillStyle = '#3f4a22'; ctx.fillRect(lx, y - 6 - up, 1, 5); ctx.fillRect(lx - 1, y - 1 - up, 3, 1);
   }
+  const by = y - 17 + (T.moving && step === 1 ? 1 : 0);
+  ctx.fillStyle = '#0b0814'; ctx.fillRect(x - 8, by - 1, 16, 11); ctx.fillRect(f > 0 ? x + 7 : x - 15, by + 3, 9, 4);    // body and barrel
+  ctx.fillStyle = '#56652e'; ctx.fillRect(x - 7, by, 14, 9);
+  ctx.fillStyle = '#7d8c45'; ctx.fillRect(x - 7, by, 14, 2);
+  ctx.fillStyle = '#3f4a22'; ctx.fillRect(x - 7, by + 8, 14, 1);
+  for (let i = 0; i < 4; i++) { ctx.fillStyle = i % 2 ? '#1b1206' : '#ffd45a'; ctx.fillRect(x - 7 + i * 2 + (f > 0 ? 0 : 6), by + 6, 2, 2); }   // a hazard stripe
+  ctx.fillStyle = '#5f6774'; ctx.fillRect(f > 0 ? x + 7 : x - 14, by + 4, 8, 2); ctx.fillStyle = '#8e97a4'; ctx.fillRect(f > 0 ? x + 7 : x - 14, by + 4, 8, 1);
+  ctx.fillStyle = T.dry && Math.floor(G.t * 4) % 2 ? '#ffd45a' : '#ff3a4a'; ctx.fillRect(x + f * 3 - (f > 0 ? 0 : 1), by + 3, 2, 2);   // its eye (blinks yellow: no ammo to load)
+  turretFlash(T, x + f * 15, by + 5, f);
+  if (mine) turretReloadBar(T, x, by - 4);
+}
+function turretFlash(T, mx, my, f) {
+  if (!(T.flash > 0)) return;
+  ctx.fillStyle = '#ffb43a'; ctx.fillRect(f > 0 ? mx : mx - 3, my - 1, 4, 3);
+  ctx.fillStyle = '#fff3c4'; ctx.fillRect(f > 0 ? mx : mx - 2, my, 3, 1);
+}
+function turretReloadBar(T, x, y) {
+  if (!(T.reloadT > 0)) return;
+  const k = clamp(1 - T.reloadT / (T.reloadDur || 1), 0, 1);
+  ctx.fillStyle = '#0b0814'; ctx.fillRect(x - 6, y - 1, 13, 3); ctx.fillStyle = '#3a3157'; ctx.fillRect(x - 5, y, 11, 1);
+  ctx.fillStyle = '#e2bf62'; ctx.fillRect(x - 5, y, Math.round(11 * k), 1);
 }
 function drawTurrets(cam) {
   if (G.state !== 'play' && G.state !== 'pause') return;
-  if (turret && player && !player.inBus && !player.hidden) drawTurretBot(turret, cam, true);
-  const m = mate(); if (allyTur && m && !m.inBus && !m.hidden) drawTurretBot(allyTur, cam, false);
+  const m = mate(), me = player && !player.inBus && !player.hidden, them = m && !m.inBus && !m.hidden;
+  if (turret2 && me) drawTurretBot2(turret2, cam, true);
+  if (allyTur2 && them) drawTurretBot2(allyTur2, cam, false);
+  if (turret && me) drawTurretBot(turret, cam, true);
+  if (allyTur && them) drawTurretBot(allyTur, cam, false);
 }
 function drawBuddies(cam) {
   if (!buddies.length) return;
@@ -4943,7 +5072,8 @@ const lastMul = () => { const m = mate(); return has('laststand') && m && m.dead
 function shotMul(z, b) {                                // everything that makes one of my bullets hit harder
   let m = lampMul(z) * toothMul(z) * crossMul(z) * lastMul();
   if (has('hollow') && unhurt(z)) m *= 1.3;
-  if (player) { const d = Math.abs(z.x - player.x); if (has('pointblank') && d < 22 + z.half) m *= 1.4; if (has('longshot') && d > VW / 2) m *= 1.3; }
+  const ox = b && b.from != null ? b.from : player ? player.x : null;      // (a turret's shot: from the turret)
+  if (ox != null) { const d = Math.abs(z.x - ox); if (has('pointblank') && d < 22 + z.half) m *= 1.4; if (has('longshot') && d > VW / 2) m *= 1.3; }
   return m;
 }
 const meleeMul = z => (has('nailbat') ? 1.25 : 1) * (has('rebar') && z.type === 'crawler' ? 3 : 1) * lampMul(z) * buddyMul() * toothMul(z) * crossMul(z) * lastMul();
@@ -5958,7 +6088,7 @@ function drawRelicPop() {                            // just picked up: the item
    On claude.ai the page's `room` carries the snapshots; on the game's own website PeerJS does (a free
    public server introduces the two browsers, then they talk directly).
    ============================================================ */
-const GAME_BUILD = 59;                              // shown on the co-op screen, so two players can check they have the same game
+const GAME_BUILD = 65;                              // shown on the co-op screen, so two players can check they have the same game
 // on the game's own website: browsers may keep an old copy of the page for up to 10 minutes after an update,
 // so check for a newer upload when the game opens and load it straight away if there is one
 (function checkForUpdate() {
@@ -5970,7 +6100,7 @@ const GAME_BUILD = 59;                              // shown on the co-op screen
     location.replace(location.pathname + '?v=' + n);
   }).catch(() => {});
 })();
-const NET_V = 16, ZTYPES = ['walker', 'runner', 'brute', 'crawler', 'flyer', 'hound', 'trash', 'spitter'], FLY_ST = ['cruise', 'wind', 'dive', 'leave'];
+const NET_V = 18, ZTYPES = ['walker', 'runner', 'brute', 'crawler', 'flyer', 'hound', 'trash', 'spitter'], FLY_ST = ['cruise', 'wind', 'dive', 'leave'];
 const NET = { role: 'solo', room: null, code: '', t: 0, push: 0, rate: 20, seq: 0, out: [], seen: 0, run: 0, night: 1, hostRun: 0,
   partner: null, lastP: null, lastSeen: 0, hadPartner: false, mateId: null, rtt: 0, lead: 0, theirTs: 0, theirAt: 0, pend: [], gone: new Set() };
 let ally = null;                                  // the other survivor on this screen, a puppet built from their messages
@@ -6113,7 +6243,7 @@ function testRoom(name) {
 
 // ---- a survivor as a short list of numbers, and back ----
 function pState(p) {
-  const fl = (p.moving ? 1 : 0) | (p.dead ? 2 : 0) | (p.inBus ? 4 : 0) | (p.hidden ? 8 : 0) | (p.backing ? 16 : 0) | (p.searching ? 32 : 0) | (p.flashT > 0 ? 64 : 0) | (p.trapT > 0 ? 256 : 0) | (p.dead && !p.reviveUsed ? 128 : 0) | ((p === player ? save.up.turret : p.hasTurret) ? 512 : 0) | (p.nlT > 0 ? 1024 : 0);
+  const fl = (p.moving ? 1 : 0) | (p.dead ? 2 : 0) | (p.inBus ? 4 : 0) | (p.hidden ? 8 : 0) | (p.backing ? 16 : 0) | (p.searching ? 32 : 0) | (p.flashT > 0 ? 64 : 0) | (p.trapT > 0 ? 256 : 0) | (p.dead && !p.reviveUsed ? 128 : 0) | ((p === player ? save.up.turret : p.hasTurret) ? 512 : 0) | ((p === player ? save.up.turret2 : p.hasTurret2) ? 2048 : 0) | (p.nlT > 0 ? 1024 : 0);
   return [r1(p.x), r1(p.fy), p.face, fl, Math.round(p.aim * 100), Math.round((p.elev || 0) * 100), Math.max(0, WEAPON_ORDER.indexOf(p.weapon)),
     Math.round(Math.min(9, p.shotT) * 100), r1(p.runPhase || 0), Math.round(Math.max(0, p.reloadT) * 100), Math.round((p.reloadDur || 1) * 100),
     Math.round(p.swingT * 100), Math.round(Math.max(0, p.hurtT) * 100), r1(Math.min(9, p.deadT || 0)), r1(p.recoil || 0), Math.round(p.porchT * 100),
@@ -6131,7 +6261,7 @@ function applyPState(q, a) {
   if (q.tx === null || Math.abs(a[0] - q.x) > 80) q.x = a[0];
   q.tx = a[0]; q.fy = a[1]; q.face = a[2] < 0 ? -1 : 1;
   q.revivable = !!(f & 128);
-  q.moving = !!(f & 1); q.inBus = !!(f & 4); q.hidden = !!(f & 8); q.backing = !!(f & 16); q.searching = (f & 32) ? true : null; q.trapped = !!(f & 256); q.hasTurret = !!(f & 512); q.nlPending = !!(f & 1024);
+  q.moving = !!(f & 1); q.inBus = !!(f & 4); q.hidden = !!(f & 8); q.backing = !!(f & 16); q.searching = (f & 32) ? true : null; q.trapped = !!(f & 256); q.hasTurret = !!(f & 512); q.hasTurret2 = !!(f & 2048); q.nlPending = !!(f & 1024);
   if (f & 64) q.flashT = .05;
   q.aim = a[4] / 100; q.elev = a[5] / 100; q.weapon = WEAPON_ORDER[a[6]] || 'pistol'; q.shotT = a[7] / 100;
   if (Math.abs(a[8] - q.runPhase) > 2) q.runPhase = a[8];
@@ -6245,6 +6375,7 @@ function hostIn(P) {
     else if (type === 'rv') getRevived();
     else if (type === 'fire') ignite(+a[0], false, +a[1], +a[2]);
     else if (type === 'mol') molFx(+a[0], +a[1]);
+    else if (type === 'tsh') turretShotFx(a);
     else if (type === 'crw') crowFlock(+a[0], +a[1]);
     else if (type === 'rcn') racOut(true, +a[0] ? 'ammo' : 'find');
     else if (type === 'heal') gotHeal(a[0]);
@@ -6423,6 +6554,7 @@ function guestIn(P) {
     else if (type === 'rv') getRevived();
     else if (type === 'fire') ignite(+a[0], false, +a[1], +a[2]);
     else if (type === 'mol') molFx(+a[0], +a[1]);
+    else if (type === 'tsh') turretShotFx(a);
     else if (type === 'crw') crowFlock(+a[0], +a[1]);
     else if (type === 'rcn') racOut(true, +a[0] ? 'ammo' : 'find');
     else if (type === 'heal') gotHeal(a[0]);
@@ -6601,7 +6733,7 @@ function guestEnd(won) {
   if (lost) save.relics = save.relics.filter(id => !gone.includes(id));
   if (!won) save.relicsNight = [];
   if (!won) save.runNew = true;
-  const cashLost = !won ? Math.min(save.cash, Math.round(stats.cash * (has('moneybelt') ? .6 : DEATH_LOSS))) : 0;
+  const cashLost = !won ? Math.min(save.cash, Math.round(stats.cash * (has('moneybelt') ? BELT_LOSS() : DEATH_LOSS))) : 0;
   save.cash -= cashLost;
   persist();
   const list = [[stats.kills, tr('sKills')], cashLost ? ['-$' + cashLost, tr('cashLost')] : ['$' + stats.cash, tr('sCash')], [fmtTime(stats.t), tr('sTime')]];
@@ -8205,7 +8337,7 @@ function setBanner(title, sub, life = 2, red = false) { G.banner = { title, sub,
 /* ============================================================
    SCREENS & FLOW
    ============================================================ */
-const screens = ['sTitle', 'sPause', 'sWin', 'sDead', 'sShop', 'sRotate', 'sLang', 'sFsHelp', 'sChar', 'sCoop', 'sPick', 'sSettings'];
+const screens = ['sTitle', 'sPause', 'sWin', 'sDead', 'sShop', 'sRotate', 'sLang', 'sFsHelp', 'sChar', 'sCoop', 'sPick', 'sSettings', 'sTunePass', 'sTuning'];
 function showScreen(id) {
   G.screen = id;
   screens.forEach(s => { if (s !== 'sRotate') $(s).hidden = s !== id; });
@@ -8235,11 +8367,85 @@ function refreshTitle() {
 const streetName = S => tr('st_' + S.name);
 // ---- settings ----
 function renderSettings() {
+  renderSettingsTune();
   const on = !save.introsOff, snd = !save.muted;
   $('setIntrosVal').textContent = tr(on ? 'setOn' : 'setOff'); $('setIntros').setAttribute('aria-pressed', on);
   $('setSoundVal').textContent = tr(snd ? 'setOn' : 'setOff'); $('setSound').setAttribute('aria-pressed', snd);
 }
-function openSettings() { G.setFrom = G.screen; unlockAudio(); sfx('click'); renderSettings(); showScreen('sSettings'); }
+function openSettings() { if (G.screen !== 'sTunePass' && G.screen !== 'sTuning') G.setFrom = G.screen; unlockAudio(); sfx('click'); renderSettings(); showScreen('sSettings'); }
+// ---- Settings > Tuning: the tuning page's numbers, in the game, behind a password. Saved on this device only and
+//      used from the next start (most numbers are read once when the game loads). ----
+const TUNE_PW = 4128297833513130;                    // (the password, hashed)
+const pwHash = (str, seed = 7) => { let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed; for (let i = 0, ch; i < str.length; i++) { ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); } h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507); h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909); h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507); h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909); return 4294967296 * (2097151 & h2) + (h1 >>> 0); };
+let tuneOK = false, tuneDraft = {}, tuneSecId = null;
+const tuneGet = (o, path) => { for (const k of path.split('.')) { if (!o || typeof o !== 'object') return undefined; o = o[k]; } return typeof o === 'number' && Number.isFinite(o) ? o : undefined; };
+function tuneSet(o, path, v) { const ks = path.split('.'); for (const k of ks.slice(0, -1)) o = (o[k] && typeof o[k] === 'object') ? o[k] : (o[k] = {}); o[ks[ks.length - 1]] = v; }
+function tuneDel(o, path) {                             // (and prune the empty branches)
+  const ks = path.split('.'), trail = [];
+  for (const k of ks.slice(0, -1)) { if (!o[k] || typeof o[k] !== 'object') return; trail.push([o, k]); o = o[k]; }
+  delete o[ks[ks.length - 1]];
+  for (let i = trail.length - 1; i >= 0; i--) { const [par, k] = trail[i]; if (Object.keys(par[k]).length) break; delete par[k]; }
+}
+const tuneFields = () => { const out = []; for (const S of TUNE_SCHEMA) for (const g of S.g) for (const f of g.f) out.push({ S, g, f, path: [S.id, g.id, f.k].filter(x => x != null).join('.') }); return out; };
+const tuneBuildVal = F => tuneGet(TUNING_BUILD, F.path) ?? F.f.d;
+const tuneCount = () => tuneFields().filter(F => tuneGet(tuneDraft, F.path) !== undefined).length;
+const tuneFmt = v => String(Math.round(v * 10000) / 10000);
+function renderSettingsTune() { $('setTuningVal').textContent = tr(tuneOK ? 'setUnlocked' : 'setLocked'); }
+function openTuning() {
+  sfx('click');
+  if (!tuneOK) { $('tunePass').value = ''; $('tunePassErr').hidden = true; showScreen('sTunePass'); setTimeout(() => { try { $('tunePass').focus(); } catch (e) {} }, 60); return; }
+  tuneDraft = JSON.parse(JSON.stringify(TUNE_LOCAL));
+  const sel = $('tuneSec');
+  if (!sel.options.length) sel.innerHTML = TUNE_SCHEMA.map(S => `<option value="${escH(S.id)}">${escH(S.t)}</option>`).join('');
+  if (!tuneSecId && TUNE_SCHEMA[0]) tuneSecId = TUNE_SCHEMA[0].id;
+  sel.value = tuneSecId; renderTuning(); showScreen('sTuning'); try { sel.focus({ preventScroll: true }); } catch (e) {}
+}
+function tryTunePass() {
+  if (pwHash($('tunePass').value.trim()) === TUNE_PW) { tuneOK = true; $('tunePass').value = ''; openTuning(); }
+  else { $('tunePassErr').hidden = false; sfx('empty'); }
+}
+function renderTuning() {
+  const S = TUNE_SCHEMA.find(q => q.id === tuneSecId) || TUNE_SCHEMA[0], n = tuneCount();
+  $('tuneNote').textContent = n ? tr('tuneNoteN', { n }) : tr('tuneNote0');
+  if (!S) { $('tuneList').innerHTML = ''; return; }
+  let h = S.n ? `<p class="keys" style="text-align:left;margin:0">${escH(S.n)}</p>` : '';
+  for (const g of S.g) {
+    h += `<div class="tune-g">${escH(g.t)}${g.n ? `<small>${escH(g.n)}</small>` : ''}</div>`;
+    for (const f of g.f) {
+      const path = [S.id, g.id, f.k].filter(x => x != null).join('.'), bv = tuneGet(TUNING_BUILD, path) ?? f.d, dv = tuneGet(tuneDraft, path), v = dv ?? bv;
+      const lab = escH(f.l) + (g.levels && f.lv ? ' · ' + escH(tr('tuneLv', { n: f.lv })) : '');
+      h += `<div class="tune-row${dv !== undefined ? ' chg' : ''}" data-p="${escH(path)}"><div class="l">${lab}<small>${f.h ? escH(f.h) + ' · ' : ''}${escH(tr('tuneDef', { v: tuneFmt(bv) }))}</small></div>
+        <div class="tune-step"><button type="button" data-d="-1" aria-label="-">−</button><input type="number" inputmode="decimal" step="${f.s}" min="${f.min}" max="${f.max}" value="${tuneFmt(v)}"><button type="button" data-d="1" aria-label="+">+</button></div></div>`;
+    }
+  }
+  $('tuneList').innerHTML = h;
+}
+function tuneChange(row, v) {
+  const F = tuneFields().find(q => q.path === row.dataset.p); if (!F || !Number.isFinite(v)) return;
+  v = clamp(v, F.f.min, F.f.max); if (F.f.i) v = Math.round(v); else v = Math.round(v * 10000) / 10000;
+  if (Math.abs(v - tuneBuildVal(F)) < 1e-9) tuneDel(tuneDraft, F.path); else tuneSet(tuneDraft, F.path, v);
+  row.querySelector('input').value = tuneFmt(v); row.classList.toggle('chg', tuneGet(tuneDraft, F.path) !== undefined);
+  const n = tuneCount(); $('tuneNote').textContent = n ? tr('tuneNoteN', { n }) : tr('tuneNote0');
+}
+$('setTuning').addEventListener('click', openTuning);
+$('tunePassGo').addEventListener('click', tryTunePass);
+$('tunePass').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); tryTunePass(); } });     // (no Enter left over to press Save)
+$('tunePassBack').addEventListener('click', () => { sfx('click'); renderSettings(); showScreen('sSettings'); });
+$('tuneBack').addEventListener('click', () => { sfx('click'); renderSettings(); showScreen('sSettings'); });
+$('tuneSec').addEventListener('change', e => { tuneSecId = e.target.value; renderTuning(); $('tuneList').scrollTop = 0; });
+$('tuneList').addEventListener('click', e => {
+  const b = e.target.closest('button[data-d]'); if (!b) return;
+  const row = b.closest('.tune-row'), F = tuneFields().find(q => q.path === row.dataset.p); if (!F) return;
+  sfx('click'); tuneChange(row, (+row.querySelector('input').value || 0) + F.f.s * +b.dataset.d);
+});
+$('tuneList').addEventListener('change', e => { const i = e.target.closest('input'); if (i) tuneChange(i.closest('.tune-row'), parseFloat(i.value)); });
+$('tuneUndo').addEventListener('click', () => { sfx('click'); tuneDraft = {}; renderTuning(); });
+$('tuneSave').addEventListener('click', () => {
+  sfx('click');
+  try { if (Object.keys(tuneDraft).length) localStorage.setItem(TUNE_KEY, JSON.stringify(tuneDraft)); else localStorage.removeItem(TUNE_KEY); } catch (e) {}
+  try { persist(); } catch (e) {}
+  setTimeout(() => location.reload(), 120);
+});
 $('setBtnT').addEventListener('click', openSettings);
 $('setBtnP').addEventListener('click', openSettings);
 $('setIntros').addEventListener('click', () => { save.introsOff = !save.introsOff; persist(); sfx('click'); renderSettings(); });
@@ -8278,7 +8484,7 @@ function endNight(won) {
   const gone = !won ? (save.relicsNight || []).filter(id => (save.relics || []).includes(id)) : [], lost = gone.length;
   if (lost) save.relics = save.relics.filter(id => !gone.includes(id));   // bitten: tonight's items go with you (the ones from earlier nights stay)
   if (!won) save.relicsNight = [];
-  const cashLost = !won ? Math.min(save.cash, Math.round(stats.cash * (has('moneybelt') ? .6 : DEATH_LOSS))) : 0;      // bitten: most of the night's cash goes with you (solo and co-op)
+  const cashLost = !won ? Math.min(save.cash, Math.round(stats.cash * (has('moneybelt') ? BELT_LOSS() : DEATH_LOSS))) : 0;      // bitten: most of the night's cash goes with you (solo and co-op)
   save.cash -= cashLost;
   if (!won) { save.runNew = true; save.up = { jacket: 0, shoes: 0 }; save.meleeTier = 0; }   // ...and the next night starts a new run (pick a gun on the way); the run's supplies are gone (the enemy cards you've seen stay seen)
   if (won) { save.night++; save.best = Math.max(save.best, save.night); if (escaped) save.escaped = true; delete save.checkpoint; }
@@ -8330,7 +8536,8 @@ function shopItems(tab = null) {                      // tab: 'supply', 'armory'
   }
   if (all || tab === 'armory') {
     out.push({ head: tr('gadgets') });
-    out.push({ key: 'up_turret', icon: SPR.iconURL.turret, name: tr('u_turret'), desc: tr('ud_turret', { n: Math.round(TUR.dmg), s: Math.round(TUR.every * 10) / 10 }), lv: save.up.turret ? 1 : 0, max: 1, owned: !!save.up.turret, price: save.up.turret ? null : round5(TUR.price) });
+    out.push({ key: 'up_turret', icon: SPR.iconURL.turret, name: tr('u_turret'), desc: tr('ud_turret', { m: TUR.mag }), lv: save.up.turret ? 1 : 0, max: 1, owned: !!save.up.turret, price: save.up.turret ? null : round5(TUR.price) });
+    out.push({ key: 'up_turret2', icon: SPR.iconURL.turret2, name: tr('u_turret2'), desc: tr('ud_turret2'), lv: save.up.turret2 ? 1 : 0, max: 1, owned: !!save.up.turret2, price: save.up.turret2 ? null : round5(TUR2.price) });
   }
   if (all || tab === 'training') {
     for (const k of ATTRS) {
@@ -8370,6 +8577,7 @@ function buy(key) {
   save.cash -= it.price;
   if (key.startsWith('ammo_')) addAmmo(key.slice(5), AMMO_CAP[key.slice(5)] || 0);
   else if (key === 'up_turret') save.up.turret = 1;
+  else if (key === 'up_turret2') save.up.turret2 = 1;
   else if (key === 'up_jacket' || key === 'up_shoes') { save.up[key.slice(3)] = 1; if (key === 'up_jacket' && player && G.state === 'play') player.hp += SUP.jacketHp; }
   else if (key === 'melee_up') save.meleeTier = 1;
   else if (key === 'nades') addNades(SUP.nadeCount);
@@ -8998,7 +9206,7 @@ try { if (hot && typeof hot.snapshot === 'function') hot.snapshot(() => ({ save 
 try {
   if (hot && typeof hot.ready === 'function') hot.ready(start); else start((hot && hot.data) || {});
 } catch (e) { console.error(e); start({}); }
-window.__porch = { get SD() { return SD; }, set SD(v) { SD = v; }, get SDg() { return SDg; }, planSupply, SUPPLY, GOOSE_MAX, lastMul, get crowsIn() { return crowsIn; }, get raccoons() { return raccoons; }, updRaccoons, racOut, crowFlock, CUT_RELICS, molR, molHost, set DUAL(v) { DUAL_DX = v[0]; DUAL_DY = v[1]; }, reviveMist, REVIVE_CLEAR, canTake, RELIC_GUN, gunOK, gunOf, myGun, relicWanted, LEG, makeLegend, legendRoll, toggleReady, coopReadyUI, mateReady, get NF() { return NF; }, set NF(v) { NF = v; }, get rcs() { return rcs; }, get scarecrows() { return scarecrows; }, get oldMen() { return oldMen; }, get goose() { return goose; }, updWatchers, updRC, flareFor, itemSpeed, shotMul, meleeMul, coinVal, rollLoot, trySearch, nearDoor, relicOK, relEnc, relDec, finishSearch, mateFound, get floaters() { return floaters; }, get turret() { return turret; }, get allyTur() { return allyTur; }, TUR, updTurret, turretFire, COOP_EASE, coopMul, relicOK, RELIC_ONLY, IT, get minis() { return minis; }, updZTraps, sprayed, stunZ, flashbang, healMe, buddyMul, lampMul, capOf, nightCfg, COOP, get cfg() { return cfg; }, ricochet, nadeR, relicSpent, addCash, get DEATH_LOSS() { return DEATH_LOSS; }, buildBuddyFrames, buildBearFrames, buildWolfFrames, get stands() { return stands; }, get traps() { return traps; }, updTraps, trapNews, statKind, zKind, exitKind, loopOf, streetOf, NADE_MAX, addNades, SIDES, ALPHA_DMG, alphaHp, bossHp, TRAP, STAND, get world() { return world; }, updStands, tickBuddy, get ammoBoxes() { return ammoBoxes; }, rollAmmoDrop, AMMO_DROP, CLIPS, magOf, gunSave, pauseCoopUI, views, offscreenX, spawnEdge, enterCoopSave, leaveCoopSave, coopStored, capNow, noiseHorde, get buddies() { return buddies; }, updBuddies, airVolley, get airShots() { return airShots; }, makeElite, COOP, ELITE, updSpitter, get spits() { return spits; }, spitAt, zArt, applyGunMods, SUP, ARM, TRN, capOf, strMul, get critBonus() { return critBonus(); }, renderShop, deathFx, CRIT_MUL, critChance, hurtZombie, get decals() { return decals; }, trashSlam, buildTrashFrames, get TRASH_ART() { return TRASH_ART; }, zLevel, zStats, headOf, hatFor, ZLV, get parts() { return parts; }, TUNING, MELEE, ZT, PT, BOSS_DMG, get RIFLE_FALL() { return RIFLE_FALL; }, bossHp, get NADE_R() { return NADE_R; }, get FLY_DMG() { return FLY_DMG; }, nadeDmg, nadeChargeStart, nadeChargeEnd, nadeMaxD, openIntro, closeIntro, checkIntros, nightCfg, unlocked, ROSTER, openSettings, cancelReload, roundsIn, getRevived, updRevive, get SOLO_SAVE() { return SOLO_SAVE; }, nadePlan, openShop, PRIMARIES, pickGun, openPick, ensureLoadout, gunFor, sticks, pollTouch, input, WEAP, fire, startReload, moveSpeed, normalizeSave, addAmmo, get fires() { return fires; }, RELICS, AMMO_CAP, has, grabRelic, dropRelics, pickRelicHouses, ignite, renderRelics, relicArt, get drops() { return drops; }, get nums() { return nums; }, shopItems, buy, fillPrice, houndWave, HOUND, buildHoundFrames, batHound, get bullets() { return bullets; }, skinOf, get WORN() { return WORN; }, get AF() { return AF; }, NET, get ally() { return ally; }, hostSnap, areaHit, get hostNades() { return hostNades; }, meleeHit, quickSwing, coopAlly, get stats() { return stats; }, get coins() { return coins; }, get K() { return K; }, noiseHorde, get spawnQ() { return spawnQ; }, spawnFlyer, NADE, get nades() { return nades; }, nadeCalc, throwNade, explode, TRACKS, G, get player() { return player; }, get zombies() { return zombies; }, get save() { return save; }, get boss() { return boss; }, get bus() { return bus; }, get props() { return props; }, get debris() { return debris; }, WX, startNight, startBoss, setWeather, houses: () => houses, dmgPlayer, spawnZombie, CE, makeTemplate, importSheet, get CUSTOM() { return CUSTOM; } };
+window.__porch = { TUNING, TUNE_SCHEMA, openTuning, get tuneOK() { return tuneOK; }, get SD() { return SD; }, set SD(v) { SD = v; }, get SDg() { return SDg; }, planSupply, SUPPLY, GOOSE_MAX, lastMul, get crowsIn() { return crowsIn; }, get raccoons() { return raccoons; }, updRaccoons, racOut, crowFlock, CUT_RELICS, molR, molHost, set DUAL(v) { DUAL_DX = v[0]; DUAL_DY = v[1]; }, reviveMist, REVIVE_CLEAR, canTake, RELIC_GUN, gunOK, gunOf, myGun, relicWanted, LEG, makeLegend, legendRoll, toggleReady, coopReadyUI, mateReady, get NF() { return NF; }, set NF(v) { NF = v; }, get rcs() { return rcs; }, get scarecrows() { return scarecrows; }, get oldMen() { return oldMen; }, get goose() { return goose; }, updWatchers, updRC, flareFor, itemSpeed, shotMul, meleeMul, coinVal, rollLoot, trySearch, nearDoor, relicOK, relEnc, relDec, finishSearch, mateFound, get floaters() { return floaters; }, get turret() { return turret; }, get turret2() { return turret2; }, get allyTur() { return allyTur; }, get allyTur2() { return allyTur2; }, TUR, TUR2, updTurret, turretTick, gunBullets, COOP_EASE, coopMul, relicOK, RELIC_ONLY, IT, get minis() { return minis; }, updZTraps, sprayed, stunZ, flashbang, healMe, buddyMul, lampMul, capOf, nightCfg, COOP, get cfg() { return cfg; }, ricochet, nadeR, relicSpent, addCash, get DEATH_LOSS() { return DEATH_LOSS; }, buildBuddyFrames, buildBearFrames, buildWolfFrames, get stands() { return stands; }, get traps() { return traps; }, updTraps, trapNews, statKind, zKind, exitKind, loopOf, streetOf, NADE_MAX, addNades, SIDES, ALPHA_DMG, alphaHp, bossHp, TRAP, STAND, get world() { return world; }, updStands, tickBuddy, get ammoBoxes() { return ammoBoxes; }, rollAmmoDrop, AMMO_DROP, CLIPS, magOf, gunSave, pauseCoopUI, views, offscreenX, spawnEdge, enterCoopSave, leaveCoopSave, coopStored, capNow, noiseHorde, get buddies() { return buddies; }, updBuddies, airVolley, get airShots() { return airShots; }, makeElite, COOP, ELITE, updSpitter, get spits() { return spits; }, spitAt, zArt, applyGunMods, SUP, ARM, TRN, capOf, strMul, get critBonus() { return critBonus(); }, renderShop, deathFx, CRIT_MUL, critChance, hurtZombie, get decals() { return decals; }, trashSlam, buildTrashFrames, get TRASH_ART() { return TRASH_ART; }, zLevel, zStats, headOf, hatFor, ZLV, get parts() { return parts; }, TUNING, MELEE, ZT, PT, BOSS_DMG, get RIFLE_FALL() { return RIFLE_FALL; }, bossHp, get NADE_R() { return NADE_R; }, get FLY_DMG() { return FLY_DMG; }, nadeDmg, nadeChargeStart, nadeChargeEnd, nadeMaxD, openIntro, closeIntro, checkIntros, nightCfg, unlocked, ROSTER, openSettings, cancelReload, roundsIn, getRevived, updRevive, get SOLO_SAVE() { return SOLO_SAVE; }, nadePlan, openShop, PRIMARIES, pickGun, openPick, ensureLoadout, gunFor, sticks, pollTouch, input, WEAP, fire, startReload, moveSpeed, normalizeSave, addAmmo, get fires() { return fires; }, RELICS, AMMO_CAP, has, grabRelic, dropRelics, pickRelicHouses, ignite, renderRelics, relicArt, get drops() { return drops; }, get nums() { return nums; }, shopItems, buy, fillPrice, houndWave, HOUND, buildHoundFrames, batHound, get bullets() { return bullets; }, skinOf, get WORN() { return WORN; }, get AF() { return AF; }, NET, get ally() { return ally; }, hostSnap, areaHit, get hostNades() { return hostNades; }, meleeHit, quickSwing, coopAlly, get stats() { return stats; }, get coins() { return coins; }, get K() { return K; }, noiseHorde, get spawnQ() { return spawnQ; }, spawnFlyer, NADE, get nades() { return nades; }, nadeCalc, throwNade, explode, TRACKS, G, get player() { return player; }, get zombies() { return zombies; }, get save() { return save; }, get boss() { return boss; }, get bus() { return bus; }, get props() { return props; }, get debris() { return debris; }, WX, startNight, startBoss, setWeather, houses: () => houses, dmgPlayer, spawnZombie, CE, makeTemplate, importSheet, get CUSTOM() { return CUSTOM; } };
 })();
 </script>
 </body></html>
