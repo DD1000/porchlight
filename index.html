@@ -28,7 +28,7 @@ body{margin:0;background:var(--night);color:var(--ink);font-family:var(--body);o
 
 /* touch controls */
 #controls{position:absolute;inset:0;z-index:3;pointer-events:none}
-#controls.picking .stick{pointer-events:none}
+#controls.picking #stFire,#controls.picking #stPistol{pointer-events:none}   /* picking a grenade spot: a tap on the gun sticks picks it; the move stick keeps walking */
 .cbtn{position:absolute;pointer-events:auto;touch-action:none;display:grid;place-items:center;margin:0;padding:0;-webkit-appearance:none;appearance:none;background:rgba(20,16,41,.5);border:max(2px,calc(var(--px)*1)) solid rgba(243,234,214,.32);border-radius:calc(var(--px)*3);color:var(--ink);font:700 calc(var(--px)*5.5)/1 var(--body);letter-spacing:.08em;cursor:pointer}
 .cbtn.on{background:rgba(255,180,58,.38);border-color:var(--amber)}
 .cbtn svg{width:42%;height:42%;shape-rendering:crispEdges;fill:currentColor}
@@ -4663,7 +4663,7 @@ function quickNade() {                                  // keyboard: lob one ahe
 }
 cv.addEventListener('pointerdown', e => {
   unlockAudio();
-  if (!NADE.on || !NADE.pick) return;                   // picking where a grenade lands: press, slide to adjust, let go to throw
+  if (!NADE.on || !NADE.pick || NADE.id !== null) return;   // picking where a grenade lands: press, slide to adjust, let go to throw (the first finger down on the street)
   e.preventDefault(); NADE.id = e.pointerId; NADE.tx = worldX(e.clientX);
   try { cv.setPointerCapture(e.pointerId); } catch (err) {}
 });
@@ -6182,7 +6182,7 @@ function drawRelicPop() {                            // just picked up: the item
    On claude.ai the page's `room` carries the snapshots; on the game's own website PeerJS does (a free
    public server introduces the two browsers, then they talk directly).
    ============================================================ */
-const GAME_BUILD = 69;                              // shown on the co-op screen, so two players can check they have the same game
+const GAME_BUILD = 70;                              // shown on the co-op screen, so two players can check they have the same game
 // on the game's own website: browsers may keep an old copy of the page for up to 10 minutes after an update,
 // so check for a newer upload when the game opens and load it straight away if there is one
 (function checkForUpdate() {
