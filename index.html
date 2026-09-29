@@ -238,7 +238,7 @@ body{margin:0;background:var(--night);color:var(--ink);font-family:var(--body);o
         <button class="link" id="soundBtnT">Sound: on</button>
         <button class="link" id="fsBtnT" hidden>Full screen</button>
         <button class="link" id="nightBtn">Pick night: 1</button>
-        <button class="link" id="langBtn" lang="zh">中文</button>
+        <button class="link" id="langBtn">Language</button>
         <button class="link" id="resetBtn" hidden>Reset progress</button>
       </div>
     </section>
@@ -332,9 +332,10 @@ body{margin:0;background:var(--night);color:var(--ink);font-family:var(--body);o
 
     <section class="screen solid" id="sLang" hidden>
       <p class="eyebrow" data-t="langEyebrow">Language · 语言</p>
-      <h2 class="head">Choose a language<br><span lang="zh">选择语言</span></h2>
+      <h2 class="head" style="line-height:1.2">Choose a language<br><span lang="es">Elige un idioma</span><br><span lang="zh">选择语言</span></h2>
       <div class="row">
         <button class="btn" id="langEn" lang="en">English</button>
+        <button class="btn" id="langEs" lang="es">Español</button>
         <button class="btn" id="langZh" lang="zh">简体中文</button>
       </div>
     </section>
@@ -488,7 +489,7 @@ function hexToRgb(h) { h = h.replace('#', ''); const n = parseInt(h, 16); return
 function shade(h, a) { const [r, g, b] = hexToRgb(h); const f = v => Math.round(clamp(a < 0 ? v * (1 + a) : v + (255 - v) * a, 0, 255)); return '#' + [f(r), f(g), f(b)].map(v => v.toString(16).padStart(2, '0')).join(''); }
 
 /* ============================================================
-   LANGUAGE (English / 简体中文)
+   LANGUAGE (English / Español / 简体中文)
    ============================================================ */
 const STR = {
   en: {
@@ -499,7 +500,7 @@ const STR = {
     keys: '<kbd>A</kbd> <kbd>D</kbd> walk &middot; <kbd>J</kbd> or <kbd>Space</kbd> fire your gun &middot; <kbd>L</kbd> fire the revolver (hold <kbd>W</kbd> / <kbd>S</kbd> to aim up / down) &middot; <kbd>E</kbd> search a lit porch &middot; <kbd>F</kbd> swing bat &middot; <kbd>G</kbd> then click where a grenade should land &middot; <kbd>R</kbd> reload &middot; <kbd>P</kbd> pause',
     touch: 'Left stick walks &middot; bottom right: your gun, then the revolver in the corner &middot; BAT above them &middot; tap the grenade button, then tap where it should land &middot; SEARCH at a lit porch',
     soundOn: 'Sound: on', soundOff: 'Sound: off', fs: 'Full screen', fsExit: 'Exit full screen', pick: 'Pick night: {n}',
-    reset: 'Reset progress', resetSure: 'Tap again to erase all progress', langBtn: '中文',
+    reset: 'Reset progress', resetSure: 'Tap again to erase all progress', langBtn: 'Language',
     titleSub: 'Night {n} · {street}', titleSubEsc: 'Escaped once · Night {n} · {street}',
     paused: 'Paused', resume: 'Resume', quit: 'Quit to title', pauseSub: 'Night {n} on {street}',
     pauseCodeLbl: 'Game code', pauseCodeIn: 'Your friend is in. If they drop out, they can rejoin with this code.',
@@ -518,7 +519,7 @@ const STR = {
     mDesc0: 'Replaces the bat. Hits harder.', mDesc1: 'Heavy swing, hits up to four.', mDesc2: 'Your best melee weapon.',
     rotEyebrow: 'Porchlight plays sideways', rotHead: 'Turn your phone', rotLede: 'Hold it in landscape for the full street view and room for the controls.', rotAnyway: 'Play in portrait anyway',
     fsHelpHead: 'Full screen on iPhone', fsHelpLede: 'iPhones don’t let web pages go full screen. Two ways to get it anyway: tap <b>Share</b>, then <b>Add to Home Screen</b>, and play from the new icon (it opens with no Safari bars). Or turn the phone sideways, tap <b>aA</b> in the address bar and choose <b>Hide Toolbar</b>.', fsHelpHead2: 'Full screen', fsHelpLede2: 'This browser won’t let the game go full screen from here. Open the game in Chrome or Safari, or add it to your home screen, and try again.', setFs: 'Full screen', setFsHow: 'How?', gotIt: 'Got it',
-    langEyebrow: 'Language · 语言', langHead: 'Choose a language',
+    langEyebrow: 'Language · Idioma · 语言', langHead: 'Choose a language',
     charBtn: 'Your character', charHead: 'Your character', charSave: 'Play as this character', charDefault: 'Use the default hero', back: 'Back',
     coopBtn: 'Play with a friend', coopEyebrow: 'Online co-op · early test', coopHead: 'Play with a friend', coopHostBtn: 'Host a game', coopJoinBtn: 'Join', coopLeave: 'Leave co-op',
     coopNote: 'One of you hosts and shares the 4-letter code; the other types it in and joins. You play the host’s night, cash is shared, and your partner shows up as the default hero.',
@@ -754,7 +755,7 @@ const STR = {
     keys: '<kbd>A</kbd> <kbd>D</kbd> 移动 &middot; <kbd>J</kbd> 或 <kbd>空格</kbd> 用你的枪射击 &middot; <kbd>L</kbd> 用左轮射击（按住 <kbd>W</kbd> / <kbd>S</kbd> 向上 / 向下瞄准）&middot; <kbd>E</kbd> 搜索亮灯的门廊 &middot; <kbd>F</kbd> 挥棒 &middot; 按 <kbd>G</kbd> 再点击手雷要落的地方 &middot; <kbd>R</kbd> 换弹 &middot; <kbd>P</kbd> 暂停',
     touch: '左摇杆移动 &middot; 右下角：你的枪，角落是左轮 &middot; 上面是「球棒」 &middot; 点手雷按钮，再点它要落的地方 &middot; 在亮灯门廊点「搜索」',
     soundOn: '声音：开', soundOff: '声音：关', fs: '全屏', fsExit: '退出全屏', pick: '选择夜晚：{n}',
-    reset: '重置进度', resetSure: '再点一次，清除全部进度', langBtn: 'English',
+    reset: '重置进度', resetSure: '再点一次，清除全部进度', langBtn: '语言',
     titleSub: '第 {n} 夜 · {street}', titleSubEsc: '已逃出一次 · 第 {n} 夜 · {street}',
     paused: '已暂停', resume: '继续', quit: '返回标题', pauseSub: '第 {n} 夜 · {street}',
     pauseCodeLbl: '游戏代码', pauseCodeIn: '队友在线。如果掉线，可以用这个代码重新加入。',
@@ -773,7 +774,7 @@ const STR = {
     mDesc0: '替换球棒，打得更重。', mDesc1: '重击，最多同时命中四个。', mDesc2: '你最好的近战武器。',
     rotEyebrow: '门廊灯需要横屏', rotHead: '请把手机横过来', rotLede: '横屏才能看到整条街，也有空间放按键。', rotAnyway: '仍然竖屏玩',
     fsHelpHead: 'iPhone 上的全屏', fsHelpLede: 'iPhone 不允许网页进入全屏。两个办法：点<b>分享</b>，再点<b>添加到主屏幕</b>，然后从新图标打开游戏（没有 Safari 的工具栏）。或者把手机横过来，点地址栏里的 <b>aA</b>，选<b>隐藏工具栏</b>。', fsHelpHead2: '全屏', fsHelpLede2: '这个浏览器不允许游戏在这里全屏。请用 Chrome 或 Safari 打开游戏，或把它添加到主屏幕，再试一次。', setFs: '全屏', setFsHow: '怎么做？', gotIt: '知道了',
-    langEyebrow: 'Language · 语言', langHead: '选择语言',
+    langEyebrow: 'Language · Idioma · 语言', langHead: '选择语言',
     charBtn: '你的角色', charHead: '你的角色', charSave: '用这个角色开始', charDefault: '使用默认角色', back: '返回',
     coopBtn: '和朋友一起玩', coopEyebrow: '在线合作 · 测试版', coopHead: '和朋友一起玩', coopHostBtn: '创建游戏', coopJoinBtn: '加入', coopLeave: '退出合作',
     coopNote: '一人创建游戏并告诉对方 4 位代码，另一人输入代码加入。进度跟随房主的夜晚，现金共享，队友显示为默认角色。',
@@ -1000,8 +1001,740 @@ const STR = {
     nades: '手雷', nadesSub: '点手雷按钮，再点落点', nadesSubKey: '按 G，再点击落点', nadePick: '点它要落的地方', nadePickKey: '点击落点 · 再按 G 投出',
     nadeName: '手雷', nadeDesc: '+{n} 枚手雷。点手雷按钮，再点落点。很吵。',
   },
+  es: {
+    "lede": "El pueblo cayó al anochecer. El último autobús sale del otro extremo de la cuadra. Las casas con la luz del porche encendida todavía tienen provisiones.",
+    "logoSub": "",
+    "start1": "Empezar la noche 1",
+    "cont": "Continuar: noche {n}",
+    "startN": "Empezar la noche {n}",
+    "shop": "Tienda",
+    "keys": "<kbd>A</kbd> <kbd>D</kbd> caminar &middot; <kbd>J</kbd> o <kbd>Espacio</kbd> disparar tu arma &middot; <kbd>L</kbd> disparar el revólver (mantén <kbd>W</kbd> / <kbd>S</kbd> para apuntar arriba / abajo) &middot; <kbd>E</kbd> registrar un porche iluminado &middot; <kbd>F</kbd> batear &middot; <kbd>G</kbd> y luego haz clic donde debe caer la granada &middot; <kbd>R</kbd> recargar &middot; <kbd>P</kbd> pausa",
+    "touch": "La palanca izquierda camina &middot; abajo a la derecha: tu arma, y el revólver en la esquina &middot; BATE encima de ellas &middot; toca el botón de granada y luego toca donde debe caer &middot; BUSCAR en un porche iluminado",
+    "soundOn": "Sonido: sí",
+    "soundOff": "Sonido: no",
+    "fs": "Pantalla completa",
+    "fsExit": "Salir de pantalla completa",
+    "pick": "Elegir noche: {n}",
+    "reset": "Borrar progreso",
+    "resetSure": "Toca otra vez para borrar todo el progreso",
+    "langBtn": "Idioma",
+    "titleSub": "Noche {n} · {street}",
+    "titleSubEsc": "Escapaste una vez · Noche {n} · {street}",
+    "paused": "Pausa",
+    "resume": "Seguir",
+    "quit": "Salir al inicio",
+    "pauseSub": "Noche {n} en {street}",
+    "pauseCodeLbl": "Código de partida",
+    "pauseCodeIn": "Tu amigo está dentro. Si se desconecta, puede volver a entrar con este código.",
+    "pauseCodeOut": "Tu amigo no está conectado. Puede volver a entrar con este código.",
+    "pauseCodeGuest": "Si te desconectas, vuelve a entrar con este código.",
+    "winSub": "Sobreviviste la noche {n}",
+    "winSubBoss": "Sobreviviste la noche {n} · el Despachador cayó",
+    "winHead": "Alcanzaste el autobús.",
+    "winHeadBoss": "Saliste del pueblo.",
+    "winLede": "El último autobús cruza el límite del condado contigo a bordo. Las calles de atrás siguen llenas de ellos, y mañana en la noche seguirán ahí. Sigue si quieres.",
+    "toShop": "Ir a la tienda",
+    "toShopBoss": "Seguir: tienda",
+    "bitten": "Mordido.",
+    "retry": "Otra vez",
+    "retryDepot": "Reintentar en la terminal",
+    "deadSub": "Noche {n} · {p}% del camino por {street}",
+    "deadSubBoss": "Noche {n} · el lote de la terminal, {p}% del Despachador",
+    "sKills": "Zombis abatidos",
+    "sPorch": "Porches registrados",
+    "sCash": "Dinero encontrado",
+    "sTime": "Tiempo",
+    "between": "Entre noches",
+    "backTitle": "Volver al inicio",
+    "maxed": "Al máximo",
+    "shells": "Cartuchos de escopeta",
+    "shells12": "12 cartuchos",
+    "inPocket": "{n} en el bolsillo",
+    "sgDesc": "Seis perdigones por disparo. Los hace retroceder. El arma más ruidosa: las hordas la oyen.",
+    "sgHave": "Viene con 10 cartuchos",
+    "smgAmmo": "Balas de subfusil",
+    "rounds90": "90 balas",
+    "smgDesc": "Once balas por segundo. Gasta mucha munición.",
+    "smgHave": "Viene con 60 balas",
+    "mDesc0": "Reemplaza el bate. Pega más fuerte.",
+    "mDesc1": "Golpe pesado, alcanza hasta a cuatro.",
+    "mDesc2": "Tu mejor arma cuerpo a cuerpo.",
+    "rotEyebrow": "Porchlight se juega de lado",
+    "rotHead": "Gira tu teléfono",
+    "rotLede": "Ponlo en horizontal para ver toda la calle y tener espacio para los controles.",
+    "rotAnyway": "Jugar en vertical de todos modos",
+    "fsHelpHead": "Pantalla completa en iPhone",
+    "fsHelpLede": "El iPhone no deja que las páginas web usen pantalla completa. Hay dos formas de lograrlo: toca <b>Compartir</b>, luego <b>Agregar a inicio</b>, y juega desde el nuevo ícono (se abre sin las barras de Safari). O gira el teléfono, toca <b>aA</b> en la barra de direcciones y elige <b>Ocultar barra de herramientas</b>.",
+    "fsHelpHead2": "Pantalla completa",
+    "fsHelpLede2": "Este navegador no deja que el juego use pantalla completa desde aquí. Abre el juego en Chrome o Safari, o agrégalo a tu pantalla de inicio, e inténtalo otra vez.",
+    "setFs": "Pantalla completa",
+    "setFsHow": "¿Cómo?",
+    "gotIt": "Entendido",
+    "langEyebrow": "Idioma · Language · 语言",
+    "langHead": "Elige un idioma",
+    "charBtn": "Tu personaje",
+    "charHead": "Tu personaje",
+    "charSave": "Jugar con este personaje",
+    "charDefault": "Usar el héroe original",
+    "back": "Atrás",
+    "coopBtn": "Jugar con un amigo",
+    "coopEyebrow": "Cooperativo en línea · prueba",
+    "coopHead": "Jugar con un amigo",
+    "coopHostBtn": "Crear partida",
+    "coopJoinBtn": "Unirse",
+    "coopLeave": "Salir del cooperativo",
+    "coopNote": "Uno crea la partida y comparte el código de 4 letras; el otro lo escribe y se une. Juegan la noche del anfitrión, el dinero se comparte y tu compañero aparece como el héroe original.",
+    "coopConnecting": "Conectando…",
+    "coopHosting": "Dale este código a tu amigo. Esperando a que se una…",
+    "coopFriendIn": "Tu amigo llegó.",
+    "coopStartN": "Empezar la noche {n} juntos",
+    "coopJoined": "Conectado. Esperando a que el anfitrión empiece la noche…",
+    "coopLooking": "Buscando al anfitrión…",
+    "coopNoHost": "Nadie ha creado una partida con ese código todavía. Revísalo con tu amigo (seguimos buscando).",
+    "w_rifle": "Rifle de cerrojo",
+    "t_shotgun": "ESCOPETA",
+    "t_smg": "SUBFUSIL",
+    "t_rifle": "RIFLE",
+    "t_pistol": "PISTOLA",
+    "d_shotgun": "Seis perdigones por disparo. Los hace retroceder. Ruidosa.",
+    "d_smg": "Once balas por segundo. Gasta mucha munición.",
+    "d_rifle": "Cinco balas. Cada una atraviesa a todos los zombis en fila, con la mitad del daño en cada uno.",
+    "pickEyebrow": "Una nueva partida",
+    "pickHead": "Elige tu arma",
+    "pickNote": "Tu revólver .38 siempre te acompaña, en su propia palanca. Conservas esta arma hasta que te muerdan, y tus mejoras de la Armería van con el arma que elijas.",
+    "nextGun": "Arma para la próxima partida",
+    "yourGun": "Tu arma",
+    "rifleAmmo": "Balas de rifle",
+    "rifleFill": "Llenar hasta {n} balas",
+    "coopYouDownRv": "AGUANTA. TU COMPAÑERO TE PUEDE LEVANTAR",
+    "coopDownSub": "QUÉDATE ENCIMA 10 SEGUNDOS PARA REANIMARLO",
+    "reviving": "REANIMANDO",
+    "gettingUp": "LEVANTÁNDOTE",
+    "helpF": "AYUDA",
+    "revived": "¡DE PIE!",
+    "revivedSub": "MEDIA VIDA. NO HAY MÁS REANIMACIONES ESTA NOCHE",
+    "cashLost": "Dinero perdido",
+    "coopWaitShort": "Esperando al anfitrión",
+    "newThreat": "NUEVA AMENAZA",
+    "howTo": "CÓMO ENFRENTARLOS",
+    "tapGo": "TOCA PARA CONTINUAR",
+    "keyGo": "PULSA ESPACIO PARA CONTINUAR",
+    "iz_walker": "CAMINANTES",
+    "id_walker": "Los lentos. Se arrastran hacia el ruido y muerden lo que alcanzan.",
+    "ih_walker": "Mantén la distancia y dispara. Retrocede mientras disparas y nunca te tocarán.",
+    "iz_runner": "CORREDORES",
+    "id_runner": "Recién convertidos. Rápidos, pero caen pronto.",
+    "ih_runner": "Voltéate a tiempo. Un par de disparos o un buen batazo basta.",
+    "iz_flyer": "MURCIÉLAGOS",
+    "id_flyer": "Vuelan en círculos sobre la calle y luego se lanzan en picada hacia ti.",
+    "ih_flyer": "Cuando le brillan los ojos está por lanzarse. Dispárale mientras baja o batea cuando pase bajo.",
+    "iz_crawler": "REPTANTES",
+    "id_crawler": "Se arrastran por el pavimento. Las balas les pasan por encima.",
+    "ih_crawler": "Apunta la palanca hacia abajo, deja que la escopeta los alcance o usa el bate.",
+    "iz_brute": "BRUTOS",
+    "id_brute": "Grandes y lentos. Aguantan muchas balas y casi no retroceden.",
+    "ih_brute": "Sigue disparando y sigue moviéndote. Una granada los debilita rápido.",
+    "iz_spitter": "ESCUPIDORES",
+    "id_spitter": "Se quedan al borde de la pantalla y escupen ácido. Mientras están frescos no los alcanzas.",
+    "ih_spitter": "Mira dónde caerá el escupitajo y hazte a un lado. Tras unos escupitajos se cansan y no pueden huir: ahí es cuando vas por ellos.",
+    "iz_elite": "ÉLITES",
+    "id_elite": "Una versión más fuerte de cualquier cosa en la calle, con brillo violeta. Seis veces la vida, y pega más fuerte.",
+    "ih_elite": "La barra sobre su cabeza es lo que le queda. Dale con todo; sueltan mucho dinero.",
+    "winded": "CANSADO",
+    "eliteDown": "ÉLITE ABATIDO",
+    "iz_trash": "BOTES DE BASURA",
+    "id_trash": "Uno flaco escondido en un bote de basura. Hacen falta muchos disparos para tumbarlo.",
+    "ih_trash": "Mantén la distancia: de cerca te aplasta con el bote. El bate y las granadas lo hacen retroceder.",
+    "iz_hound": "SABUESOS",
+    "id_hound": "Lo más rápido de la calle. Después del aullido llegan en jauría y saltan a tu cara.",
+    "ih_hound": "Las balas no los alcanzan. Batea cuando uno salte y cae.",
+    "iz_boss": "EL DESPACHADOR",
+    "id_boss": "Lo que ahora manda en la terminal. Embiste, da zarpazos, golpea el suelo, lanza botes y llama refuerzos.",
+    "ih_boss": "Batea cuando embista para aturdirlo y luego descarga todo. Apártate cuando prepare un golpe al suelo.",
+    "setTuning": "Ajustes de balance",
+    "setTuningNote": "Los números de balance del juego. Requiere contraseña.",
+    "setLocked": "Bloqueado",
+    "setUnlocked": "Abrir",
+    "tuneHead": "Ajustes de balance",
+    "tunePassNote": "Contraseña",
+    "tuneOpen": "Abrir",
+    "tuneWrong": "Contraseña incorrecta",
+    "tuneSave": "Guardar y reiniciar",
+    "tuneUndo": "Deshacer cambios",
+    "tuneNote0": "Los cambios se quedan en este dispositivo. Guardar reinicia el juego (una noche en curso empieza de nuevo).",
+    "tuneNoteN": "{n} cambiados en este dispositivo. Guardar reinicia el juego (una noche en curso empieza de nuevo).",
+    "tuneLv": "nivel {n}",
+    "tuneDef": "versión: {v}",
+    "settings": "Ajustes",
+    "setIntros": "Presentación de enemigos",
+    "setSound": "Sonido",
+    "setOn": "Sí",
+    "setOff": "No",
+    "setIntrosNote": "Una tarjeta que explica cada enemigo nuevo la primera vez que aparece en una partida.",
+    "items": "Objetos",
+    "noItems": "Aún no tienes objetos. Registra las casas con un destello en las ventanas.",
+    "tapItem": "Toca un objeto para leer qué hace.",
+    "relicHouse": "ALGO BRILLA",
+    "relicHouseSub": "REGISTRA LA CASA DE LAS VENTANAS DORADAS",
+    "relicDrop": "ALGO GENIAL",
+    "relicDropSub": "PÁRATE ENCIMA PARA RECOGERLO",
+    "collecting": "RECOGIENDO",
+    "haveIt": "YA LO TIENES",
+    "gunOnly": "SOLO {g}",
+    "needsIt": "REQUIERE {i}",
+    "otherOne": "EL OTRO ES TUYO",
+    "oneEach": "UNO PARA CADA UNO",
+    "newItem": "OBJETO NUEVO",
+    "itemsLost": "Objetos perdidos",
+    "flareF": "BENGALA LISTA",
+    "quickF": "CAMBIO RÁPIDO",
+    "fillF": "MATA Y RECARGA",
+    "fullBtn": "Lleno",
+    "shellsFill": "Llenar hasta {n} cartuchos",
+    "roundsFill": "Llenar hasta {n} balas",
+    "inPocketOf": "{n} de {c} en el bolsillo",
+    "r_bouncer": "Cerrojo del Portero",
+    "rd_bouncer": "Recargar empuja hacia atrás a los zombis cercanos.",
+    "r_quickmag": "Cargador de Cambio Rápido",
+    "rd_quickmag": "Cada segunda recarga en vacío llena al instante medio cargador.",
+    "r_kickback": "Culata de Retroceso",
+    "rd_kickback": "El retroceso de la escopeta te desliza hacia atrás.",
+    "r_vest": "Chaleco del Cargador",
+    "rd_vest": "Menos daño de frente mientras recargas.",
+    "r_killfill": "Mata y Recarga",
+    "rd_killfill": "Recargar justo después de una baja tarda la mitad.",
+    "r_crowbar": "Mango de Palanca",
+    "rd_crowbar": "Los golpes cuerpo a cuerpo lanzan a los enemigos más lejos.",
+    "r_onetwo": "Vendas Uno-Dos",
+    "rd_onetwo": "Aturdir a un enemigo cuerpo a cuerpo potencia tu siguiente disparo contra él.",
+    "r_getaway": "Tenis de Escape",
+    "rd_getaway": "Vaciar el cargador te da un impulso de velocidad.",
+    "r_barbed": "Chaqueta de Púas",
+    "rd_barbed": "Quien te ataque de cerca recibe daño.",
+    "r_collar": "Collar de Perro",
+    "rd_collar": "Un perro callejero amigable te acompaña. Agarra a un zombi a la vez por el brazo y no lo suelta, así que ese no puede moverse ni morder. Su mordida casi no les hace daño. Nada puede lastimar al perro.",
+    "r_air": "Apoyo Aéreo",
+    "rd_air": "Cada 20 segundos más o menos, cae fuego de subfusil sobre algunos zombis cerca de ti. Nadie dice de dónde.",
+    "r_flare": "Bengala de Carretera",
+    "rd_flare": "Recibir daño hace que tu siguiente ataque encienda una pequeña zona alrededor de su objetivo.",
+    "r_rabbit": "Pata de Conejo",
+    "rd_rabbit": "Una vez por noche, un golpe que te derribaría te deja con 1 de vida.",
+    "r_wind2": "Segundo Aire",
+    "rd_wind2": "Una vez por noche, bajar de un cuarto de tu vida te cura rápido durante 3 segundos.",
+    "r_adren": "Inyección de Adrenalina",
+    "rd_adren": "Al recibir daño corres 50% más rápido durante 2 segundos.",
+    "r_medic": "Botiquín",
+    "rd_medic": "La vida que encuentras cura 50% más.",
+    "r_leech": "Amuleto de Sanguijuela",
+    "rd_leech": "Cada baja te cura 1 de vida.",
+    "r_deadman": "Interruptor del Muerto",
+    "rd_deadman": "Cuando caes, sueltas una granada activa.",
+    "r_lastround": "Última Bala",
+    "rd_lastround": "La última bala del cargador hace el triple de daño.",
+    "r_tracer": "Balas Trazadoras",
+    "rd_tracer": "Uno de cada 5 disparos prende fuego donde pega (uno de cada 15 con el subfusil).",
+    "r_ricochet": "Balas de Rebote",
+    "rd_ricochet": "Un disparo fallido rebota hacia el zombi más cercano, con 60% del daño.",
+    "r_buckshot": "Canana de Perdigones",
+    "rd_buckshot": "Los disparos de escopeta lanzan 2 perdigones más.",
+    "r_silencer": "Silenciador de Filtro",
+    "rd_silencer": "Tus disparos tienen la mitad de probabilidad de atraer una horda.",
+    "r_bandolier": "Bandolera",
+    "rd_bandolier": "Lleva un cargador de repuesto más para tu arma.",
+    "r_sticky": "Cinta Adhesiva",
+    "rd_sticky": "Tus granadas se pegan al primer zombi que tocan.",
+    "r_cluster": "Seguros de Racimo",
+    "rd_cluster": "Tus granadas sueltan 3 explosiones pequeñas después de estallar.",
+    "r_gloves": "Guantes Antiexplosión",
+    "rd_gloves": "Tus granadas explotan 25% más amplio, y las granadas te hacen la mitad de daño.",
+    "r_griptape": "Cinta de Agarre",
+    "rd_griptape": "Puedes volver a batear 25% antes.",
+    "r_knuckles": "Nudillos con Púas",
+    "rd_knuckles": "Los golpes de bate hacen sangrar a los zombis durante 3 segundos.",
+    "r_scavenger": "Bolsa del Carroñero",
+    "rd_scavenger": "Registras 40% más rápido y encuentras munición más seguido.",
+    "r_magnet": "Imán",
+    "rd_magnet": "Las monedas vuelan hacia ti desde el doble de lejos, y las cajas de munición se deslizan hacia ti.",
+    "r_tipjar": "Frasco de Propinas",
+    "rd_tipjar": "Las monedas valen 25% más.",
+    "r_cologne": "Colonia Podrida",
+    "rd_cologne": "Los zombis dormidos tienen que estar mucho más cerca para notarte.",
+    "r_headlamp": "Linterna de Cabeza",
+    "rd_headlamp": "Ilumina la calle de enfrente. Tus golpes a zombis cerca delante de ti hacen 15% más de daño.",
+    "r_binocs": "Binoculares",
+    "rd_binocs": "Flechas en el borde de la pantalla muestran a los zombis que vienen desde fuera.",
+    "r_flashbang": "Seguro Cegador",
+    "rd_flashbang": "La primera vez que te lastiman cada noche, un destello aturde a todos los zombis cerca de ti.",
+    "r_bearspray": "Spray Antiosos",
+    "rd_bearspray": "Una vez por noche, el primer oso o lobo que te ataque recibe el spray: no recibes daño y queda aturdido 3 segundos. Se encuentra en el bosque.",
+    "r_trapkit": "Kit de Trampas",
+    "rd_trapkit": "Una trampa para osos que abres con el bate se vuelve a armar, para los zombis: el siguiente que la pise queda atrapado y herido. Se encuentra en el bosque.",
+    "r_snowshoes": "Raquetas de Nieve",
+    "rd_snowshoes": "Las trampas para osos te hacen la mitad de daño y te sueltan el doble de rápido. Se encuentra en el bosque.",
+    "r_buddy": "Sistema de Compañeros",
+    "rd_buddy": "Mientras tú y tu compañero estén cerca, ambos hacen 10% más de daño. Se encuentra en cooperativo.",
+    "r_canteen": "Cantimplora Compartida",
+    "rd_canteen": "La vida que encuentras también cura a tu compañero, la mitad. Se encuentra en cooperativo.",
+    "r_bandage": "Rollo de Vendas",
+    "rd_bandage": "Quédate quieto 2 segundos y te curas 2 de vida por segundo hasta que te muevas o te lastimen.",
+    "r_mjacket": "Chaqueta de Motociclista",
+    "rd_mjacket": "Las mordidas hacen 15% menos daño.",
+    "r_bloodbag": "Bolsa de Sangre",
+    "rd_bloodbag": "La primera vez cada noche que bajas de la mitad de tu vida, te curas 25.",
+    "r_painkill": "Analgésicos",
+    "rd_painkill": "Con menos de 30% de vida, recibes 30% menos daño.",
+    "r_ninelives": "Placa de Siete Vidas",
+    "rd_ninelives": "Una vez por noche, cuando caes, te levantas 5 segundos después con 30 de vida.",
+    "r_rocker": "Mecedora",
+    "rd_rocker": "Cada casa o pila de palos que terminas de registrar te cura 4.",
+    "r_undertaker": "Moneda del Enterrador",
+    "rd_undertaker": "Matar a un élite te cura 25.",
+    "r_scarf": "Bufanda de Malla",
+    "rd_scarf": "Las picadas de murciélago y los saltos de sabueso o lobo hacen 40% menos daño.",
+    "r_poncho": "Poncho de Lluvia",
+    "rd_poncho": "El ácido de los escupidores no te hace daño. Aparece desde la noche 6.",
+    "r_salts": "Sales Aromáticas",
+    "rd_salts": "Que te empujen ya no detiene una búsqueda, una recarga ni una reanimación.",
+    "r_hollow": "Puntas Huecas",
+    "rd_hollow": "Tu primer golpe a un zombi que aún no está herido hace 30% más.",
+    "r_brass": "Casquillos Recogidos",
+    "rd_brass": "Cada baja tiene 20% de probabilidad de devolver una bala a tu cargador (4 balas con el subfusil).",
+    "r_doubletap": "Pistolas Dobles",
+    "rd_doubletap": "Un segundo revólver en la otra mano: cada disparo usa los dos, y tienes el doble de tiros antes de recargar.",
+    "r_slugs": "Cartuchos de Bala",
+    "rd_slugs": "Los perdigones de escopeta atraviesan al primer zombi que tocan.",
+    "r_apround": "Balas Perforantes",
+    "rd_apround": "Tus balas atraviesan al primer zombi, con la mitad de daño al siguiente. El rifle ya los atraviesa: sus balas no pierden daño en el camino.",
+    "r_speedload": "Cargador Rápido",
+    "rd_speedload": "Recargas el doble de rápido.",
+    "r_dragon": "Aliento de Dragón",
+    "rd_dragon": "Uno de cada cuatro disparos de escopeta que matan deja un pequeño fuego donde cayó el zombi.",
+    "r_knockdown": "Balas Derribadoras",
+    "rd_knockdown": "Los disparos de rifle tumban a los zombis durante 1 segundo.",
+    "r_pointblank": "A Quemarropa",
+    "rd_pointblank": "Los disparos a zombis al alcance de tu brazo hacen 40% más.",
+    "r_longshot": "Tiro Largo",
+    "rd_longshot": "Los disparos a zombis a más de media pantalla hacen 30% más.",
+    "r_nailbat": "Bate con Clavos",
+    "rd_nailbat": "Los golpes de bate hacen 25% más de daño.",
+    "r_homerun": "Jonrón",
+    "rd_homerun": "Uno de cada 4 batazos lanza al zombi contra los de atrás y también los tumba.",
+    "r_wideswing": "Swing Amplio",
+    "rd_wideswing": "El bate golpea a 2 zombis más por batazo.",
+    "r_batglove": "Guantes de Bateo",
+    "rd_batglove": "Batear a un sabueso o lobo en pleno salto te cura 10.",
+    "r_windmill": "Molino",
+    "rd_windmill": "Cada batazo dentro de 1 segundo del anterior hace 15% más, acumulando hasta 60%.",
+    "r_baton": "Bastón Eléctrico",
+    "rd_baton": "Los zombis que golpeas con el bate se quedan aturdidos 50% más.",
+    "r_rebar": "Núcleo de Varilla",
+    "rd_rebar": "El bate hace el triple de daño a los reptantes.",
+    "r_shoulder": "Hombrera",
+    "rd_shoulder": "Caminar contra un zombi lo empuja un paso atrás (una vez cada 2 segundos).",
+    "r_cleanup": "Equipo de Limpieza",
+    "rd_cleanup": "Los zombis que matas con el bate sueltan 50% más dinero.",
+    "r_pouch": "Bolsa Extra",
+    "rd_pouch": "Lleva 2 granadas más (7 en vez de 5).",
+    "r_shortfuse": "Mecha Corta",
+    "rd_shortfuse": "Tus granadas estallan 1 segundo antes.",
+    "r_nailbomb": "Bomba de Clavos",
+    "rd_nailbomb": "Los zombis atrapados en tus explosiones sangran durante 3 segundos.",
+    "r_firebomb": "Molotov",
+    "rd_firebomb": "Tus granadas se vuelven molotovs: se rompen donde caen y dejan una zona de fuego que quema a todos los zombis dentro durante 6 segundos.",
+    "r_concuss": "Carga de Conmoción",
+    "rd_concuss": "Los zombis atrapados en tus explosiones quedan aturdidos 1 segundo más.",
+    "r_pincoll": "Coleccionista de Seguros",
+    "rd_pincoll": "Cada 25 bajas te dan una granada gratis.",
+    "r_pitcher": "Brazo de Lanzador",
+    "rd_pitcher": "Puedes lanzar granadas 30% más lejos.",
+    "r_tripwire": "Cable Trampa",
+    "rd_tripwire": "Una granada en el suelo estalla antes en cuanto un zombi se para junto a ella.",
+    "r_gascan": "Bidón de Gasolina",
+    "rd_gascan": "Los brutos que revientan derraman combustible ardiendo: una zona de fuego en el suelo donde revientan, que quema a los zombis alrededor. Se encuentra en el pueblo.",
+    "r_beeper": "Pitido Señuelo",
+    "rd_beeper": "Los zombis se giran hacia tu granada mientras está en el suelo, y se juntan alrededor antes de que estalle.",
+    "r_openroad": "Camino Libre",
+    "rd_openroad": "Corres 20% más rápido mientras no haya zombis despiertos en pantalla.",
+    "r_greased": "Chaqueta Engrasada",
+    "rd_greased": "Te escurres junto a un zombi en vez de que te bloquee (una vez cada 3 segundos).",
+    "r_retreat": "Botas de Retirada",
+    "rd_retreat": "Retroceder mientras disparas es 25% más rápido.",
+    "r_skates": "Patines",
+    "rd_skates": "Corres 20% más rápido, pero te deslizas un poco al frenar.",
+    "r_panic": "Botón de Pánico",
+    "rd_panic": "Con menos de 30% de vida, corres 25% más rápido.",
+    "r_tailwind": "Viento a Favor",
+    "rd_tailwind": "Cada baja te hace 10% más rápido durante 1 segundo, acumulando hasta tres bajas.",
+    "r_dice": "Dados de la Suerte",
+    "rd_dice": "Cada mordida tiene 10% de probabilidad de fallarte por completo.",
+    "r_ironboots": "Botas de Hierro",
+    "rd_ironboots": "Los jefes y los brutos no pueden empujarte.",
+    "r_trailrun": "Tenis de Montaña",
+    "rd_trailrun": "Corres 15% más rápido en el bosque. Se encuentra en el bosque.",
+    "r_watch": "Reloj de Bolsillo",
+    "rd_watch": "Una vez por noche, cuando bajas de 25% de vida, los zombis cerca de ti van a mitad de velocidad durante 3 segundos.",
+    "r_lockpick": "Ganzúa",
+    "rd_lockpick": "Cada casa o pila que registras tiene 20% de probabilidad de darte un segundo hallazgo.",
+    "r_coupon": "Cuponera",
+    "rd_coupon": "Todo en la tienda cuesta 10% menos.",
+    "r_moneybelt": "Cinturón de Dinero",
+    "rd_moneybelt": "Si te muerden pierdes 30% del dinero de la noche en vez de 50%.",
+    "r_detector": "Detector de Metales",
+    "rd_detector": "Las casas y pilas con munición dentro muestran un pequeño destello azul.",
+    "r_treasure": "Mapa del Tesoro",
+    "rd_treasure": "Una casa brillante más (con objetos) cada noche.",
+    "r_qmaster": "Insignia de Intendente",
+    "rd_qmaster": "Las cajas de munición dan 50% más munición.",
+    "r_bounty": "Cartel de Recompensa",
+    "rd_bounty": "Los élites sueltan el triple de dinero.",
+    "r_penny": "Centavo de la Suerte",
+    "rd_penny": "Una de cada veinte monedas es de oro y vale cinco veces más.",
+    "r_pawn": "Boleto de Empeño",
+    "rd_pawn": "La vida que encuentras con la vida llena se convierte en $20.",
+    "r_salvager": "Chatarrero",
+    "rd_salvager": "Cada bruto u oso que matas suelta una caja de munición.",
+    "r_nvg": "Gafas de Visión Nocturna",
+    "rd_nvg": "La noche es mucho menos oscura.",
+    "r_huntmap": "Mapa del Cazador",
+    "rd_huntmap": "Los puestos en los árboles con un cazador están marcados. Se encuentra en el bosque.",
+    "r_trapspot": "Detector de Trampas",
+    "rd_trapspot": "Las trampas para osos brillan mucho, así que las ves desde el otro lado de la pantalla. Se encuentra en el bosque.",
+    "r_radio": "Radio del Clima",
+    "rd_radio": "La niebla es más ligera, y los relámpagos de las tormentas no te ciegan.",
+    "r_siren": "Sirena Antiaérea",
+    "rd_siren": "Una horda avisa 2 segundos antes, con una flecha del lado por donde viene.",
+    "r_stetho": "Estetoscopio",
+    "rd_stetho": "Cada zombi muestra una pequeña barra de vida.",
+    "r_flaregun": "Pistola de Bengalas",
+    "rd_flaregun": "Una vez por noche, cuando empieza una horda, sube una bengala calle abajo y la mitad de la horda va hacia allá.",
+    "r_compass": "Brújula de Explorador",
+    "rd_compass": "Una flecha apunta a la casa brillante más cercana que no has registrado.",
+    "r_notebook": "Libreta del Vigía",
+    "rd_notebook": "Los zombis dormidos muestran una pequeña Z, así sabes cuáles siguen dormidos.",
+    "r_bell": "Campana de Alarma",
+    "rd_bell": "Un zombi que despierta detrás de ti hace sonar una campana y muestra una flecha.",
+    "r_crow": "Amigos Cuervos",
+    "rd_crow": "Cada vez que un murciélago se lanza hacia ti, hay {n}% de probabilidad de que una bandada de cuervos baje y lo mate.",
+    "r_treats": "Premios para Perro",
+    "rd_treats": "Tu perro muerde el triple de fuerte y puede sujetar a un bruto o un oso.",
+    "r_raccoon": "Mapache Amigo",
+    "rd_raccoon": "Cada 45 segundos un mapache llega corriendo con algo, como si hubiera registrado una casa por ti. Cuando te queda poca munición trae una caja de munición (como mucho una vez cada 30 segundos).",
+    "r_oldman": "El Viejo del Porche",
+    "rd_oldman": "Una vez por noche, un viejo en un porche iluminado dispara su escopeta a los zombis cerca de ti durante 10 segundos. Se encuentra en el pueblo.",
+    "r_radioop": "Operador de Radio",
+    "rd_radioop": "El Apoyo Aéreo llega 30% más seguido.",
+    "r_rccar": "Carrito a Control",
+    "rd_rccar": "Un carrito de juguete avanza y explota contra el primer zombi que alcanza, cada 30 segundos.",
+    "r_owl": "Lechuza",
+    "rd_owl": "Una lechuza tumba a los cazadores de sus puestos en los árboles antes de que te caigan encima. Se encuentra en el bosque.",
+    "r_scarecrow": "Espantapájaros",
+    "rd_scarecrow": "Una vez por noche, cuando 5 o más zombis se te acercan, aparece un espantapájaros que los atrae durante 5 segundos.",
+    "r_goose": "Ganso Guardián",
+    "rd_goose": "Cuando los zombis se te acercan por detrás, un ganso grazna y aturde al grupo, hasta 6 a la vez.",
+    "r_fireflies": "Frasco de Luciérnagas",
+    "rd_fireflies": "Las luciérnagas te siguen, iluminan el camino y hacen brillar a los escupidores para que los encuentres. Se encuentra en el bosque.",
+    "r_resin": "Resina de Pino",
+    "rd_resin": "Excavar las pilas de palos tarda la mitad. Se encuentra en el bosque.",
+    "r_bark": "Armadura de Corteza",
+    "rd_bark": "Los cazadores que caen de los árboles no te hacen daño. Se encuentra en el bosque.",
+    "r_bearbell": "Cascabel Antiosos",
+    "rd_bearbell": "Los osos se mueven 25% más lento. Se encuentra en el bosque.",
+    "r_pelt": "Piel de Lobo",
+    "rd_pelt": "Los lobos se agazapan medio segundo más antes de saltar, así es más fácil batearlos. Se encuentra en el bosque.",
+    "r_huntbounty": "Recompensa del Cazador",
+    "rd_huntbounty": "Los cazadores sueltan el triple de dinero. Se encuentra en el bosque.",
+    "r_antler": "Amuleto de Cuerno",
+    "rd_antler": "Los golpes de oso no te empujan. Se encuentra en el bosque.",
+    "r_badge": "Insignia de Guardabosques",
+    "rd_badge": "Los guardabosques tienen 15% menos vida. Se encuentra en el bosque.",
+    "r_keys": "Llaves del Despachador",
+    "rd_keys": "El Despachador llama a 2 ayudantes en vez de 3 (3 en vez de 5 cuando se enoja).",
+    "r_tooth": "Colmillo del Alfa",
+    "rd_tooth": "Los golpes a un Despachador o Alfa aturdido hacen 25% más.",
+    "r_flood": "Reflector de la Terminal",
+    "rd_flood": "El lote del jefe está iluminado, y las embestidas del jefe avisan 0.3 segundos antes.",
+    "r_tagteam": "En Equipo",
+    "rd_tagteam": "Rematar a un zombi que tu compañero golpeó en el último segundo les da $2 a los dos. Se encuentra en cooperativo.",
+    "r_stretcher": "Camilla",
+    "rd_stretcher": "Reanimar a tu compañero tarda 40% menos. Se encuentra en cooperativo.",
+    "r_rally": "Grito de Ánimo",
+    "rd_rally": "Reanimar a tu compañero los cura a los dos 30. Se encuentra en cooperativo.",
+    "r_ammopouch": "Bolsa de Munición Compartida",
+    "rd_ammopouch": "Las cajas de munición que recoges también le dan a tu compañero la cuarta parte. Se encuentra en cooperativo.",
+    "r_backtoback": "Espalda con Espalda",
+    "rd_backtoback": "Mientras estén juntos, los dos reciben 15% menos daño. Se encuentra en cooperativo.",
+    "r_crossfire": "Fuego Cruzado",
+    "rd_crossfire": "Los zombis que están entre tú y tu compañero reciben 20% más daño. Se encuentra en cooperativo.",
+    "r_mirror": "Espejo de Señales",
+    "rd_mirror": "Cuando tu compañero cae, los zombis cerca de él son empujados una vez. Se encuentra en cooperativo.",
+    "r_whistle": "Silbato Señuelo",
+    "rd_whistle": "Una vez por noche, cuando tu compañero está rodeado, los siguientes 5 zombis cerca de él se voltean a perseguirte a ti. Se encuentra en cooperativo.",
+    "r_carepkg": "Paquete de Ayuda",
+    "rd_carepkg": "Cuando tu compañero lanza una granada, tienes 15% de probabilidad de encontrar una. Se encuentra en cooperativo.",
+    "r_laststand": "Última Resistencia",
+    "rd_laststand": "Mientras tu compañero está caído, haces 18% más de daño. Se encuentra en cooperativo.",
+    "r_finders": "Comisión del Hallazgo",
+    "rd_finders": "El dinero que encuentras en casas y pilas de palos vale 15% más.",
+    "supply": "SUMINISTROS",
+    "supplySub": "QUÉDATE EN EL CÍRCULO VERDE HASTA QUE SE LLENE LA BARRA",
+    "supplyHold": "¡AGUANTA EN EL CÍRCULO!",
+    "supplyHoldSub": "VIENEN DE LOS DOS LADOS",
+    "supplyArrow": "CAJA",
+    "holdF": "AGUANTA",
+    "missF": "FALLÓ",
+    "slowF": "¡LENTO!",
+    "nineF": "¡DE PIE!",
+    "pinF": "+1 GRANADA",
+    "legend": "¡LEGENDARIO!",
+    "legendSub": "VIENE UNO DORADO. SUELTA OBJETOS",
+    "legendDown": "LEGENDARIO ABATIDO",
+    "owlF": "¡LECHUZA!",
+    "honkF": "¡CUAC!",
+    "bellF": "¡DETRÁS DE TI!",
+    "flareGunF": "¡BENGALA!",
+    "mirrorF": "¡ATRÁS!",
+    "whistleF": "¡POR AQUÍ!",
+    "pawnF": "+$20 (EMPEÑADO)",
+    "crateF": "+1 GRANADA (PAQUETE DE AYUDA)",
+    "ammoShareF": "+{n} DE TU COMPAÑERO",
+    "lockF": "¡ALGO MÁS!",
+    "raccoonF": "¡MAPACHE!",
+    "scareF": "¡ESPANTAPÁJAROS!",
+    "oldmanF": "¡FUERA DE MI JARDÍN!",
+    "hrF": "¡JONRÓN!",
+    "r_walkie": "Walkie-Talkie",
+    "rd_walkie": "Siempre muestra a qué distancia está tu compañero, y corres 20% más rápido hacia él mientras está caído. Se encuentra en cooperativo.",
+    "luckF": "¡SUERTE!",
+    "windF": "SEGUNDO AIRE",
+    "deadmanF": "¡GRANADA ACTIVA!",
+    "sprayF": "¡ROCIADO!",
+    "flashF": "¡DESTELLO!",
+    "trapArmF": "TRAMPA LISTA",
+    "coopBadCode": "El código tiene 4 letras o números.",
+    "hounds": "¡SABUESOS!",
+    "houndsSub": "BATÉALOS CUANDO SALTEN",
+    "caughtF": "¡ATRAPADO!",
+    "coopOld": "Tu amigo tiene otra versión del juego. Recarguen la página los dos e inténtenlo otra vez.",
+    "coopVer": "Versión del juego {n}",
+    "coopNet": "No se pudo conectar con el servicio de conexión. Revisa tu internet e inténtalo otra vez.",
+    "coopUnavailable": "El cooperativo no puede conectarse aquí. Abre el juego desde su sitio web para jugar con un amigo.",
+    "coopDenied": "El cooperativo no está disponible en este enlace. Abre el juego desde su sitio web para jugar con un amigo.",
+    "coopHostLeft": "El anfitrión salió de la partida.",
+    "coopWait": "Esperando a que el anfitrión empiece la siguiente noche.",
+    "coopLeft": "TU COMPAÑERO SE FUE",
+    "coopDown": "COMPAÑERO CAÍDO",
+    "coopYouDown": "ESTÁS CAÍDO",
+    "coopYouDownSub": "TU COMPAÑERO AÚN PUEDE LLEGAR AL AUTOBÚS",
+    "coopTogether": "LOS DOS",
+    "coopBusWait": "ESPERANDO A TU COMPAÑERO",
+    "step1": "Guarda la plantilla y copia la instrucción para la IA.",
+    "step2": "En una app de imágenes con IA, adjunta una foto tuya y la plantilla, pega la instrucción y guarda la imagen que haga.",
+    "step3": "Carga esa imagen aquí.",
+    "tplBtn": "Guardar plantilla",
+    "promptBtn": "Copiar instrucción",
+    "sheetBtn": "Cargar hoja de sprites",
+    "sheetNone": "Jugando con el héroe original.",
+    "sheetCurrent": "Jugando con tu propio personaje.",
+    "sheetWorking": "Recortando tus poses...",
+    "sheetFound": "Se encontraron {n} de {total} poses. Revisa la vista previa y juega.",
+    "sheetNoIdle": "No se encontró la pose de pie (arriba a la izquierda). ¿Es la plantilla ya dibujada?",
+    "sheetBad": "No se pudo leer esa imagen. Intenta guardarla otra vez como PNG.",
+    "promptCopied": "Instrucción copiada. Pégala en tu app de imágenes con IA.",
+    "promptSelect": "Copia la instrucción de abajo.",
+    "cSwap": "CAMBIAR",
+    "cFire": "DISPARAR",
+    "cMove": "MOVER",
+    "cSearch": "BUSCAR",
+    "cMelee0": "BATE",
+    "cMelee1": "CLAVOS",
+    "cMelee2": "HACHA",
+    "w_pistol": "Revólver .38",
+    "w_shotgun": "Escopeta de corredera",
+    "w_smg": "Subfusil Chopper",
+    "m_bat": "Bate de béisbol",
+    "m_nailbat": "Bate con clavos",
+    "m_axe": "Hacha de bombero",
+    "u_jacket": "Chaqueta de lona",
+    "ud_jacket": "+{n} de vida máxima. Se pierde si te muerden.",
+    "u_shoes": "Tenis de montaña",
+    "ud_shoes": "+{n}% de velocidad al caminar. Se pierde si te muerden.",
+    "mDescRun": "Golpe pesado, alcanza hasta a cuatro. Se pierde si te muerden.",
+    "tab_supply": "Suministros",
+    "tab_armory": "Armería",
+    "tab_training": "Entrenamiento",
+    "armory": "Armería",
+    "training": "Entrenamiento",
+    "forRun": "Para esta partida",
+    "forGood": "Tuyo para siempre",
+    "glv": "Mejora de arma",
+    "glvDesc": "+{n}% de daño por nivel. Cada nivel cuesta más.",
+    "fitted": "Instalado",
+    "owned": "Lo tienes",
+    "att_sight": "Mira de punto rojo",
+    "att_sight_rifle": "Mira telescópica",
+    "att_hot": "Cargas potentes",
+    "att_mag": "Cargador extendido",
+    "att_mag_pistol": "Tambor más grande",
+    "att_mag_shotgun": "Extensión de tubo",
+    "att_grip": "Empuñadura rápida",
+    "att_grip_pistol": "Cargador rápido",
+    "att_barrel": "Cañón largo",
+    "att_barrel_shotgun": "Estrangulador",
+    "att_trigger": "Gatillo sensible",
+    "ad_sight": "+{n}% de probabilidad de crítico",
+    "ad_hot": "+{n}% de daño",
+    "ad_mag": "+{n}% de capacidad del cargador y munición que llevas",
+    "ad_grip": "Recarga {n}% más rápido",
+    "ad_barrel": "+{n}% de alcance, {n}% menos dispersión",
+    "ad_trigger": "Dispara {n}% más rápido",
+    "at_health": "Vida",
+    "at_agility": "Agilidad",
+    "at_strength": "Fuerza",
+    "at_precision": "Precisión",
+    "atd_health": "+{n} de vida máxima por nivel",
+    "atd_agility": "+{n}% de velocidad al caminar por nivel",
+    "atd_strength": "+{n}% de empuje por nivel",
+    "atd_precision": "+{n}% de probabilidad de crítico por nivel",
+    "refund": "Puntas Huecas, Manos Rápidas y el bate con clavos ya no están, y la chaqueta y los tenis ahora tienen un solo nivel. Te devolvimos ${n} por ellos.",
+    "st_MAPLE ST": "Calle Maple",
+    "st_ELM ST": "Calle Elm",
+    "st_OAK AVE": "Avenida Oak",
+    "st_BIRCH LN": "Paseo Birch",
+    "st_MAIN ST": "Calle Main",
+    "sh_MAPLE ST": "C. MAPLE",
+    "sh_ELM ST": "C. ELM",
+    "sh_OAK AVE": "AV. OAK",
+    "sh_BIRCH LN": "P. BIRCH",
+    "sh_MAIN ST": "C. MAIN",
+    "night": "NOCHE {n}",
+    "hudNight": "NOCHE {n}  {street}",
+    "tip_MAPLE ST": "LLEGA AL AUTOBÚS AL FINAL DE LA CALLE",
+    "tip_ELM ST": "LLUEVE ESTA NOCHE. HAY MÁS CORREDORES",
+    "tip_OAK AVE": "LLEGA LA NIEBLA. ALGO SE ARRASTRA",
+    "tip_BIRCH LN": "SE ACERCA UNA TORMENTA. HORDAS MÁS GRANDES",
+    "tip_MAIN ST": "LA TERMINAL DE AUTOBUSES ESTÁ AL FINAL DE LA CALLE MAIN",
+    "again": "{street} OTRA VEZ. TE SIGUIERON",
+    "depot": "LA TERMINAL",
+    "depotSub": "ÉL SIGUE AHÍ DENTRO",
+    "horde": "¡HORDA!",
+    "hordeSub": "OYERON LOS DISPAROS",
+    "hordeSubShotgun": "LA ESCOPETA DESPERTÓ A LA CUADRA",
+    "hordeSubBoom": "OYERON LA EXPLOSIÓN",
+    "newGun": "ARMA NUEVA",
+    "crawlers": "REPTANTES",
+    "crawlersSub": "LAS BALAS LES PASAN POR ENCIMA. USA EL BATE O UNA ESCOPETA",
+    "bats": "MURCIÉLAGOS",
+    "batsSub": "SE LANZAN EN PICADA. APUNTA LA PALANCA DERECHA HACIA ARRIBA",
+    "batsSubKey": "SE LANZAN EN PICADA. MANTÉN W MIENTRAS DISPARAS",
+    "boss": "EL DESPACHADOR",
+    "bossSub": "BATEA CUANDO EMBISTA PARA DETENERLO",
+    "bossDown": "DESPACHADOR ABATIDO",
+    "bossDownSub": "EL ÚLTIMO AUTOBÚS ESTÁ LLEGANDO",
+    "staggered": "ATURDIDO",
+    "staggeredF": "¡ATURDIDO!",
+    "dazed": "MAREADO",
+    "reload": "RECARGAR",
+    "search": "BUSCAR",
+    "searchKey": "E  BUSCAR",
+    "searching": "BUSCANDO",
+    "fShells": "+{n} CARTUCHOS",
+    "fRounds": "+{n} BALAS",
+    "meters": "{n}M",
+    "readyBtn": "Estoy listo",
+    "readyOn": "¡Listo! (toca para cancelar)",
+    "waitMate": "Esperando a tu compañero",
+    "coopReadyHint": "Toca Estoy listo cuando termines de comprar. Después, el anfitrión empieza la siguiente noche.",
+    "fItems": "¡OBJETOS!",
+    "mateFound": "{p} ENCONTRÓ {t}",
+    "mateEmpty": "{p} NO ENCONTRÓ NADA",
+    "gadgets": "Artefactos",
+    "u_turret": "Mini torreta",
+    "ud_turret": "Una pequeña torreta con patas te sigue y dispara un revólver a los zombis cercanos: {m} tiros y luego recarga. Sus disparos hacen {d}% de tu daño con {c}% fijo de probabilidad de crítico, y tus objetos funcionan en ellos.",
+    "u_hobo": "Vagabundo ayudante",
+    "ud_hobo": "Un vagabundo con su hatillo te sigue y registra las casas iluminadas cerca de ti. Lo que encuentra es tuyo. Tuyo para siempre: no se pierde si te muerden.",
+    "hoboF": "EL VAGABUNDO ENCONTRÓ",
+    "u_turret2": "Torreta pesada",
+    "ud_turret2": "Una torreta con patas más grande que dispara tu arma principal a la mitad de tu ritmo y recarga como tú. Usa tu munición. Sus disparos hacen {d}% de tu daño con {c}% fijo de probabilidad de crítico, y tus objetos funcionan en ellos.",
+    "adl_sight": "+{n}% de probabilidad de crítico por nivel",
+    "adl_hot": "+{n}% de daño por nivel",
+    "adl_mag": "+{n}% de capacidad del cargador y munición que llevas por nivel",
+    "adl_grip": "Recarga {n}% más rápido por nivel",
+    "adl_barrel": "+{n}% de alcance y menos dispersión por nivel",
+    "adl_trigger": "Dispara {n}% más rápido por nivel",
+    "adNow": "ahora {n}%",
+    "armRefund": "La Armería cambió: cada mejora ahora tiene diez niveles. Te devolvimos ${n} por lo que habías comprado, para gastarlo otra vez.",
+    "fNadesFull": "GRANADAS AL MÁXIMO",
+    "nadesFull": "Lleno ({n} máx.)",
+    "trapped": "¡ATRAPADO!",
+    "trappedSub": "BATEA PARA ABRIRLA",
+    "trapFreeF": "¡LIBRE!",
+    "trapOffF": "¡CLAC!",
+    "alphaB": "EL ALFA",
+    "alphaBSub": "BATEA CUANDO EMBISTA PARA DETENERLO",
+    "iz_ranger": "GUARDABOSQUES",
+    "id_ranger": "El servicio de parques nunca se fue. Lentos y tercos, y aquí afuera hay muchos.",
+    "ih_ranger": "Igual que con los caminantes: mantén la distancia y sigue disparando.",
+    "iz_hunter": "CAZADORES",
+    "id_hunter": "Siguen arriba en sus puestos de los árboles, esperando. Cuando pasas debajo de uno, te cae encima.",
+    "ih_hunter": "Vigila los puestos en los árboles. Retrocede cuando uno caiga y luego dispara.",
+    "iz_bear": "OSOS ZOMBI",
+    "id_bear": "Grizzlis podridos. Cuesta tumbarlos, y un zarpazo te quita un buen pedazo de vida.",
+    "ih_bear": "Nunca dejes que uno te alcance. Granadas y fuego constante a distancia. No revientan al caer.",
+    "iz_wolf": "LOBOS",
+    "id_wolf": "Después del aullido una manada cruza los árboles, más rápida que nada, directo a tu cuello.",
+    "ih_wolf": "Las balas no los alcanzan en el aire. Batea cuando uno salte.",
+    "iz_alpha": "EL ALFA",
+    "id_alpha": "Un grizzli gigante que manda en este bosque. Embiste, araña, golpea el suelo, lanza troncos y llama a la manada.",
+    "ih_alpha": "Batea cuando embista para aturdirlo y luego descarga todo. Apártate cuando se pare en dos patas para golpear.",
+    "iz_trap": "TRAMPAS PARA OSOS",
+    "id_trap": "Mandíbulas de acero en el sendero. Si pisas una, te atrapa la pierna y te deja ahí.",
+    "ih_trap": "Batea una trampa para dispararla. ¿Atrapado? Batea para abrirla.",
+    "sh_PINE TRAIL": "SENDERO DEL PINO",
+    "sh_BEAR CREEK": "ARROYO DEL OSO",
+    "sh_HOLLOW RIDGE": "CRESTA HUECA",
+    "sh_WOLF RUN": "PASO DEL LOBO",
+    "sh_RANGER STATION": "ESTACIÓN FORESTAL",
+    "tip_PINE TRAIL": "AL BOSQUE. LA CAMIONETA DE LOS GUARDABOSQUES ESTÁ AL FINAL DEL SENDERO",
+    "tip_BEAR CREEK": "LLUEVE ENTRE LOS PINOS. HAY ALGO GRANDE AQUÍ AFUERA",
+    "tip_HOLLOW RIDGE": "NIEBLA EN LA HONDONADA. VIGILA LOS PUESTOS DE LOS ÁRBOLES",
+    "tip_WOLF RUN": "SE ACERCA UNA TORMENTA. ESCUCHA EL AULLIDO",
+    "tip_RANGER STATION": "LA ESTACIÓN FORESTAL ESTÁ AL FINAL DEL SENDERO",
+    "sPile": "Pilas registradas",
+    "winHeadTruck": "Alcanzaste la camioneta.",
+    "winHeadWoods": "Al bosque.",
+    "winLedeWoods": "Pasando la terminal, un sendero sube a las colinas. Bajo los pinos hay más calma que en las calles. No va a durar.",
+    "winSubAlpha": "Sobreviviste la noche {n} · el Alfa cayó",
+    "winHeadAlpha": "Fuera del bosque.",
+    "winLedeAlpha": "La camioneta de los guardabosques baja rebotando por el camino hacia el pueblo. Lo que te siguió entre los árboles sigue allá arriba, y las calles te esperan otra vez.",
+    "retryStation": "Reintentar en la estación",
+    "deadSubAlpha": "Noche {n} · la estación forestal, {p}% del Alfa",
+    "station": "LA ESTACIÓN FORESTAL",
+    "stationSub": "SIGUE AHÍ AFUERA",
+    "wolves": "¡LOBOS!",
+    "wolvesSub": "BATÉALOS CUANDO SALTEN",
+    "bossDownTrail": "LA PUERTA DE ATRÁS ESTÁ ABIERTA. AL BOSQUE",
+    "alphaDown": "ALFA ABATIDO",
+    "alphaDownSub": "LA CAMIONETA DE LOS GUARDABOSQUES YA VIENE",
+    "fAmmoFull": "MUNICIÓN AL MÁXIMO",
+    "gunCarry": "Estas mejoras van con el arma que elijas después de que te muerdan.",
+    "fHealth": "+{n} DE VIDA",
+    "fFoundSg": "ENCONTRASTE UNA ESCOPETA",
+    "fFoundSmg": "ENCONTRASTE UN SUBFUSIL",
+    "fEmpty": "VACÍO",
+    "fNoAmmo": "SIN MUNICIÓN",
+    "fNades": "+{n} GRANADAS",
+    "fNoNades": "SIN GRANADAS",
+    "nades": "GRANADAS",
+    "nadesSub": "TOCA EL BOTÓN DE GRANADA Y LUEGO TOCA DONDE CAE",
+    "nadesSubKey": "PULSA G Y LUEGO HAZ CLIC DONDE CAE",
+    "nadePick": "TOCA DONDE DEBE CAER",
+    "nadePickKey": "HAZ CLIC DONDE DEBE CAER · G OTRA VEZ LA LANZA",
+    "nadeName": "Granadas",
+    "nadeDesc": "+{n} granadas. Toca el botón de granada y luego toca donde debe caer. Ruidosas."
+  },
 };
 let LANG = 'en';
+const LANGS = ['en', 'es', 'zh'], LANG_ATTR = { en: 'en', es: 'es', zh: 'zh-Hans' };
 function tr(k, v) {
   let s = STR[LANG][k]; if (s === undefined) s = STR.en[k]; if (s === undefined) return k;
   if (v) for (const n in v) s = s.split('{' + n + '}').join(v[n]);
@@ -1066,13 +1799,29 @@ FONT['/'] = ['..#', '..#', '.#.', '#..', '#..'];
 FONT[' '] = ['..', '..', '..', '..', '..'];
 FONT['&'] = ['.#..', '#.#.', '.#..', '#.#.', '.#.#'];
 FONT[','] = ['.', '.', '.', '#', '#'];
+FONT['¿'] = ['.#.', '...', '.#.', '#..', '.##'];
+FONT['¡'] = ['#', '.', '#', '#', '#'];
+FONT['·'] = ['.', '.', '#', '.', '.'];
+FONT[';'] = ['.', '#', '.', '#', '#'];
+// Spanish: these draw their plain letter with a mark over it (a pixel row above the letter, one row clear of it)
+const PX_MARK = { 'Á': ['A', '.#.'], 'É': ['E', '.#.'], 'Í': ['I', '.#.'], 'Ó': ['O', '.#.'], 'Ú': ['U', '.#.'], 'Ü': ['U', '#.#'], 'Ñ': ['N', '.##.'] };
+const PX_FOLD = { '’': "'", '‘': "'", '…': '...', '–': '-', '—': '-', 'º': 'O', 'ª': 'A' };
+const pxGlyph = ch => FONT[ch] || (PX_MARK[ch] && FONT[PX_MARK[ch][0]]) || null;
+function pxText(s) {                                   // the text as the pixel font draws it (capitals), or null if it needs the system font (Chinese)
+  let o = '';
+  for (let ch of String(s).toUpperCase()) { if (PX_FOLD[ch]) ch = PX_FOLD[ch]; else if (!pxGlyph(ch) && ch.charCodeAt(0) > 127) return null; o += ch; }
+  return o;
+}
+const pxOK = s => pxText(s) !== null;
+const pxMarked = s => [...String(s).toUpperCase()].some(ch => PX_MARK[ch]);
 
-function textW(s, sc = 1) { let w = 0; for (const ch of s) { const g = FONT[ch] || FONT[' ']; w += (g[0].length + 1) * sc; } return Math.max(0, w - sc); }
+function textW(s, sc = 1) { let w = 0; for (const ch of (pxText(s) ?? s)) { const g = pxGlyph(ch) || FONT[' ']; w += (g[0].length + 1) * sc; } return Math.max(0, w - sc); }
 function putText(g, s, x, y, col, sc) {
   g.fillStyle = col; let cx = x;
   for (const ch of s) {
-    const gl = FONT[ch] || FONT[' '];
+    const gl = pxGlyph(ch) || FONT[' '], mk = PX_MARK[ch];
     for (let j = 0; j < 5; j++) { const row = gl[j]; for (let i = 0; i < row.length; i++) if (row[i] === '#') g.fillRect(cx + i * sc, y + j * sc, sc, sc); }
+    if (mk) for (let i = 0; i < mk[1].length; i++) if (mk[1][i] === '#') g.fillRect(cx + i * sc, y - sc - 1, sc, sc);      // (the accent / tilde)
     cx += (gl[0].length + 1) * sc;
   }
 }
@@ -1085,9 +1834,9 @@ function drawCJK(s, x, y, col, sc, align, sh, g) {
   g.fillStyle = col; g.fillText(s, x, yy); g.restore();
 }
 function drawText(s, x, y, col, sc = 1, align = 'left', sh = '#0b0814', g = ctx) {
-  s = String(s);
-  if (/[^\x00-\x7f]/.test(s)) { drawCJK(s, x, y, col, sc, align, sh, g); return; }
-  s = s.toUpperCase();
+  const px = pxText(s);
+  if (px === null) { drawCJK(String(s), x, y, col, sc, align, sh, g); return; }
+  s = px;
   const w = textW(s, sc);
   if (align === 'center') x -= Math.floor(w / 2); else if (align === 'right') x -= w;
   x = Math.round(x); y = Math.round(y);
@@ -6144,7 +6893,7 @@ function drawRelicHUD(y) {                            // the tally, top left und
   return y + Math.ceil(Math.min(list.length, cap) / per) * S;
 }
 function wrapText(s, maxW) {
-  if (/[^\x00-\x7f]/.test(s)) return [s];
+  if (!pxOK(s)) return [s];
   const out = []; let line = '';
   for (const w of s.split(' ')) { const t = line ? line + ' ' + w : w; if (line && textW(t.toUpperCase()) > maxW) { out.push(line); line = w; } else line = t; }
   if (line) out.push(line);
@@ -6160,7 +6909,7 @@ function drawRelicPop() {                            // just picked up: the item
   for (let i = 0; i < 4; i++) { const a = k * 1.6 + i * Math.PI / 2; twinkle(Math.round(cx + Math.cos(a) * 20), Math.round(y0 + 6 * s + Math.sin(a) * 16), Math.round(1.5 + Math.sin(k * 6 + i) * 1.5)); }
   ctx.drawImage(relicArt(P.id), cx - 6 * s, y0, 12 * s, 12 * s);
   drawText(tr('newItem'), cx, y0 - 9, '#a99fbd', 1, 'center');
-  const name = tr('r_' + P.id), sc = /[^\x00-\x7f]/.test(name) || textW(name.toUpperCase(), 2) <= VW - 24 ? 2 : 1;
+  const name = tr('r_' + P.id), sc = !pxOK(name) || textW(name.toUpperCase(), 2) <= VW - 24 ? 2 : 1;
   const ny = y0 + 29;
   drawText(name, cx, ny, '#ffb43a', sc, 'center');
   wrapText(relicDesc(P.id), Math.min(VW - 40, 230)).forEach((ln, i) => drawText(ln, cx, ny + 5 * sc + 5 + i * 8, '#f3ead6', 1, 'center'));
@@ -6182,7 +6931,7 @@ function drawRelicPop() {                            // just picked up: the item
    On claude.ai the page's `room` carries the snapshots; on the game's own website PeerJS does (a free
    public server introduces the two browsers, then they talk directly).
    ============================================================ */
-const GAME_BUILD = 70;                              // shown on the co-op screen, so two players can check they have the same game
+const GAME_BUILD = 71;                              // shown on the co-op screen, so two players can check they have the same game
 // on the game's own website: browsers may keep an old copy of the page for up to 10 minutes after an update,
 // so check for a newer upload when the game opens and load it straight away if there is one
 (function checkForUpdate() {
@@ -8315,7 +9064,8 @@ function draw() {
   }
   for (const f of floaters) {
     ctx.globalAlpha = f.t > f.life * .7 ? 1 - (f.t - f.life * .7) / (f.life * .3) : 1;
-    drawText(f.text, f.x - cam, f.y, f.col, 1, 'center'); ctx.globalAlpha = 1;
+    const hw = pxOK(f.text) ? textW(f.text) / 2 + 2 : 0;         // (kept on screen: a long one by the edge slides in)
+    drawText(f.text, hw ? clamp(f.x - cam, hw, VW - hw) : f.x - cam, f.y, f.col, 1, 'center'); ctx.globalAlpha = 1;
   }
   drawNums(cam);
   drawMateTag(cam);
@@ -8368,8 +9118,8 @@ function closeIntro() {
   G.intro = null; $('introTap').hidden = true; $('app').classList.remove('intro'); resetSticks(); sfx('click');
 }
 $('introTap').addEventListener('pointerdown', e => { e.preventDefault(); closeIntro(); });
-function wrapAny(s, maxW) {                            // Chinese: split every few characters; English: by words
-  if (!/[^\x00-\x7f]/.test(s)) return wrapText(s, maxW);
+function wrapAny(s, maxW) {                            // Chinese: split every few characters; English and Spanish: by words
+  if (pxOK(s)) return wrapText(s, maxW);
   const n = Math.max(6, Math.floor(maxW / 6.6)), out = [];
   for (let i = 0; i < s.length; i += n) out.push(s.slice(i, i + n));
   return out;
@@ -8421,7 +9171,8 @@ function drawIntro() {
   const tx = px + pw + 8, tw = x0 + w - 8 - tx;
   let y = y0 + 9;
   drawText(tr('newThreat'), tx, y, '#ff5a6a', 1); y += 9;
-  const nsc = /[^\x00-\x7f]/.test(name) || textW(name.toUpperCase(), 3) <= tw ? 3 : 2;
+  const nsc = !pxOK(name) || textW(name.toUpperCase(), 3) <= tw ? 3 : 2;
+  if (pxMarked(name)) y += nsc;                        // (room for the accents over a big Spanish name)
   drawText(name, tx, y, '#ffb43a', nsc); y += 5 * nsc + 7;
   wrapAny(desc, tw).slice(0, 3).forEach(ln => { drawText(ln, tx, y, '#f3ead6', 1); y += 8; });
   y += 3; drawText(tr('howTo'), tx, y, '#a99fbd', 1); y += 9;
@@ -8458,7 +9209,7 @@ function refreshTitle() {
   const S = streetOf(save.night);
   $('nightBtn').textContent = tr('pick', { n: save.night });
   $('titleSub').textContent = tr(save.escaped ? 'titleSubEsc' : 'titleSub', { n: save.night, street: streetName(S) });
-  $('langBtn').textContent = tr('langBtn'); $('langBtn').lang = LANG === 'zh' ? 'en' : 'zh';
+  $('langBtn').textContent = tr('langBtn');
   syncFsButtons();
 }
 const streetName = S => tr('st_' + S.name);
@@ -8719,8 +9470,8 @@ $('pickBig').addEventListener('click', e => { const b = e.target.closest('[data-
 ['pickDead', 'pickCoop'].forEach(k => $(k).addEventListener('click', e => { const b = e.target.closest('[data-gun]'); if (!b) return; sfx('click'); pickGun(b.dataset.gun); }));
 $('pickBack').addEventListener('click', () => { sfx('click'); toTitle(); });
 function applyLang(l) {
-  LANG = l === 'zh' ? 'zh' : 'en';
-  $('app').setAttribute('lang', LANG === 'zh' ? 'zh-Hans' : 'en');
+  LANG = LANGS.includes(l) ? l : 'en';
+  $('app').setAttribute('lang', LANG_ATTR[LANG]);
   document.querySelectorAll('[data-t]').forEach(el => { el.innerHTML = tr(el.dataset.t); });
   $('logoSub').hidden = !tr('logoSub');
   syncControlText(); refreshTitle();
@@ -8728,8 +9479,9 @@ function applyLang(l) {
 }
 function chooseLang(l) { unlockAudio(); save.lang = l; persist(); applyLang(l); sfx('click'); showScreen('sTitle'); }
 $('langEn').addEventListener('click', () => chooseLang('en'));
+$('langEs').addEventListener('click', () => chooseLang('es'));
 $('langZh').addEventListener('click', () => chooseLang('zh'));
-$('langBtn').addEventListener('click', () => { unlockAudio(); save.lang = LANG === 'zh' ? 'en' : 'zh'; persist(); applyLang(save.lang); sfx('click'); });
+$('langBtn').addEventListener('click', () => { unlockAudio(); sfx('click'); showScreen('sLang'); });      // the title's language link: the picker (three languages now)
 /* ============================================================
    YOUR CHARACTER: an AI-made sprite sheet
    The player saves our template (every pose, on a 6 x 3 grid), gives it to an AI image app with a
@@ -8857,6 +9609,7 @@ function makeTemplate() {
 const PROMPT = {
   en: 'I am attaching two images: a photo of me, and a sprite sheet template for a 2D pixel-art zombie game. Redraw the template as a sprite sheet of ME, as a chunky pixel-art game character in the same art style as the template character. Keep the same 6 x 3 grid, the same image size (1536 x 1024), and in every cell the same pose, size and position as the template character, facing right, feet on the dashed line. Make my face, hair, skin tone and clothes recognisable. Hold a black pistol in every pose where the template holds one, and a wooden baseball bat in the three swing poses. In HURT, FALL and DOWN the hands are empty. Plain white background. Do not draw grid lines, labels, text, shadows or muzzle flashes.',
   zh: '我附上两张图：一张我的照片，一张 2D 像素风丧尸游戏的角色动作模板。请按模板重新画一张我的角色图：像素风、和模板角色一样的画风。保持同样的 6 x 3 格子和同样的图片尺寸（1536 x 1024），每一格里的姿势、大小和位置都和模板角色一样，面朝右，脚踩在虚线上。要能认出我的脸、发型、肤色和衣服。模板里拿枪的动作都拿一把黑色手枪，三个挥击动作拿一根木制棒球棒。受伤、倒下、躺地这三格手里是空的。纯白背景。不要画格子线、标签、文字、阴影或枪口火光。',
+  es: 'Te adjunto dos imágenes: una foto mía y una plantilla de hoja de sprites para un juego de zombis en 2D con pixel art. Vuelve a dibujar la plantilla como una hoja de sprites de MÍ, como un personaje de videojuego en pixel art grueso con el mismo estilo que el personaje de la plantilla. Mantén la misma cuadrícula de 6 x 3, el mismo tamaño de imagen (1536 x 1024), y en cada celda la misma pose, tamaño y posición que el personaje de la plantilla, mirando a la derecha, con los pies sobre la línea punteada. Haz que mi cara, mi pelo, mi tono de piel y mi ropa se reconozcan. Sostén una pistola negra en cada pose donde la plantilla sostiene una, y un bate de béisbol de madera en las tres poses de golpe. En HURT, FALL y DOWN las manos están vacías. Fondo blanco liso. No dibujes líneas de cuadrícula, etiquetas, texto, sombras ni fogonazos.',
 };
 
 // ---- cutting a finished sheet into game frames ----
@@ -9301,7 +10054,7 @@ setInterval(() => {
 }, 200);
 function start(data) {
   save = normalizeSave((data && data.save) || loadSave()); applyGunMods();
-  applyLang(save.lang || (/^zh/i.test(navigator.language || '') ? 'zh' : 'en'));
+  applyLang(save.lang || (/^zh/i.test(navigator.language || '') ? 'zh' : /^es/i.test(navigator.language || '') ? 'es' : 'en'));
   G.isTouch = matchMedia('(pointer: coarse)').matches;
   loadAtlas(() => loadCharAssets(() => {
     buildSprites(); buildWorld(); resize();
@@ -9314,7 +10067,7 @@ try { if (hot && typeof hot.snapshot === 'function') hot.snapshot(() => ({ save 
 try {
   if (hot && typeof hot.ready === 'function') hot.ready(start); else start((hot && hot.data) || {});
 } catch (e) { console.error(e); start({}); }
-window.__porch = { get hobo() { return hobo; }, get allyHobo() { return allyHobo; }, HOBO, searchDone, nadePickStart, nadePickEnd, worldX, TUNING, TUNE_SCHEMA, openTuning, get tuneOK() { return tuneOK; }, get SD() { return SD; }, set SD(v) { SD = v; }, get SDg() { return SDg; }, planSupply, SUPPLY, GOOSE_MAX, lastMul, get crowsIn() { return crowsIn; }, get raccoons() { return raccoons; }, updRaccoons, racOut, crowFlock, CUT_RELICS, molR, molHost, set DUAL(v) { DUAL_DX = v[0]; DUAL_DY = v[1]; }, reviveMist, REVIVE_CLEAR, canTake, RELIC_GUN, gunOK, gunOf, myGun, relicWanted, LEG, makeLegend, legendRoll, toggleReady, coopReadyUI, mateReady, get NF() { return NF; }, set NF(v) { NF = v; }, get rcs() { return rcs; }, get scarecrows() { return scarecrows; }, get oldMen() { return oldMen; }, get goose() { return goose; }, updWatchers, updRC, flareFor, itemSpeed, shotMul, meleeMul, coinVal, rollLoot, trySearch, nearDoor, relicOK, relEnc, relDec, finishSearch, mateFound, get floaters() { return floaters; }, get turret() { return turret; }, get turret2() { return turret2; }, get allyTur() { return allyTur; }, get allyTur2() { return allyTur2; }, TUR, TUR2, updTurret, turretTick, gunBullets, COOP_EASE, coopMul, relicOK, RELIC_ONLY, IT, get minis() { return minis; }, updZTraps, sprayed, stunZ, flashbang, healMe, buddyMul, lampMul, capOf, nightCfg, COOP, get cfg() { return cfg; }, ricochet, nadeR, relicSpent, addCash, get DEATH_LOSS() { return DEATH_LOSS; }, buildBuddyFrames, buildBearFrames, buildWolfFrames, get stands() { return stands; }, get traps() { return traps; }, updTraps, trapNews, statKind, zKind, exitKind, loopOf, streetOf, NADE_MAX, addNades, SIDES, ALPHA_DMG, alphaHp, bossHp, TRAP, STAND, get world() { return world; }, updStands, tickBuddy, get ammoBoxes() { return ammoBoxes; }, rollAmmoDrop, AMMO_DROP, CLIPS, magOf, gunSave, pauseCoopUI, views, offscreenX, spawnEdge, enterCoopSave, leaveCoopSave, coopStored, capNow, noiseHorde, get buddies() { return buddies; }, updBuddies, airVolley, get airShots() { return airShots; }, makeElite, COOP, ELITE, updSpitter, get spits() { return spits; }, spitAt, zArt, applyGunMods, SUP, ARM, TRN, capOf, strMul, get critBonus() { return critBonus(); }, renderShop, deathFx, CRIT_MUL, critChance, hurtZombie, get decals() { return decals; }, trashSlam, buildTrashFrames, get TRASH_ART() { return TRASH_ART; }, zLevel, zStats, headOf, hatFor, ZLV, get parts() { return parts; }, TUNING, MELEE, ZT, PT, BOSS_DMG, get RIFLE_FALL() { return RIFLE_FALL; }, bossHp, get NADE_R() { return NADE_R; }, get FLY_DMG() { return FLY_DMG; }, nadeDmg, nadeChargeStart, nadeChargeEnd, nadeMaxD, openIntro, closeIntro, checkIntros, nightCfg, unlocked, ROSTER, openSettings, cancelReload, roundsIn, getRevived, updRevive, get SOLO_SAVE() { return SOLO_SAVE; }, nadePlan, openShop, PRIMARIES, pickGun, openPick, ensureLoadout, gunFor, sticks, pollTouch, input, WEAP, fire, startReload, moveSpeed, normalizeSave, addAmmo, get fires() { return fires; }, RELICS, AMMO_CAP, has, grabRelic, dropRelics, pickRelicHouses, ignite, renderRelics, relicArt, get drops() { return drops; }, get nums() { return nums; }, shopItems, buy, fillPrice, houndWave, HOUND, buildHoundFrames, batHound, get bullets() { return bullets; }, skinOf, get WORN() { return WORN; }, get AF() { return AF; }, NET, get ally() { return ally; }, hostSnap, areaHit, get hostNades() { return hostNades; }, meleeHit, quickSwing, coopAlly, get stats() { return stats; }, get coins() { return coins; }, get K() { return K; }, noiseHorde, get spawnQ() { return spawnQ; }, spawnFlyer, NADE, get nades() { return nades; }, nadeCalc, throwNade, explode, TRACKS, G, get player() { return player; }, get zombies() { return zombies; }, get save() { return save; }, get boss() { return boss; }, get bus() { return bus; }, get props() { return props; }, get debris() { return debris; }, WX, startNight, startBoss, setWeather, houses: () => houses, dmgPlayer, spawnZombie, CE, makeTemplate, importSheet, get CUSTOM() { return CUSTOM; } };
+window.__porch = { tr, applyLang, showScreen, floater, setBanner, pxText, get LANG() { return LANG; }, get hobo() { return hobo; }, get allyHobo() { return allyHobo; }, HOBO, searchDone, nadePickStart, nadePickEnd, worldX, TUNING, TUNE_SCHEMA, openTuning, get tuneOK() { return tuneOK; }, get SD() { return SD; }, set SD(v) { SD = v; }, get SDg() { return SDg; }, planSupply, SUPPLY, GOOSE_MAX, lastMul, get crowsIn() { return crowsIn; }, get raccoons() { return raccoons; }, updRaccoons, racOut, crowFlock, CUT_RELICS, molR, molHost, set DUAL(v) { DUAL_DX = v[0]; DUAL_DY = v[1]; }, reviveMist, REVIVE_CLEAR, canTake, RELIC_GUN, gunOK, gunOf, myGun, relicWanted, LEG, makeLegend, legendRoll, toggleReady, coopReadyUI, mateReady, get NF() { return NF; }, set NF(v) { NF = v; }, get rcs() { return rcs; }, get scarecrows() { return scarecrows; }, get oldMen() { return oldMen; }, get goose() { return goose; }, updWatchers, updRC, flareFor, itemSpeed, shotMul, meleeMul, coinVal, rollLoot, trySearch, nearDoor, relicOK, relEnc, relDec, finishSearch, mateFound, get floaters() { return floaters; }, get turret() { return turret; }, get turret2() { return turret2; }, get allyTur() { return allyTur; }, get allyTur2() { return allyTur2; }, TUR, TUR2, updTurret, turretTick, gunBullets, COOP_EASE, coopMul, relicOK, RELIC_ONLY, IT, get minis() { return minis; }, updZTraps, sprayed, stunZ, flashbang, healMe, buddyMul, lampMul, capOf, nightCfg, COOP, get cfg() { return cfg; }, ricochet, nadeR, relicSpent, addCash, get DEATH_LOSS() { return DEATH_LOSS; }, buildBuddyFrames, buildBearFrames, buildWolfFrames, get stands() { return stands; }, get traps() { return traps; }, updTraps, trapNews, statKind, zKind, exitKind, loopOf, streetOf, NADE_MAX, addNades, SIDES, ALPHA_DMG, alphaHp, bossHp, TRAP, STAND, get world() { return world; }, updStands, tickBuddy, get ammoBoxes() { return ammoBoxes; }, rollAmmoDrop, AMMO_DROP, CLIPS, magOf, gunSave, pauseCoopUI, views, offscreenX, spawnEdge, enterCoopSave, leaveCoopSave, coopStored, capNow, noiseHorde, get buddies() { return buddies; }, updBuddies, airVolley, get airShots() { return airShots; }, makeElite, COOP, ELITE, updSpitter, get spits() { return spits; }, spitAt, zArt, applyGunMods, SUP, ARM, TRN, capOf, strMul, get critBonus() { return critBonus(); }, renderShop, deathFx, CRIT_MUL, critChance, hurtZombie, get decals() { return decals; }, trashSlam, buildTrashFrames, get TRASH_ART() { return TRASH_ART; }, zLevel, zStats, headOf, hatFor, ZLV, get parts() { return parts; }, TUNING, MELEE, ZT, PT, BOSS_DMG, get RIFLE_FALL() { return RIFLE_FALL; }, bossHp, get NADE_R() { return NADE_R; }, get FLY_DMG() { return FLY_DMG; }, nadeDmg, nadeChargeStart, nadeChargeEnd, nadeMaxD, openIntro, closeIntro, checkIntros, nightCfg, unlocked, ROSTER, openSettings, cancelReload, roundsIn, getRevived, updRevive, get SOLO_SAVE() { return SOLO_SAVE; }, nadePlan, openShop, PRIMARIES, pickGun, openPick, ensureLoadout, gunFor, sticks, pollTouch, input, WEAP, fire, startReload, moveSpeed, normalizeSave, addAmmo, get fires() { return fires; }, RELICS, AMMO_CAP, has, grabRelic, dropRelics, pickRelicHouses, ignite, renderRelics, relicArt, get drops() { return drops; }, get nums() { return nums; }, shopItems, buy, fillPrice, houndWave, HOUND, buildHoundFrames, batHound, get bullets() { return bullets; }, skinOf, get WORN() { return WORN; }, get AF() { return AF; }, NET, get ally() { return ally; }, hostSnap, areaHit, get hostNades() { return hostNades; }, meleeHit, quickSwing, coopAlly, get stats() { return stats; }, get coins() { return coins; }, get K() { return K; }, noiseHorde, get spawnQ() { return spawnQ; }, spawnFlyer, NADE, get nades() { return nades; }, nadeCalc, throwNade, explode, TRACKS, G, get player() { return player; }, get zombies() { return zombies; }, get save() { return save; }, get boss() { return boss; }, get bus() { return bus; }, get props() { return props; }, get debris() { return debris; }, WX, startNight, startBoss, setWeather, houses: () => houses, dmgPlayer, spawnZombie, CE, makeTemplate, importSheet, get CUSTOM() { return CUSTOM; } };
 })();
 </script>
 </body></html>
