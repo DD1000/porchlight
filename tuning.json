@@ -1,0 +1,16 @@
+{
+ "note": "",
+ "updatedAt": "2026-09-30T19:06:04.000Z",
+ "values": {
+  "grenade": {
+   "charge": 2
+  },
+  "enemies": {
+   "runner": {
+    "hp": 12,
+    "spdMax": 57,
+    "cashMin": 1
+   }
+  }
+ }
+}
