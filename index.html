@@ -6931,7 +6931,7 @@ function drawRelicPop() {                            // just picked up: the item
    On claude.ai the page's `room` carries the snapshots; on the game's own website PeerJS does (a free
    public server introduces the two browsers, then they talk directly).
    ============================================================ */
-const GAME_BUILD = 71;                              // shown on the co-op screen, so two players can check they have the same game
+const GAME_BUILD = 72;                              // shown on the co-op screen, so two players can check they have the same game
 // on the game's own website: browsers may keep an old copy of the page for up to 10 minutes after an update,
 // so check for a newer upload when the game opens and load it straight away if there is one
 (function checkForUpdate() {
@@ -8707,7 +8707,7 @@ function drawPlayer(cam) {
     return;
   }
   const dark = smooth(player.porchT) * .42, red = player.hurtT / .26 * .5;
-  if (player.swingT >= 0 && CUSTOM) { drawChar(S.L, S.T, S.x, S.y, d); overlay(ATLAS_RED, red); return; }   // their bat is part of the drawing
+  if (player.swingT >= 0 && CUSTOM) { drawChar(S.L, S.T, S.x, S.y, d); overlay(ATLAS_RED, red); if (melee().id === 'axe') drawAxeHead(S); return; }   // their bat is part of the drawing (the axe's head goes on its end)
   if (player.swingT >= 0) {
     const M = melee(), f = AF[M.art], t = swingPhase();
     let ang, trail = null, behind = false;
@@ -9518,6 +9518,87 @@ function setAtlas(img) {
   ATLAS = img;
   const t = tintsOf(img); ATLAS_WHITE = t.white; ATLAS_RED = t.red; ATLAS_DARK = t.dark;
 }
+// ---- the fire axe on a drawn character: their swing poses hold a bat, so the axe's head goes on the end of it ----
+const BAT_ANG = { swing1: -1.85, swing2: -.3, swing3: .8 };   // the bat's angle in the template's swing poses (facing right)
+const TIP_CACHE = new WeakMap();
+// find the bat in each swing pose (their hand positions are only guesses): look along the template's bat angle for the drawing's
+// furthest point, then walk back from it while the drawing stays thin; the angle with the longest thin run is the bat
+function batTips(img, frames) {
+  let got = TIP_CACHE.get(img); if (got) return got;
+  got = {}; TIP_CACHE.set(img, got);
+  let D, CW;
+  try {
+    const c = document.createElement('canvas'); c.width = img.width; c.height = img.height; CW = c.width;
+    const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(img, 0, 0); D = g.getImageData(0, 0, c.width, c.height).data;
+  } catch (e) { return got; }
+  for (const k in BAT_ANG) {
+    const f = frames[k]; if (!f || !f.w) continue;
+    const W = Math.round(f.W || f.w), H = Math.round(f.H || f.h), s = W / f.w, X = Math.round(f.x), Y = Math.round(f.y);
+    const op = (x, y) => { x = Math.round(x); y = Math.round(y); return x >= 0 && y >= 0 && x < W && y < H && D[((Y + y) * CW + X + x) * 4 + 3] > 100; };
+    const edge = [];
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (op(x, y) && !(op(x - 1, y) && op(x + 1, y) && op(x, y - 1) && op(x, y + 1))) edge.push(x, y);
+    if (!edge.length) continue;
+    const lim = 9.5 * s;                                // a bat is ~7 atlas pixels thick with its outline; arms and legs are thicker
+    const across = (px, py, a) => {
+      const nx = -Math.sin(a), ny = Math.cos(a); let l = 0, r = 0;
+      while (l < 60 && op(px + nx * (l + 1), py + ny * (l + 1))) l++;
+      while (r < 60 && op(px - nx * (r + 1), py - ny * (r + 1))) r++;
+      return l + r + 1;
+    };
+    let best = null;
+    for (let a = BAT_ANG[k] - .5; a <= BAT_ANG[k] + .5; a += .02) {
+      const ux = Math.cos(a), uy = Math.sin(a);
+      let ex = 0, ey = 0, m = -1e9;
+      for (let i = 0; i < edge.length; i += 2) { const v = edge[i] * ux + edge[i + 1] * uy; if (v > m) { m = v; ex = edge[i]; ey = edge[i + 1]; } }
+      let qx = ex - ux * 2, qy = ey - uy * 2, run = 0;
+      while (run < W + H && op(qx, qy) && across(qx, qy, a) <= lim) { qx -= ux; qy -= uy; run++; }
+      if (!best || run > best.run) best = { run, ex, ey, gx: qx, gy: qy };
+    }
+    if (best.run < 18 * s) continue;                   // nothing bat-like: leave their drawing alone
+    got[k] = { tipX: best.ex / s, tipY: best.ey / s, gripX: best.gx / s, gripY: best.gy / s };
+  }
+  return got;
+}
+// the head: red paint, a steel edge on the blade, a pick on the back, a dark outline like the drawn characters (3 pixels per atlas pixel)
+let AXE_HEAD = null;
+function axeHeadArt() {
+  if (AXE_HEAD) return AXE_HEAD;
+  const X0 = -16, X1 = 16, Y0 = -25, Y1 = 33, W = X1 - X0 + 1, H = Y1 - Y0 + 1;   // x runs along the handle (+x = its end), y across it (+y = the blade)
+  const inHead = (x, y) => {
+    if (y >= -8 && y <= 8) return Math.abs(x) <= 7;                             // the eye, around the handle
+    if (y > 8) { const hw = 6 + Math.max(0, y - 12) * .42; return y <= 30 - (x / 13) * (x / 13) * 3 && Math.abs(x) <= hw; }   // a neck, then the blade flares to a curved edge
+    const t = (-8 - y) / 14; if (t > 1) return false;                         // the pick tapers to a point, curving back toward the grip
+    return Math.abs(x + t * t * 3) <= 5.5 - 4.7 * t;
+  };
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d');
+  const near = (x, y, r) => { for (let j = -r; j <= r; j++) for (let i = -r; i <= r; i++) if (inHead(x + i, y + j)) return true; return false; };
+  for (let y = Y0; y <= Y1; y++) for (let x = X0; x <= X1; x++) {
+    let col = null;
+    if (inHead(x, y)) {
+      const steel = (y > 8 && !inHead(x, y + 7)) || (y < -8 && (-8 - y) / 14 > .7);
+      const rim = y > 8 && !inHead(x, y + 1), hi = !inHead(x + 2, y), lo = !inHead(x - 2, y);
+      if (steel) col = rim ? '#f6f8fb' : hi ? '#e3e9ef' : lo ? '#87929f' : '#bcc5cf';
+      else if (y > 8 && !inHead(x, y + 8)) col = '#6e141b';                    // the line where the paint stops and the ground edge starts
+      else col = hi ? '#ee6153' : lo ? '#8a1820' : '#cb2b31';
+      if (!steel && y >= -3 && y <= 3 && Math.abs(x) <= 2) col = y === -3 || x === -2 ? '#3a0a0f' : '#5a1016';   // the wedge in the eye
+    } else if (near(x, y, 2)) col = '#1a1116';
+    if (col) { g.fillStyle = col; g.fillRect(x - X0, y - Y0, 1, 1); }
+  }
+  return (AXE_HEAD = { c, ox: -X0, oy: -Y0 });
+}
+// drawn over their swing: centred just short of the bat's end, square to it, blade leading the swing
+function drawAxeHead(S) {
+  const T = S.T; if (!T || T.tipX == null) return;
+  const tip = pointOf(S, T.tipX, T.tipY), grip = pointOf(S, T.gripX, T.gripY), d = player.face;
+  const ang = Math.atan2(tip.y - grip.y, tip.x - grip.x), art = axeHeadArt(), k = 1 / (3 * A);   // 3 art pixels per atlas pixel
+  const back = 2.2 / A;                                                                             // pull it in from the rounded end
+  ctx.save();
+  ctx.translate(tip.x - Math.cos(ang) * back, tip.y - Math.sin(ang) * back); ctx.rotate(ang); if (d < 0) ctx.scale(1, -1);
+  ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(art.c, -art.ox * k, -art.oy * k, art.c.width * k, art.c.height * k);
+  ctx.restore();
+}
 // their frames go under the game's own sheet; the survivor's animation slots point at them
 function composeCustom(img, frames) {
   const oy = ATLAS_BASE.height, c = document.createElement('canvas');
@@ -9528,6 +9609,8 @@ function composeCustom(img, frames) {
   const map = {};                          // sv_ = holding the pistol (theirs, as drawn); sn_ = pistol taken out (another gun is drawn in)
   for (const seq in SLOTS) SLOTS[seq].forEach((k, i) => { map['sv_' + seq + '_' + pad2(i)] = at(k); map['sn_' + seq + '_' + pad2(i)] = at(k, true); });
   map.ss_windup = at('swing1'); map.ss_strike = at('swing2'); map.ss_follow = at('swing3');
+  const tips = batTips(img, frames);                // where their bat ends in each swing, for the fire axe's head
+  [['ss_windup', 'swing1'], ['ss_strike', 'swing2'], ['ss_follow', 'swing3']].forEach(([m, k]) => { const t = tips[pick(k)]; if (t) Object.assign(map[m], t); });
   map.cx_hurt = at('hurt'); map.cx_fall = at('fall'); map.cx_down = at('down');
   return { canvas: c, frames: map };
 }
