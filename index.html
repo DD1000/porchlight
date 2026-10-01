@@ -4781,7 +4781,8 @@ function killZombie(z, dir) {
     blood(z.x, z.fy - 30, dir, 40); addShake(7); sfx('roar'); sfx('slam');
     for (let i = 0; i < 16; i++) pushCoin({ x: z.x + rnd(-10, 10), y: z.fy - 30, vx: rnd(-80, 80), vy: rnd(-150, -80), v: irnd(8, 14), t: 0, fy: z.fy + irnd(-3, 3) });
     G.bossDone = true; G.busT = 1.6;
-    dropRelics({ doorX: Math.round(clamp(z.x, ARENA_L + 24, (SB[z.v] ? sbWall() : ARENA_R - 30) - 6)) }, false, true);     // every boss leaves an item for each of you
+    { const lo = ARENA_L + 24, hi = Math.max(lo, Math.min(SB[z.v] ? sbWall() : ARENA_R - 30, BUS_X - 40) - 6);      // every boss leaves an item for each of you: in the middle of the lot, well clear of the bus
+      dropRelics({ doorX: Math.round((lo + hi) / 2) }, false, true); }
     if (SB[z.v]) sbDown(z);
     else {
       const bk = world && world.forest ? ['alphaDown', 'alphaDownSub'] : ['bossDown', 'bossDownTrail'];
@@ -9314,7 +9315,7 @@ function drawRelicPop() {                            // just picked up: the item
    On claude.ai the page's `room` carries the snapshots; on the game's own website PeerJS does (a free
    public server introduces the two browsers, then they talk directly).
    ============================================================ */
-const GAME_BUILD = 92;                              // shown on the co-op screen, so two players can check they have the same game
+const GAME_BUILD = 93;                              // shown on the co-op screen, so two players can check they have the same game
 // on the game's own website: browsers may keep an old copy of the page for up to 10 minutes after an update,
 // so check for a newer upload when the game opens and load it straight away if there is one
 (function checkForUpdate() {
@@ -11888,6 +11889,7 @@ function renderShop() {
   for (const b of document.querySelectorAll('#shopTabs [data-tab]')) { b.classList.toggle('on', b.dataset.tab === tab); b.textContent = tr('tab_' + b.dataset.tab); }
   const gw = NET.role === 'guest';                    // co-op guest: shop, then wait for the host to start the night
   $('shopGo').textContent = gw ? tr('coopWaitShort') : tr('startN', { n: save.night }); $('shopGo').disabled = gw;
+  if (NET.role === 'guest' || NET.role === 'host') { G.readyKey = ''; coopReadyUI(); }      // (co-op: the ready / waiting state wins over the line above, every time the shop redraws, e.g. after buying something)
   $('shopTitle').textContent = tr(gw ? 'back' : 'backTitle');
   let html = '';
   if (save.refundMsg) { G.refund = save.refundMsg; save.refundMsg = 0; persist(); }
